@@ -1,0 +1,33 @@
+Package: bioRgeo
+Type: Package
+Title: bioRgeo
+Version: 0.1.0
+Authors@R: person("Pierre", "Denelle", email = "pierre.denelle@gmail.com",
+    role = c("aut" , "cre"), comment = c(ORCID = "0000-0001-5037-2281"))
+Description: Aim at testing several methods to delineate bioregions.
+    Use methods based on projected or bipartite networks.
+Depends:
+  R (>= 3.5.3)
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Imports:
+    ade4,
+    cluster,
+    DescTools,
+    dplyr,
+    ecodist,
+    Rcpp,
+    SMUT,
+	lctools,
+	fastcluster
+Suggests:
+    cowplot,
+    ggplot2,
+    knitr,
+    igraph,
+    reshape2,
+    rmarkdown,
+    sf
+VignetteBuilder: knitr
+

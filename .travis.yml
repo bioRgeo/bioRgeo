@@ -1,0 +1,13 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+cache: packages
+
+addons:
+  apt:
+    update: true
+    packages:
+      - libudunits2-dev # for udunits2
+      - libgeos-dev # for sf
+      - libproj-dev # for sf
+      - libgdal-dev # for sf

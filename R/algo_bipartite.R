@@ -22,7 +22,7 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE){
   if(algo == "LPAwb"){ # Beckett modularity
     dat <- as.matrix(dat)
     # Find labels and weighted modularity using LPAwb+
-    network_mod <- Bioregionalization::LPA_wb_plus(dat)
+    network_mod <- bioRgeo::LPA_wb_plus(dat)
 
     # Conversion into data.frame with node, category and module
     network_lab <- data.frame(node = c(rownames(dat), colnames(dat)),

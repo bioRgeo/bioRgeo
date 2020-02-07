@@ -1,6 +1,5 @@
 
 contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
-  require(DescTools)
 
   if(!is.data.frame(dat)){
     stop("dat must be a data.frame with columns sp and site.")
@@ -37,9 +36,13 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
     dat$ab <- 1
   }
 
-  # Create contingency table
-  mat <- xtabs(ab ~ site + sp, data = dat)
-  mat <- as.matrix.xtabs(mat)
+  # Create contingency table with matrix indexing
+  mat <- with(dat, {
+    out <- matrix(nrow = nlevels(site), ncol = nlevels(sp),
+                  dimnames = list(levels(site), levels(sp)))
+    out[cbind(site, sp)] <- value
+    out
+  })
 
   # Check for empty rows and columns
   mat <- mat[rowSums(mat) > 0, ]

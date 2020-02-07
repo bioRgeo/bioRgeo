@@ -1,15 +1,29 @@
 
-algo_bipartite <- function(dat, algo = "greedy", weight = FALSE){
+algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
+                           input = "matrix", site = NULL, sp = NULL,
+                           ab = NULL){
 
-  if(!is.matrix(dat)){
-    stop("Input dat should be a matrix with sites as rows and species
-         as columns.")
+  if(!(input %in% c("matrix", "data frame"))){
+    stop("dat must be either a contingency matrix with sites as rows and
+    species as columns or a long format data frame with each row being the
+    presence of a species in a given site.")
   }
 
-  if(!(algo %in% c("greedy", "girvan", "walktrap", "louvain", "LPAwb", "infomap"))){
-    stop("Provided algorithm to compute modularity is not available.
-     Please chose among the followings:
-         greedy, girvan, walktrap, louvain, or LPAwb.")
+  if(input == "matrix"){
+    if(!is.matrix(dat)){
+      stop("dat should be a matrix with sites as rows and species as columns.")
+    }
+  } else if(input == "data frame"){
+    if(!is.data.frame(dat)){
+      stop("dat should be a long format data frame with each row being the
+    presence of a species in a given site.")
+    }
+  }
+
+  if(!(algo %in% c("greedy", "girvan", "walktrap", "louvain", "LPAwb",
+                   "infomap"))){
+    stop("Provided algorithm to compute modularity is not available. Please
+    choose among the followings: greedy, girvan, walktrap, louvain, or LPAwb.")
   }
 
   if(!is.logical(weight)){
@@ -37,24 +51,36 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE){
     # https://stats.stackexchange.com/questions/209086/community-detection-and-modularity
     # https://www.sixhat.net/finding-communities-in-networks-with-r-and-igraph.html
 
-    # Transforming matrix into square matrix (first pixels and then species)
-    rownames_mat <- rownames(dat)
-    dat_sq <- rbind(
-      cbind(array(0, c(nrow(dat), nrow(dat))), as.matrix(dat)),
-      cbind(as.matrix(t(dat)), array(0, c(ncol(dat), ncol(dat)))))
+    if(input == "matrix"){
+      # Convert matrix into square matrix (first pixels and then species)
+      rownames_mat <- rownames(dat)
+      dat_sq <- rbind(
+        cbind(array(0, c(nrow(dat), nrow(dat))), as.matrix(dat)),
+        cbind(as.matrix(t(dat)), array(0, c(ncol(dat), ncol(dat)))))
 
-    # Add pixel names to square matrix
-    rownames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
-    colnames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
+      # Add pixel names to square matrix
+      rownames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
+      colnames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
 
-    if(weight == FALSE){
-      # Tranforming site_sp matrix into binary matrix
-      dat_sq[dat_sq > 0] <- 1
-      network <- graph_from_adjacency_matrix(
-        dat_sq, mode = "undirected", add.rownames = NULL, weighted = NULL)
-    } else if(weight == TRUE){
-      network <- graph_from_adjacency_matrix(
-        dat_sq, mode = "undirected", add.rownames = NULL, weighted = TRUE)
+      if(weight == FALSE){
+        # Tranforming site_sp matrix into binary matrix
+        dat_sq[dat_sq > 0] <- 1
+        network <- graph_from_adjacency_matrix(
+          dat_sq, mode = "undirected", add.rownames = NULL, weighted = NULL)
+      } else if(weight == TRUE){
+        network <- graph_from_adjacency_matrix(
+          dat_sq, mode = "undirected", add.rownames = NULL, weighted = TRUE)
+      }
+
+    }else if(input == "data frame"){
+      if(weight == FALSE){
+        # Tranforming site_sp matrix into binary matrix
+        network <- graph_from_data_frame(dat[, c(sp, site)],
+                                         directed = FALSE)
+      } else if(weight == TRUE){
+        network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE,
+                                         weighted = TRUE)
+      }
     }
 
     # Modularity algorithm
@@ -85,8 +111,13 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE){
     network_lab$modularity <- modularity(network_mod)
 
     # Add category of the node
-    network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
-                              "site", "sp")
+    if(input == "matrix"){
+      network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
+                                "site", "sp")
+    }else if(input == "data frame"){
+      network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
+                                "site", "sp")
+    }
   }
 
   return(network_lab)

@@ -8,10 +8,10 @@ output:
   word_vignette:
     number_sections: true
 vignette: >
- %\VignetteIndexEntry{Tutorial for Bioregionalization R package}
+%\VignetteIndexEntry{Tutorial for Bioregionalization R package}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8} 
-editor_options: 
+ editor_options: 
  chunk_output_type: console
 ---
 
@@ -284,6 +284,13 @@ Bipartite algorithms applied on example dataset.
 ```{r bipartite}
 # With fastgreedy
 bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
+
+# fastgreedy, input data frame
+bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ], algo = "greedy",
+                         weight = FALSE, input = "data frame", site = "site",
+                         sp = "sp", ab = NULL)
+
+table(bip$module); table(bip_df$module)
 
 # With Beckett algorithm
 bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)

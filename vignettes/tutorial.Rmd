@@ -114,6 +114,15 @@ sp_proj <- sp_proj[, c("id1", "id2", "simpson")]
 
 knitr::kable(head(sp_proj))
 
+# With data frame input
+sp_proj_df <- project_network(sp_df[which(sp_df$pa != 0), ],
+                              similarity = "simpson", input = "data frame",
+                              site = "site", sp = "sp")
+sp_proj_df <- sp_proj_df[, c("id1", "id2", "simpson")]
+
+knitr::kable(head(sp_proj_df))
+
+# Bray-Curtis dissimilarity can take into account abundances of species
 sp_proj_w <- project_network(sp_mat_w, similarity = "bray")
 sp_proj_w <- sp_proj_w[, c("id1", "id2", "bray")]
 

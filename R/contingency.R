@@ -37,12 +37,17 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
   }
 
   # Create contingency table with matrix indexing
+  dat$site <- as.factor(dat$site)
+  dat$sp <- as.factor(dat$sp)
+
   mat <- with(dat, {
     out <- matrix(nrow = nlevels(site), ncol = nlevels(sp),
                   dimnames = list(levels(site), levels(sp)))
-    out[cbind(site, sp)] <- value
+    out[cbind(site, sp)] <- ab
     out
   })
+  # Replace NAs with 0s
+  mat[is.na(mat)] <- 0
 
   # Check for empty rows and columns
   mat <- mat[rowSums(mat) > 0, ]

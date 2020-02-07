@@ -1,11 +1,27 @@
 
-project_network <- function(contingency_mat, similarity = "simpson"){
+project_network <- function(dat, similarity = "simpson", input = "matrix",
+                            site = NULL, sp = NULL, ab = NULL, binary = TRUE){
   require(Rcpp)
   require(SMUT)
 
-  if(!is.matrix(contingency_mat)){
-    stop("Contingency table should be a matrix with sites as rows and
-         species as columns.")
+  if(!(input %in% c("matrix", "data frame"))){
+    stop("dat must be either a contingency matrix with sites as rows and
+    species as columns or a long format data frame with each row being the
+    presence of a species in a given site.")
+  }
+
+  if(input == "matrix"){
+    if(!is.matrix(dat)){
+      stop("dat should be a matrix with sites as rows and species as columns.")
+    }
+  } else if(input == "data frame"){
+    if(!is.data.frame(dat)){
+      stop("dat should be a long format data frame with each row being the
+    presence of a species in a given site.")
+    }
+
+    # Conversion as a contingency table with contingency function
+    dat <- contingency(dat, site, sp, ab = NULL, binary = TRUE)
   }
 
   if(!(similarity %in% c("simpson", "jaccard", "sorensen", "whittaker",
@@ -16,12 +32,12 @@ project_network <- function(contingency_mat, similarity = "simpson"){
   }
 
   # Convert as matrix to remove names
-  contingency_mat <- as.matrix(contingency_mat)
+  dat <- as.matrix(dat)
 
   if(similarity == "bray"){
     require(ecodist)
     require(reshape2)
-    bray <- bcdist(contingency_mat, rmzero = FALSE)
+    bray <- bcdist(dat, rmzero = FALSE)
     # Conversion as matrix and removal of upper part and diagonal
     bray <- as.matrix(bray)
     bray[upper.tri(bray)] <- NA
@@ -33,11 +49,11 @@ project_network <- function(contingency_mat, similarity = "simpson"){
     abc <- abc[complete.cases(abc), ]
     colnames(abc) <- c("id1", "id2", "bray")
     # Create columns of site names and put id in the id columns
-    if(!is.null(rownames(contingency_mat))){
+    if(!is.null(rownames(dat))){
       abc$id1_name <- abc$id1
       abc$id2_name <- abc$id2
-      abc$id1 <- match(abc$id1, rownames(contingency_mat))
-      abc$id2 <- match(abc$id2, rownames(contingency_mat))
+      abc$id1 <- match(abc$id1, rownames(dat))
+      abc$id2 <- match(abc$id2, rownames(dat))
     }
     # Similarity instead of dissimilarity
     abc$bray <- 1 - abc$bray
@@ -48,9 +64,8 @@ project_network <- function(contingency_mat, similarity = "simpson"){
   } else{
 
     # Get the number of species shared by two sites
-    # eigenMapMatMult to compute matrix product
-    # equivalent to contingency_mat %*% t(contingency_mat)
-    a <- eigenMapMatMult(contingency_mat, t(contingency_mat))
+    # eigenMapMatMult to compute matrix product; equivalent to dat %*% t(dat)
+    a <- eigenMapMatMult(dat, t(dat))
 
     abc <- which(a > 0, arr.ind = TRUE)
     abc <- cbind(abc, a[a > 0])
@@ -85,9 +100,9 @@ project_network <- function(contingency_mat, similarity = "simpson"){
     }
   }
   # If contingency matrix has rownames, ressign them to abc data.frame
-  if(!is.null(rownames(contingency_mat))){
-    abc$id1_name <- rownames(contingency_mat)[abc$id1]
-    abc$id2_name <- rownames(contingency_mat)[abc$id2]
+  if(!is.null(rownames(dat))){
+    abc$id1_name <- rownames(dat)[abc$id1]
+    abc$id2_name <- rownames(dat)[abc$id2]
   }
 
   return(abc)

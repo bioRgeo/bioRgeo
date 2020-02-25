@@ -47,6 +47,12 @@ options(tinytex.verbose = TRUE)
 
 ```
 
+In the following vignette, we show how *bioRgeo* package works. We use
+simulated datasets to illustrate how we can detect communities using various
+methods, ranging from bipartite network modularity to classical clustering.
+
+From these segregations, we show how different maps can be compared.
+
 # Virtual dataset
 
 `virtual_sp` is a dataset simulated that comes with the package. This dataset
@@ -54,13 +60,8 @@ relies on the response curve of virtual species to a virtual raster. The
 virtual raster contains 10000 cells and was simulated using `gstat` R package.
 [See here for details.](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/)
 
-Based on this layer, the `virtualspecies` R package (Leroy et al. 2015) was
-used to simulate a Gaussian response curve of 100 virtual species. The mean and
-standard deviation of the response function was varying among species, such as
-some of them are more or less generalists/specialists.
-
-For every species in every cell, we could derive a suitability index.
-Species with suitability index inferior to 0.15 were arbitrarily set absent.
+Each site having XY coordinates, we can plot the raster of the virtual
+environment layer:
 
 ```{r dataset}
 # Import virtual dataset
@@ -79,19 +80,41 @@ sp_df %>%
   scale_fill_distiller("Value", palette = "OrRd") +
   coord_equal() +
   labs(title = "Environmental variable") +
-  theme(panel.background = element_rect(fill = "transparent",colour = NA))
+  theme(panel.background = element_rect(fill = "transparent", colour = NA))
 
 ```
+
+Based on this raster, we used `virtualspecies` R package (Leroy et al. 2015)
+to simulate a Gaussian response curve of 100 virtual species. The mean and
+standard deviation of the response function varied among species, drawing a
+continuum of generalist and specialist species.
+
+We here illustrate two contrasted response curves:
 
 ```{r virtual_sp_response_curve, fig.label = "Example of response curve for one virtual species."}
 knitr::include_graphics("../figures/sp50_response_curve.png")
 ```
 
+For every species in every cell, we could derive a suitability index.
+Species with suitability index inferior to 0.15 were arbitrarily set absent.
+
 ```{r virtual_sp_map, fig.label = "Example of suitability map for one virtual species."}
 knitr::include_graphics("../figures/sp50_suitability.png")
 ```
 
-The first step is to convert the data.frame into a contingency table.
+# Inputs of the package
+*bioRgeo* R package relies on two possible inputs as illustrated in the
+following figure. Several functions of the package necessitate to define the
+structure of the input.
+User can switch from one input or the other using either
+*contingency()* or *contingency_to_dataframe()* functions.
+
+```{r input_figure, fig.label = "Two possible inputs."}
+knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
+```
+
+In our case, we can easily convert the input data.frame into a contingency
+table, using the *contingency()* function:
 
 ```{r contingency_matrix}
 sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
@@ -103,10 +126,19 @@ sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5])
 ```
 
-# Community detection on projected networks
-## Projection of the network
+# Community detection
+The core of the package relies on the aggregation of several methods that
+perform community detection based on distinct methods.
 
-We then need to project the network.
+## Projected networks
+
+A projected network considers the similarity between each pair of nodes. In
+our case, nodes can represent different sites that are linked together
+according the proportion of species they share together.
+
+### Projection of the network
+
+To project the network, we can use the *project_network()* function.
 
 ```{r projection}
 sp_proj <- project_network(sp_mat, similarity = "simpson")
@@ -133,7 +165,7 @@ knitr::kable(head(sp_proj_w))
 knitr::include_graphics("../figures/Lenormand_et_al_2019_Figure2.png")
 ```
 
-# Community detection: Order Statistics Local Optimization Method
+### Order Statistics Local Optimization Method (OSLOM)
 
 Running OSLOM. tp files containing the modularity results are directly stored
 within the virtual dataset, but the following chunk can be run independently.
@@ -166,12 +198,60 @@ oslom_vignette_w <- oslom_output(virtual[[3]], sp_mat_w)
 
 print(paste0("Number of bioregions detected = ",
              length(unique(oslom_vignette$bioregion)),
-             "; and with weights: ",
+             " ; and with weights: ",
              length(unique(oslom_vignette_w$bioregion))))
 
 ```
 
-## Species' contributions
+## Clustering
+
+Example with Ward analysis and k-means clustering.
+
+```{r ward_cluster}
+# CA_res <- CA_cluster(sp_mat)
+ward_res <- ward_cluster(sp_mat, K.max = 6)
+```
+
+## Bipartite networks
+
+Bipartite algorithms applied on example dataset.
+
+```{r bipartite}
+# With fastgreedy
+bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
+
+# fastgreedy, input data frame
+bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ], algo = "greedy",
+                         weight = FALSE, input = "data frame", site = "site",
+                         sp = "sp", ab = NULL)
+
+table(bip$module); table(bip_df$module)
+
+# With Beckett algorithm
+bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
+
+# With Infomap
+bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
+
+# Only sites
+bip_site <- bip %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site2 <- bip2 %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site_infomap <- bip_infomap %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+```
+
+# Species' contributions
 
 Step 3 of Figure 1 (see Lenormand et al. (2019))
 
@@ -255,7 +335,7 @@ knitr::kable(top10[which(top10$bioregion == "2"), ])
 
 ```
 
-## Interaction between bioregions
+# Interaction between bioregions
 
 ```{r lambda}
 z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
@@ -266,54 +346,6 @@ lambda <- interact(input_network = "projected",
 knitr::kable(head(lambda[[1]]))
 # Plot
 lambda[[2]]
-```
-
-# Clustering
-
-Example with Ward analysis and k-means clustering.
-
-```{r ward_cluster}
-# CA_res <- CA_cluster(sp_mat)
-ward_res <- ward_cluster(sp_mat, K.max = 6)
-```
-
-# Community detection on bipartite networks
-## Several algorithms
-Bipartite algorithms applied on example dataset.
-
-```{r bipartite}
-# With fastgreedy
-bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
-
-# fastgreedy, input data frame
-bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ], algo = "greedy",
-                         weight = FALSE, input = "data frame", site = "site",
-                         sp = "sp", ab = NULL)
-
-table(bip$module); table(bip_df$module)
-
-# With Beckett algorithm
-bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
-
-# With Infomap
-bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
-
-# Only sites
-bip_site <- bip %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
-bip_site2 <- bip2 %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
-bip_site_infomap <- bip_infomap %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
 ```
 
 ## Species and sites' contributions
@@ -687,3 +719,7 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
                     optim_method = "firstSEmax", nstart = 25, B = 50,
                     K.max = 20)
 ```
+
+# References
+
+Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607. doi:10.1111/ecog.01388

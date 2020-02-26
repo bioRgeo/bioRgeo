@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Performs a CA analysis and k-means clustering from a contingency table — ward_cluster • Bioregionalization</title>
+<title>Performs a CA analysis and k-means clustering from a contingency table — ward_cluster • bioRgeo</title>
 
 
 <!-- jquery -->
@@ -69,7 +69,7 @@ optimal number of clusters and extract them." />
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">Bioregionalization</a>
+        <a class="navbar-link" href="../index.html">bioRgeo</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -94,6 +94,9 @@ optimal number of clusters and extract them." />
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/tutorial.html">Tutorial for Bioregionalization R package</a>
+    </li>
+    <li>
+      <a href="../articles/tutorial_mediterranean.html">Tutorial for Bioregionalization R package</a>
     </li>
   </ul>
 </li>
@@ -173,7 +176,10 @@ or globalSEmax.</p></td>
 
 <span class='no'>tmp</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='contingency.html'>contingency</a></span>(<span class='kw'>dat</span> <span class='kw'>=</span> <span class='no'>ex</span>, <span class='kw'>sp</span> <span class='kw'>=</span> <span class='st'>"species"</span>, <span class='kw'>site</span> <span class='kw'>=</span> <span class='st'>"sites"</span>, <span class='kw'>ab</span> <span class='kw'>=</span> <span class='st'>"count"</span>)
 <span class='fu'>ward_cluster</span>(<span class='no'>tmp</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"ward.D2"</span>, <span class='kw'>optim_method</span> <span class='kw'>=</span> <span class='st'>"firstSEmax"</span>,
-                         <span class='kw'>nstart</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>K.max</span> <span class='kw'>=</span> <span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : cluster</span></div><div class='output co'>#&gt;   site cluster
+                         <span class='kw'>nstart</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>K.max</span> <span class='kw'>=</span> <span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : cluster</span></div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : fastcluster</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attachement du package : 'fastcluster'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:stats':</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    hclust</span></div><div class='output co'>#&gt;   site cluster
 #&gt; 1    A       1
 #&gt; 2    B       1
 #&gt; 3    C       1</div></pre>

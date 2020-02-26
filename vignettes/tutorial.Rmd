@@ -8,7 +8,7 @@ output:
   word_vignette:
     number_sections: true
 vignette: >
-%\VignetteIndexEntry{Tutorial for Bioregionalization R package}
+ %\VignetteIndexEntry{Tutorial for Bioregionalization R package}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8} 
  editor_options: 

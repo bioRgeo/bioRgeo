@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compute zscores for species from a given delineation of sites. — zscore_dplyr • Bioregionalization</title>
+<title>Compute zscores for species from a given delineation of sites. — zscore_dplyr • bioRgeo</title>
 
 
 <!-- jquery -->
@@ -68,7 +68,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">Bioregionalization</a>
+        <a class="navbar-link" href="../index.html">bioRgeo</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -93,6 +93,9 @@
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/tutorial.html">Tutorial for Bioregionalization R package</a>
+    </li>
+    <li>
+      <a href="../articles/tutorial_mediterranean.html">Tutorial for Bioregionalization R package</a>
     </li>
   </ul>
 </li>
@@ -161,7 +164,9 @@ readLines() function. This object can be generated with run_oslom() function.</p
 
 <span class='no'>z_scores</span> <span class='kw'>&lt;-</span> <span class='fu'>zscore_dplyr</span>(<span class='no'>ex</span>, <span class='kw'>sp_col</span> <span class='kw'>=</span> <span class='st'>"species"</span>, <span class='kw'>site_col</span> <span class='kw'>=</span> <span class='st'>"sites"</span>,
                    <span class='kw'>bioregion_col</span> <span class='kw'>=</span> <span class='st'>"bioregion"</span>)</div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : dplyr</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attachement du package : 'dplyr'</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:stats':</span>
+#&gt; <span class='message'>Attachement du package : 'dplyr'</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:igraph':</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    as_data_frame, groups, union</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:stats':</span>
 #&gt; <span class='message'></span>
 #&gt; <span class='message'>    filter, lag</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from 'package:base':</span>
 #&gt; <span class='message'></span>

@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • bioRgeo</title>
+<title>Function to identify pixels grouped together through different
+bioregionalizations. — comparison • bioRgeo</title>
 
 
 <!-- jquery -->
@@ -35,7 +36,11 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Function to identify pixels grouped together through different
+bioregionalizations. — comparison" />
+<meta property="og:description" content="Function to identify pixels grouped together through different methods of
+bioregionalizations." />
+<meta name="twitter:card" content="summary" />
 
 
 
@@ -54,7 +59,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -111,125 +116,61 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Function to identify pixels grouped together through different
+bioregionalizations.</h1>
+    
+    <div class="hidden name"><code>comparison.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Function to identify pixels grouped together through different methods of
+bioregionalizations.</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'><a href='all_maps.html'>all_maps</a></span>(<span class='no'>dat</span>, <span class='no'>site</span>, <span class='no'>sp</span>, <span class='no'>ab</span>, <span class='kw'>binary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="algo_bipartite.html">algo_bipartite()</a></code> </p>
-        </td>
-        <td><p>Community detection on bipartite networks</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="all_maps.html">all_maps()</a></code> </p>
-        </td>
-        <td><p>Wrap-up function that runs several methods available in the package.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="comparison.html">all_maps()</a></code> </p>
-        </td>
-        <td><p>Function to identify pixels grouped together through different
-bioregionalizations.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="contingency.html">contingency()</a></code> </p>
-        </td>
-        <td><p>Create a contingency table from a data.frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="contingency_to_dataframe.html">contingency_to_dataframe()</a></code> </p>
-        </td>
-        <td><p>Create a data.frame from a contingency table.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="contribute.html">contribute()</a></code> </p>
-        </td>
-        <td><p>Compute Cz and rho scores for species from a given delineation of
-sites.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cz.html">cz()</a></code> </p>
-        </td>
-        <td><p>Calculate the Cz scores of sites and species for a given
-bipartite network.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="interact.html">interact()</a></code> </p>
-        </td>
-        <td><p>Computes interactions between modules.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="oslom_output.html">oslom_output()</a></code> </p>
-        </td>
-        <td><p>Convert the .tp output of OSLOM algorithm into a data.frame,
-with each site having its bioregion.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="project_network.html">project_network()</a></code> </p>
-        </td>
-        <td><p>Project a contingency table using a similarity metric</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="run_oslom.html">run_oslom()</a></code> </p>
-        </td>
-        <td><p>Convert the .tp output of OSLOM algorithm into a data.frame,
-with each site having its bioregion.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ward_cluster.html">contingency()</a></code> </p>
-        </td>
-        <td><p>Performs a CA analysis and k-means clustering from a contingency table</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="zscore.html">zscore()</a></code> </p>
-        </td>
-        <td><p>Compute zscores for species from a given delineation of sites.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="zscore_dplyr.html">zscore_dplyr()</a></code> </p>
-        </td>
-        <td><p>Compute zscores for species from a given delineation of sites.</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>dat</th>
+      <td><p>a data.frame with a column containing the sites and
+columns containing different partitions.</p></td>
+    </tr>
+    <tr>
+      <th>bio_col</th>
+      <td><p>a numeric indicating which columns of dat contains
+the different bioregions.</p></td>
+    </tr>
+    <tr>
+      <th>thres</th>
+      <td><p>a numeric determining the minimum number of pixels per pair.</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
+
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>ex</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>site</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='st'>"site"</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>1</span>:<span class='fl'>7</span>)),
+<span class='kw'>bio1</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"a"</span>, <span class='st'>"b"</span>, <span class='st'>"a"</span>, <span class='st'>"c"</span>, <span class='st'>"d"</span>, <span class='st'>"b"</span>, <span class='st'>"d"</span>),
+<span class='kw'>bio2</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"aa"</span>, <span class='st'>"aa"</span>, <span class='st'>"aa"</span>, <span class='st'>"bb"</span>, <span class='st'>"cc"</span>, <span class='st'>"bb"</span>, <span class='st'>"cc"</span>))
+
+<span class='fu'>comparison</span>(<span class='no'>ex</span>, <span class='kw'>bio_col</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2</span>, <span class='fl'>3</span>), <span class='kw'>thres</span> <span class='kw'>=</span> <span class='fl'>1</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: la condition a une longueur &gt; 1 et seul le premier élément est utilisé</span></div><div class='output co'>#&gt; <span class='error'>Error in left_join(all100, all_bioregions[, c("site", colnames(all_bioregions)[bio_col])],     by = c(id1 = "site")): impossible de trouver la fonction "left_join"</span></div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-all-functions">All functions</a></li>
+      <li><a href="#arguments">Arguments</a></li>
+      <li><a href="#details">Details</a></li>
+      <li><a href="#note">Note</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
+
   </div>
 </div>
 

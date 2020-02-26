@@ -260,6 +260,9 @@ ward_res <- ward_cluster(sp_mat, K.max = 6)
 
 # All contributions
 
+This part aims at evaluating the contributions of species to the different
+bioregions created.
+
 ```{r contrib}
 tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
 # table(tmp$sp, tmp$bioregion)

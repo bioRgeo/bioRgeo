@@ -130,6 +130,52 @@ knitr::kable(sp_mat_w[1:5, 1:5])
 The core of the package relies on the aggregation of several methods that
 perform community detection based on distinct methods.
 
+## Bipartite networks
+Networks are called bipartite when they are constituted by two types of nodes.
+Each type of node can only be linked with the other type. For example, if
+species occur in sites, sites and species constitute two types of nodes and
+an occurrence of a species within a site describes a link between these two
+nodes.
+
+Several algorithms to detect community within bipartite networks. Several of
+them are implemented within the *igraph* package.
+
+```{r bipartite}
+# With fastgreedy
+bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
+
+# fastgreedy, input data frame
+bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ],
+                         algo = "greedy",
+                         weight = FALSE, input = "data frame", site = "site",
+                         sp = "sp", ab = NULL)
+
+table(bip$module); table(bip_df$module)
+
+# With Beckett algorithm
+bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
+
+# With Infomap
+bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
+
+# Only sites
+bip_site <- bip %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site2 <- bip2 %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site_infomap <- bip_infomap %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+```
+
 ## Projected networks
 
 A projected network considers the similarity between each pair of nodes. In
@@ -212,42 +258,14 @@ Example with Ward analysis and k-means clustering.
 ward_res <- ward_cluster(sp_mat, K.max = 6)
 ```
 
-## Bipartite networks
+# All contributions
 
-Bipartite algorithms applied on example dataset.
+```{r contrib}
+tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
+# table(tmp$sp, tmp$bioregion)
 
-```{r bipartite}
-# With fastgreedy
-bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
-
-# fastgreedy, input data frame
-bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ], algo = "greedy",
-                         weight = FALSE, input = "data frame", site = "site",
-                         sp = "sp", ab = NULL)
-
-table(bip$module); table(bip_df$module)
-
-# With Beckett algorithm
-bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
-
-# With Infomap
-bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
-
-# Only sites
-bip_site <- bip %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
-bip_site2 <- bip2 %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
-bip_site_infomap <- bip_infomap %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
+scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
+                     bioregion_col = "bioregion")
 
 ```
 
@@ -275,7 +293,8 @@ $$
 \hat\rho_{ij}^{+} = \frac{\rho_{ij}^{+}}{\sum_i\rho_{ij}^{+}}
 $$
 
-Finally, we determine for each bioregion how each set of species contributes to it.
+Finally, we determine for each bioregion how each set of species contributes
+to it.
 
 $$
 \lambda_{jj'} = \frac{1}{|A_j|}\sum_{i \in A_{j}}\hat\rho_{jj'}^{+}
@@ -348,7 +367,7 @@ knitr::kable(head(lambda[[1]]))
 lambda[[2]]
 ```
 
-## Species and sites' contributions
+# Species and sites' contributions
 
 Cz computation on bipartite results.
 
@@ -367,17 +386,6 @@ head(cz_bip[[1]])
 # knitr::kable(head(lambda[[1]]))
 # # Plot
 # lambda[[2]]
-
-```
-
-# All contributions
-
-```{r contrib}
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
-# table(tmp$sp, tmp$bioregion)
-
-scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                     bioregion_col = "bioregion")
 
 ```
 

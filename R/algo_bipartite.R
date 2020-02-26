@@ -18,12 +18,19 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
       stop("dat should be a long format data frame with each row being the
     presence of a species in a given site.")
     }
+
+    if(weight == TRUE & is.null(ab)){
+      stop("With weight = TRUE and input = 'data frame', input data frame
+      should have a column containg the abundances of species at sites.")
+    }
   }
 
   if(!(algo %in% c("greedy", "girvan", "walktrap", "louvain", "LPAwb",
-                   "infomap"))){
+                   "infomap", "spinglass", "leading_eigen", "label_prop",
+                   "optimal"))){
     stop("Provided algorithm to compute modularity is not available. Please
-    choose among the followings: greedy, girvan, walktrap, louvain, or LPAwb.")
+    choose among the followings: greedy, girvan, walktrap, louvain, LPAwb,
+         infomap, spinglass, leading_eigen, label_prop or optimal.")
   }
 
   if(!is.logical(weight)){
@@ -47,7 +54,9 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
     network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                               "site", "sp")
 
-  } else if(algo %in% c("greedy", "girvan", "walktrap", "louvain", "infomap")){
+  } else if(algo %in% c("greedy", "girvan", "walktrap", "louvain", "infomap",
+                        "spinglass", "leading_eigen", "label_prop",
+                        "optimal")){
     # https://stats.stackexchange.com/questions/209086/community-detection-and-modularity
     # https://www.sixhat.net/finding-communities-in-networks-with-r-and-igraph.html
 
@@ -74,9 +83,7 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
 
     }else if(input == "data frame"){
       if(weight == FALSE){
-        # Tranforming site_sp matrix into binary matrix
-        network <- graph_from_data_frame(dat[, c(sp, site)],
-                                         directed = FALSE)
+        network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE)
       } else if(weight == TRUE){
         network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE,
                                          weighted = TRUE)
@@ -85,7 +92,7 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
 
     # Modularity algorithm
     if(algo == "greedy"){
-      network_mod <- fastgreedy.community(network)
+      network_mod <- cluster_fast_greedy(network)
     } else if(algo == "girvan"){
       network_mod <- cluster_edge_betweenness(network, modularity = TRUE)
     } else if(algo == "walktrap"){
@@ -94,18 +101,19 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
       network_mod <- cluster_louvain(graph = network)
     } else if(algo == "infomap"){
       network_mod <- cluster_infomap(graph = network)
+    } else if(algo == "spinglass"){
+      network_mod <- cluster_spinglass(graph = network)
+    } else if(algo == "leading_eigen"){
+      network_mod <- cluster_leading_eigen(graph = network)
+    } else if(algo == "label_prop"){
+      network_mod <- cluster_label_prop(graph = network)
+    } else if(algo == "optimal"){
+      network_mod <- cluster_optimal(graph = network)
     }
-    # Convert results into data.frame
-    network_lab <- c()
-    for(i in 1:length(igraph::groups(network_mod))){
-      network_lab <- rbind(network_lab,
-                           cbind(igraph::groups(network_mod)[[i]],
-                                 rep(as.numeric(i),
-                                     length(igraph::groups(network_mod)[[i]]))))
-    }
-    network_lab <- data.frame(network_lab)
-    colnames(network_lab) <- c("node", "module")
-    # rownames(network_lab) <- network_lab$node
+
+    # Create data.frame with modules
+    network_lab <- data.frame(node = names(membership(network_mod)),
+                              module = as.character(membership(network_mod)))
 
     # Add modularity score
     network_lab$modularity <- modularity(network_mod)

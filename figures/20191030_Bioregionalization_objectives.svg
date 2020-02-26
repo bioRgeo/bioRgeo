@@ -495,22 +495,6 @@
          transform="matrix(-1.1,0,0,-1.1,-1.1,0)" />
     </marker>
     <marker
-       inkscape:stockid="Arrow1Mend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="Arrow1Mend-3"
-       style="overflow:visible"
-       inkscape:isstock="true"
-       inkscape:collect="always">
-      <path
-         inkscape:connector-curvature="0"
-         id="path2056-0"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.4,0,0,-0.4,-4,0)" />
-    </marker>
-    <marker
        inkscape:stockid="Arrow2Lend"
        orient="auto"
        refY="0"
@@ -829,8 +813,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.64144687"
-     inkscape:cx="343.44341"
-     inkscape:cy="863.00221"
+     inkscape:cx="343.90091"
+     inkscape:cy="738.28416"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -884,7 +868,7 @@
          id="flowPara4142-4-7"
          style="font-size:40px;line-height:1.25"> </flowPara></flowRoot>    <g
        id="g5254"
-       transform="translate(-16.535434,-8.8188976)">
+       transform="translate(223.46457,-8.8188976)">
       <rect
          y="70.851753"
          x="350.5733"
@@ -963,76 +947,9 @@
            inkscape:connector-curvature="0" />
       </g>
     </g>
-    <g
-       id="g4394"
-       transform="matrix(0.78951725,0,0,0.78951725,71.552673,-429.02566)">
-      <path
-         inkscape:connector-curvature="0"
-         id="path4312"
-         d="m 254.42857,400.93363 109.28572,0"
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path4314"
-         d="m 299.28571,380.21934 0,110.35714"
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4136-5-0"
-         xml:space="preserve"
-         transform="translate(217.7606,354.24304)"><flowRegion
-           id="flowRegion4138-8-5"><rect
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel"
-             y="26.886175"
-             x="40.406101"
-             height="26.741858"
-             width="181.37358"
-             id="rect4140-3-5" /></flowRegion><flowPara
-           style="font-size:17.5px;line-height:1.25"
-           id="flowPara4142-4-0">Site</flowPara></flowRoot>      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4136-5-0-2"
-         xml:space="preserve"
-         transform="translate(263.46966,352.36316)"><flowRegion
-           id="flowRegion4138-8-5-3"><rect
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel"
-             y="26.886175"
-             x="40.406101"
-             height="26.741858"
-             width="181.37358"
-             id="rect4140-3-5-7" /></flowRegion><flowPara
-           style="font-size:17.5px;line-height:1.25"
-           id="flowPara4142-4-0-3">Species</flowPara></flowRoot>      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4136-5-0-2-0"
-         xml:space="preserve"
-         transform="translate(223.93569,376.91184)"><flowRegion
-           id="flowRegion4138-8-5-3-7"><rect
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel"
-             y="26.886175"
-             x="40.406101"
-             height="83.170433"
-             width="115.30215"
-             id="rect4140-3-5-7-4" /></flowRegion><flowPara
-           style="font-size:17.5px;line-height:1.25"
-           id="flowPara4142-4-0-3-1">A              sp<flowSpan
-   style="font-size:82.32879043%;baseline-shift:sub"
-   id="flowSpan4980">1</flowSpan></flowPara><flowPara
-           id="flowPara4388"
-           style="font-size:17.5px;line-height:1.25">A              sp<flowSpan
-   style="font-size:82.32879043%;baseline-shift:sub"
-   id="flowSpan4982">2</flowSpan></flowPara><flowPara
-           id="flowPara4390"
-           style="font-size:17.5px;line-height:1.25">A              sp<flowSpan
-   style="font-size:82.32879043%;baseline-shift:sub"
-   id="flowSpan4984">3</flowSpan></flowPara><flowPara
-           id="flowPara4392"
-           style="font-size:17.5px;line-height:1.25">A              sp<flowSpan
-   style="font-size:82.32879043%;baseline-shift:sub"
-   id="flowSpan4986">4</flowSpan></flowPara></flowRoot>    </g>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6640)"
-       d="m 867.89841,39.047551 c 0,0 29.49218,-11.341821 48.41343,-14.942253 11.28637,-2.160267 31.91894,-2.699905 31.91894,-2.699905"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6640)"
+       d="m 221.26424,123.31765 c 0,0 87.7598,-29.228678 144.0637,-38.50727 33.58481,-5.567144 94.98109,-6.957835 94.98109,-6.957835"
        id="path4415"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccc" />
@@ -1488,19 +1405,6 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
          id="flowPara4142-4-00-2-8-4-0-8-8-0"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:20px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">ward_cluster()</flowPara></flowRoot>    <flowRoot
-       transform="translate(-19.767419,212.32124)"
-       xml:space="preserve"
-       id="flowRoot4136-5-1-6"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-         id="flowRegion4138-8-1-9"><rect
-           id="rect4140-3-7-6"
-           width="477.80215"
-           height="59.598999"
-           x="40.406101"
-           y="26.886175"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-         id="flowPara4142-4-00-0"
-         style="font-size:27.5px;line-height:1.25">Bipartite network</flowPara></flowRoot>    <flowRoot
        transform="translate(384.89527,604.04329)"
        xml:space="preserve"
        id="flowRoot4136-5-1-6-9"
@@ -1677,189 +1581,11 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
          id="flowPara4142-4-00-2-8-4-0-8-8-0-0"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:20px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">comparison()</flowPara></flowRoot>    <g
-       id="g4195"
-       transform="translate(44.587778,-217.11581)">
-      <path
-         sodipodi:nodetypes="cc"
-         inkscape:connector-curvature="0"
-         id="path4415-2-9"
-         d="M 397.19706,117.30389 H 501.48513"
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4136-5-1-0-5-6"
-         xml:space="preserve"
-         transform="matrix(0.46987574,0,0,0.46987574,369.76061,72.247646)"><flowRegion
-           id="flowRegion4138-8-1-0-6-1"><rect
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel"
-             y="26.886175"
-             x="40.406101"
-             height="59.598999"
-             width="477.80215"
-             id="rect4140-3-7-2-5-19" /></flowRegion><flowPara
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:37.24388885px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1"
-           id="flowPara4142-4-00-2-8-0">contingency()</flowPara></flowRoot>      <path
-         sodipodi:nodetypes="cc"
-         inkscape:connector-curvature="0"
-         id="path4415-2-9-0"
-         d="M 504.12629,136.62976 H 401.94595"
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-3)" />
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4136-5-1-0-5-6-6"
-         xml:space="preserve"
-         transform="matrix(0.46987574,0,0,0.46987574,305.66433,134.70001)"><flowRegion
-           id="flowRegion4138-8-1-0-6-1-4"><rect
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel"
-             y="26.886175"
-             x="40.406101"
-             height="50.081947"
-             width="668.14325"
-             id="rect4140-3-7-2-5-19-8" /></flowRegion><flowPara
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:37.24388885px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1"
-           id="flowPara4142-4-00-2-8-0-9">contingency_to_dataframe()</flowPara></flowRoot>    </g>
-    <g
        id="g4394-8"
        transform="translate(368.94196,-303.12499)" />
-    <g
-       id="g4183"
-       transform="matrix(0.78951725,0,0,0.78951725,146.467,-192.58765)">
-      <path
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.9375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="M 254.42857,400.93363 H 462.44092"
-         id="path4312-7"
-         inkscape:connector-curvature="0"
-         transform="translate(368.94196,-303.12499)" />
-      <path
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.9375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="M 299.28571,380.21934 V 490.57648"
-         id="path4314-6"
-         inkscape:connector-curvature="0"
-         transform="translate(368.94196,-303.12499)" />
-      <flowRoot
-         transform="translate(586.70256,51.11805)"
-         xml:space="preserve"
-         id="flowRoot4136-5-0-5"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-           id="flowRegion4138-8-5-2"><rect
-             id="rect4140-3-5-3"
-             width="181.37358"
-             height="26.741858"
-             x="40.406101"
-             y="26.886175"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-           id="flowPara4142-4-0-6"
-           style="font-size:17.5px;line-height:1.25">Site</flowPara></flowRoot>      <flowRoot
-         transform="translate(630.28083,29.35079)"
-         xml:space="preserve"
-         id="flowRoot4136-5-0-2-9"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-           id="flowRegion4138-8-5-3-2"><rect
-             id="rect4140-3-5-7-9"
-             width="181.37358"
-             height="26.741858"
-             x="40.406101"
-             y="26.886175"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-           id="flowPara4142-4-0-3-0"
-           style="font-size:17.5px;line-height:1.25">Species</flowPara></flowRoot>      <flowRoot
-         transform="translate(592.87765,73.78685)"
-         xml:space="preserve"
-         id="flowRoot4136-5-0-2-0-3"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-           id="flowRegion4138-8-5-3-7-4"><rect
-             id="rect4140-3-5-7-4-39"
-             width="115.30215"
-             height="83.170433"
-             x="40.406101"
-             y="26.886175"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-           id="flowPara4142-4-0-3-1-4"
-           style="font-size:17.5px;line-height:1.25">A</flowPara><flowPara
-           style="font-size:17.5px;line-height:1.25"
-           id="flowPara4388-7">B</flowPara><flowPara
-           style="font-size:17.5px;line-height:1.25"
-           id="flowPara4392-2">C              </flowPara></flowRoot>      <flowRoot
-         transform="translate(634.71806,75.17875)"
-         xml:space="preserve"
-         id="flowRoot4136-5-0-2-0-3-3"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-           id="flowRegion4138-8-5-3-7-4-7"><rect
-             id="rect4140-3-5-7-4-39-4"
-             width="155.78717"
-             height="83.170433"
-             x="40.406101"
-             y="26.886175"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-           id="flowPara4115"
-           style="font-size:17.5px;line-height:1.25">0      0.6     0.4         0.7</flowPara><flowPara
-           id="flowPara4119"
-           style="font-size:17.5px;line-height:1.25">1      0.1      0.1         0.2</flowPara><flowPara
-           id="flowPara4121"
-           style="font-size:17.5px;line-height:1.25">0.4   0.8    0.5         0.1  </flowPara></flowRoot>      <flowRoot
-         transform="translate(630.65965,50.74252)"
-         xml:space="preserve"
-         id="flowRoot4136-5-0-5-1"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
-           id="flowRegion4138-8-5-2-9"><rect
-             id="rect4140-3-5-3-8"
-             width="181.37358"
-             height="26.741858"
-             x="40.406101"
-             y="26.886175"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
-           id="flowPara4142-4-0-6-5"
-           style="font-size:17.5px;line-height:1.25">sp<flowSpan
-   style="font-size:82.32879016%;baseline-shift:sub"
-   id="flowSpan4976">1</flowSpan>   sp<flowSpan
-   style="font-size:82.32879016%;baseline-shift:sub"
-   id="flowSpan4974">2</flowSpan>   sp<flowSpan
-   style="font-size:82.32879016%;baseline-shift:sub"
-   id="flowSpan4972">3</flowSpan>         sp<flowSpan
-   style="font-size:82.32879016%;baseline-shift:sub"
-   id="flowSpan4970">n</flowSpan></flowPara></flowRoot>      <circle
-         r="1.7498612"
-         cy="168.49469"
-         cx="639.94739"
-         id="path5749-29"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         r="1.7498612"
-         cy="173.05597"
-         cx="639.94739"
-         id="path5749-2-6"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         r="1.7498612"
-         cy="177.61728"
-         cx="639.94739"
-         id="path5749-6-6"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         transform="matrix(0,-1,1,0,0,0)"
-         r="1.7498612"
-         cy="774.50323"
-         cx="-89.955132"
-         id="path5749-97"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         transform="matrix(0,-1,1,0,0,0)"
-         r="1.7498612"
-         cy="779.06458"
-         cx="-89.955132"
-         id="path5749-2-7"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         transform="matrix(0,-1,1,0,0,0)"
-         r="1.7498612"
-         cy="783.62585"
-         cx="-89.955132"
-         id="path5749-6-2"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.89083821;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    </g>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2922)"
-       d="m 130.45084,147.33169 0,94.71927"
+       d="m 130.45084,147.33169 0,238.92847"
        id="path4415-2-97"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -2549,7 +2275,7 @@
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <g
        id="g8852"
-       transform="matrix(0.74687274,0,0,0.74687274,462.70149,-24.288765)">
+       transform="matrix(0.74687274,0,0,0.74687274,490.70149,-24.288765)">
       <g
          id="g8913"
          transform="translate(-321.76159,-8.8558236)">
@@ -2966,5 +2692,18 @@
         </g>
       </g>
     </g>
-  </g>
+    <flowRoot
+       transform="translate(197.74159,-8.8673058)"
+       xml:space="preserve"
+       id="flowRoot4136-5-1-5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
+         id="flowRegion4138-8-1-40"><rect
+           id="rect4140-3-7-9"
+           width="207.38626"
+           height="100.09126"
+           x="40.406101"
+           y="26.886175"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
+         style="font-size:27.5px;line-height:1.25"
+         id="flowPara5660-2">If data are spatialized</flowPara></flowRoot>  </g>
 </svg>

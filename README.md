@@ -5,9 +5,11 @@ README
 
 # An R package to compare several methods of bioregionalization and estimate the contributions of species
 
-`bioRgeo` is a package designed to compare several methods of
-clustering based on multivariate or network
-approaches.
+[![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)](https://www.r-project.org/Licenses/GPL-3)
+[![Travis build status](https://travis-ci.org/pierredenelle/Bioregionalization.svg?branch=master)](https://travis-ci.org/pierredenelle/Bioregionalization)
+
+`bioRgeo` is an R package designed to compare several methods of
+clustering based on multivariate or network approaches.
 
 ## 1 Installation
 
@@ -25,6 +27,8 @@ vignette("tutorial", package = "bioRgeo")
 ```
 
     ## Warning: vignette 'tutorial' not found
+
+html of the vignette can also be accessed **[here](https://biorgeo.github.io/bioRgeo/articles/tutorial.html)**
 
 ## 3 Dependencies
 

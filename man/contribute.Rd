@@ -28,11 +28,20 @@ account.}
 }
 
 \description{
-See Guimera et Amaral, Nature, 2005.
-See Lenormand et al., Ecology and Evolution, 2019.
+See Guimera et Amaral, Nature, 2005 for Cz coefficients.
+See Lenormand et al., Ecology and Evolution, 2019 for rho scores.
 }
 \details{}
 \section{Note}{}
+
+\value{
+\item{}{The input data.frame binded with 7 new columns: bio_site containing
+the bioregion of the given site, bio_sp the bioregion of the given species,
+C_site and C_sp having respectively the participation coefficient C score of
+the site and the species
+at each row, z_site and z_sp the same of the intra-module degree z
+coefficient and rho the species contribution.}
+}
 
 \examples{
 ex <- data.frame(sites = c(rep("A", 2), rep("B", 3), rep("C", 2)),

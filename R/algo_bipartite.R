@@ -33,6 +33,10 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
          infomap, spinglass, leading_eigen, label_prop or optimal.")
   }
 
+  if(algo == "optimal"){
+    warning("This algorithm may take time to run.")
+  }
+
   if(!is.logical(weight)){
     stop("weight must be a boolean.")
   }
@@ -75,10 +79,10 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
         # Tranforming site_sp matrix into binary matrix
         dat_sq[dat_sq > 0] <- 1
         network <- graph_from_adjacency_matrix(
-          dat_sq, mode = "undirected", add.rownames = NULL, weighted = NULL)
+          dat_sq, mode = "undirected", add.rownames = TRUE, weighted = NULL)
       } else if(weight == TRUE){
         network <- graph_from_adjacency_matrix(
-          dat_sq, mode = "undirected", add.rownames = NULL, weighted = TRUE)
+          dat_sq, mode = "undirected", add.rownames = TRUE, weighted = TRUE)
       }
 
     }else if(input == "data frame"){

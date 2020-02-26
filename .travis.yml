@@ -3,6 +3,10 @@
 language: R
 cache: packages
 
+before_script:
+  - Rscript -e 'remotes::install_cran(c("devtools", "covr", "pkgdown", "spelling"))'
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo tlmgr install framed titling cancel; fi
+
 addons:
   apt:
     update: true
@@ -11,3 +15,11 @@ addons:
       - libgeos-dev # for sf
       - libproj-dev # for sf
       - libgdal-dev # for sf
+
+deploy:
+  - provider: script
+    script: Rscript -e 'pkgdown::deploy_site_github()'
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: "$DEPLOY = true"

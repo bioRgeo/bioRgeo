@@ -38,8 +38,8 @@ sites. — contribute • bioRgeo</title>
 
 <meta property="og:title" content="Compute Cz and rho scores for species from a given delineation of
 sites. — contribute" />
-<meta property="og:description" content="See Guimera et Amaral, Nature, 2005.
-See Lenormand et al., Ecology and Evolution, 2019." />
+<meta property="og:description" content="See Guimera et Amaral, Nature, 2005 for Cz coefficients.
+See Lenormand et al., Ecology and Evolution, 2019 for rho scores." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -95,10 +95,10 @@ See Lenormand et al., Ecology and Evolution, 2019." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/tutorial.html">Tutorial for Bioregionalization R package</a>
+      <a href="../articles/tutorial.html">Tutorial</a>
     </li>
     <li>
-      <a href="../articles/tutorial_mediterranean.html">Tutorial for Bioregionalization R package</a>
+      <a href="../articles/tutorial_mediterranean.html">Tutorial with Mediterranean example</a>
     </li>
   </ul>
 </li>
@@ -125,8 +125,8 @@ sites.</h1>
     </div>
 
     <div class="ref-description">
-    <p>See Guimera et Amaral, Nature, 2005.
-See Lenormand et al., Ecology and Evolution, 2019.</p>
+    <p>See Guimera et Amaral, Nature, 2005 for Cz coefficients.
+See Lenormand et al., Ecology and Evolution, 2019 for rho scores.</p>
     </div>
 
     <pre class="usage"><span class='fu'>contribute</span>(<span class='no'>dat</span>, <span class='no'>sp_col</span>, <span class='no'>site_col</span>, <span class='no'>bioregion_col</span>)</pre>
@@ -171,6 +171,17 @@ account.</p></td>
 
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    
+
+<dt></dt><dd><p>The input data.frame binded with 7 new columns: bio_site containing
+the bioregion of the given site, bio_sp the bioregion of the given species,
+C_site and C_sp having respectively the participation coefficient C score of
+the site and the species
+at each row, z_site and z_sp the same of the intra-module degree z
+coefficient and rho the species contribution.</p></dd>
+
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='no'>ex</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>sites</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"A"</span>, <span class='fl'>2</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"B"</span>, <span class='fl'>3</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"C"</span>, <span class='fl'>2</span>)),
@@ -189,6 +200,7 @@ account.</p></td>
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#details">Details</a></li>
       <li><a href="#note">Note</a></li>
+      <li><a href="#value">Value</a></li>
       <li><a href="#examples">Examples</a></li>
     </ul>
 

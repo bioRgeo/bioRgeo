@@ -1,5 +1,5 @@
 
-ward_cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
+cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                          nstart = 25, B = 50, K.max = 20){
   require(cluster)
 
@@ -54,11 +54,11 @@ ward_cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     mtm <- Matrix::tcrossprod(m)
     sq <- rowSums(m*m)
     sqrt(outer(sq,sq,"+") - 2*mtm)
-  } 
-  
+  }
+
   dist_sp_mat <- euc_dist(dat)
   dist_sp_mat <- as.dist(dist_sp_mat)
-  
+
   #h <- hclust(dist_sp_mat, method = method)
   require(fastcluster)
   h <- fastcluster::hclust(dist_sp_mat, method = method)

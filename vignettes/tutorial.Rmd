@@ -249,11 +249,19 @@ print(paste0("Number of bioregions detected = ",
 
 ## Clustering
 
-Example with Ward analysis and k-means clustering.
+Other methods to detect communities use more classical clustering approaches.
+For example, k-means clustering aims at partitionning *n* observations into
+*k* clusters in which each observation belongs to the cluster with the nearest
+mean.
 
-```{r ward_cluster}
+Agglomerative Hierarchical Clustering.
+
+See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
+to add more methods.
+
+```{r cluster}
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- ward_cluster(sp_mat, K.max = 6)
+ward_res <- cluster(sp_mat, K.max = 6)
 ```
 
 # Species' contributions
@@ -389,7 +397,8 @@ head(cz_bip[[1]])
 
 # Comparison of different bioregionalizations
 
-If spatial data.
+If sites have coordinates, we can apply several functions to compare how the
+distinct bioregions are segregated through space.
 
 ## Projection on a map.
 

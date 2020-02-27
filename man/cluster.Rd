@@ -1,5 +1,5 @@
-\name{ward_cluster}
-\alias{ward_cluster}
+\name{cluster}
+\alias{cluster}
 \title{Performs a CA analysis and k-means clustering from a contingency table}
 \usage{
 contingency(dat, sp, site, ab, binary = FALSE)
@@ -37,6 +37,6 @@ species = c("a", "b", "a", "c", "d", "b", "d"),
 count = c(10, 100, 1, 20, 50, 10, 20))
 
 tmp <- contingency(dat = ex, sp = "species", site = "sites", ab = "count")
-ward_cluster(tmp, method = "ward.D2", optim_method = "firstSEmax",
+cluster(tmp, method = "ward.D2", optim_method = "firstSEmax",
                          nstart = 25, B = 50, K.max = 2)
 }

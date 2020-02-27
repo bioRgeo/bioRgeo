@@ -261,7 +261,7 @@ to add more methods.
 
 ```{r cluster}
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_mat, K.max = 6)
+ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 6)
 ```
 
 # Species' contributions
@@ -636,11 +636,16 @@ coo <- coordinates(all_bioregions_sp)
 # plot(MI, main = "", las = 1) 
 
 bws <- c(3, 4, 6, 9, 12, 18, 24)
-moran_oslom <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$oslom)
-moran_ward <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$ward)
-moran_greedy <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$greedy)
-moran_lpawb <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$lpawb)
-moran_infomap <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$infomap)
+moran_oslom <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$oslom,
+                                  plot = FALSE)
+moran_ward <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$ward,
+                                  plot = FALSE)
+moran_greedy <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$greedy,
+                                  plot = FALSE)
+moran_lpawb <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$lpawb,
+                                  plot = FALSE)
+moran_infomap <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$infomap,
+                                  plot = FALSE)
 
 all_moran <-
   rbind(data.frame(

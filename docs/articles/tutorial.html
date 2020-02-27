@@ -93,7 +93,7 @@ text-align: justify}
 </style>
 <p>The principle of the package is illustrated by the following figure.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">knitr<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span>(<span class="st">"../figures/Bioregionalization_scheme3.png"</span>)</a></code></pre></div>
-<p><img src="../figures/Bioregionalization_scheme3.png" width="1230"></p>
+<p><img src="../figures/Bioregionalization_scheme3.png" width="2072"></p>
 <p>In the following vignette, we show how <em>bioRgeo</em> package works. We use simulated datasets to illustrate how we can detect communities using various methods, ranging from bipartite network modularity to classical clustering.</p>
 <p>From these segregations, we show how different maps can be compared.</p>
 <div id="virtual-dataset" class="section level1">
@@ -478,7 +478,7 @@ text-align: justify}
 <p>Agglomerative Hierarchical Clustering.</p>
 <p>See <a href="https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68" class="uri">https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68</a> to add more methods.</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="co"># CA_res &lt;- CA_cluster(sp_mat)</span></a>
-<a class="sourceLine" id="cb18-2" title="2">ward_res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cluster.html">cluster</a></span>(sp_mat, <span class="dt">K.max =</span> <span class="dv">6</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb18-2" title="2">ward_res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cluster.html">cluster</a></span>(sp_mat, <span class="dt">method =</span> <span class="st">"ward.D2"</span>, <span class="dt">n_clust =</span> <span class="dv">6</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="species-contributions" class="section level1">
@@ -1013,105 +1013,106 @@ text-align: justify}
 <a class="sourceLine" id="cb38-18" title="18"><span class="co"># plot(MI, main = "", las = 1) </span></a>
 <a class="sourceLine" id="cb38-19" title="19"></a>
 <a class="sourceLine" id="cb38-20" title="20">bws &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">9</span>, <span class="dv">12</span>, <span class="dv">18</span>, <span class="dv">24</span>)</a>
-<a class="sourceLine" id="cb38-21" title="21">moran_oslom &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>oslom)</a></code></pre></div>
+<a class="sourceLine" id="cb38-21" title="21">moran_oslom &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>oslom,</a>
+<a class="sourceLine" id="cb38-22" title="22">                                  <span class="dt">plot =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb38-23" title="23">moran_ward &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>ward,</a>
+<a class="sourceLine" id="cb38-24" title="24">                                  <span class="dt">plot =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb38-25" title="25">moran_greedy &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>greedy,</a>
+<a class="sourceLine" id="cb38-26" title="26">                                  <span class="dt">plot =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb38-27" title="27">moran_lpawb &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>lpawb,</a>
+<a class="sourceLine" id="cb38-28" title="28">                                  <span class="dt">plot =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb38-29" title="29">moran_infomap &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>infomap,</a>
+<a class="sourceLine" id="cb38-30" title="30">                                  <span class="dt">plot =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb38-31" title="31"></a>
+<a class="sourceLine" id="cb38-32" title="32">all_moran &lt;-</a>
+<a class="sourceLine" id="cb38-33" title="33"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(</a>
+<a class="sourceLine" id="cb38-34" title="34">    <span class="dt">algo =</span> <span class="st">"oslom"</span>, <span class="dt">k =</span> moran_oslom[, <span class="st">"k"</span>],</a>
+<a class="sourceLine" id="cb38-35" title="35">    <span class="dt">moran =</span> moran_oslom[, <span class="st">"Moran's I"</span>]),</a>
+<a class="sourceLine" id="cb38-36" title="36">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"ward"</span>, <span class="dt">k =</span> moran_ward[, <span class="st">"k"</span>],</a>
+<a class="sourceLine" id="cb38-37" title="37">               <span class="dt">moran =</span> moran_ward[, <span class="st">"Moran's I"</span>]),</a>
+<a class="sourceLine" id="cb38-38" title="38">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"ward"</span>, <span class="dt">k =</span> moran_ward[, <span class="st">"k"</span>],</a>
+<a class="sourceLine" id="cb38-39" title="39">               <span class="dt">moran =</span> moran_greedy[, <span class="st">"Moran's I"</span>]),</a>
+<a class="sourceLine" id="cb38-40" title="40">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"greedy"</span>, <span class="dt">k =</span> moran_greedy[, <span class="st">"k"</span>],</a>
+<a class="sourceLine" id="cb38-41" title="41">               <span class="dt">moran =</span> moran_lpawb[, <span class="st">"Moran's I"</span>]),</a>
+<a class="sourceLine" id="cb38-42" title="42">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"infomap"</span>, <span class="dt">k =</span> moran_infomap[, <span class="st">"k"</span>],</a>
+<a class="sourceLine" id="cb38-43" title="43">               <span class="dt">moran =</span> moran_infomap[, <span class="st">"Moran's I"</span>])</a>
+<a class="sourceLine" id="cb38-44" title="44">  )</a>
+<a class="sourceLine" id="cb38-45" title="45"></a>
+<a class="sourceLine" id="cb38-46" title="46"><span class="kw">ggplot</span>(all_moran, <span class="kw">aes</span>(k, moran)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-47" title="47"><span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(algo))) <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-48" title="48"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(algo))) <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-49" title="49"><span class="st">  </span><span class="kw">scale_color_viridis_d</span>(<span class="st">"Method"</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-50" title="50"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"# of neighbours"</span>, <span class="dt">y =</span> <span class="st">"Moran's I"</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-51" title="51"><span class="st">  </span><span class="kw">theme_classic</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb38-52" title="52"><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill=</span> <span class="ot">NA</span>, <span class="dt">color =</span> <span class="st">"black"</span>))</a></code></pre></div>
 <p><img src="tutorial_files/figure-html/autocorrelation-1.png" width="1152"></p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1">moran_ward &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>ward)</a></code></pre></div>
-<p><img src="tutorial_files/figure-html/autocorrelation-2.png" width="1152"></p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">moran_greedy &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>greedy)</a></code></pre></div>
-<p><img src="tutorial_files/figure-html/autocorrelation-3.png" width="1152"></p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1">moran_lpawb &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>lpawb)</a></code></pre></div>
-<p><img src="tutorial_files/figure-html/autocorrelation-4.png" width="1152"></p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1">moran_infomap &lt;-<span class="st"> </span>lctools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/lctools/man/moransI.v.html">moransI.v</a></span>(coo, bws, all_bioregions_sp<span class="op">@</span>data<span class="op">$</span>infomap)</a></code></pre></div>
-<p><img src="tutorial_files/figure-html/autocorrelation-5.png" width="1152"></p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1">all_moran &lt;-</a>
-<a class="sourceLine" id="cb43-2" title="2"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(</a>
-<a class="sourceLine" id="cb43-3" title="3">    <span class="dt">algo =</span> <span class="st">"oslom"</span>, <span class="dt">k =</span> moran_oslom[, <span class="st">"k"</span>],</a>
-<a class="sourceLine" id="cb43-4" title="4">    <span class="dt">moran =</span> moran_oslom[, <span class="st">"Moran's I"</span>]),</a>
-<a class="sourceLine" id="cb43-5" title="5">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"ward"</span>, <span class="dt">k =</span> moran_ward[, <span class="st">"k"</span>],</a>
-<a class="sourceLine" id="cb43-6" title="6">               <span class="dt">moran =</span> moran_ward[, <span class="st">"Moran's I"</span>]),</a>
-<a class="sourceLine" id="cb43-7" title="7">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"ward"</span>, <span class="dt">k =</span> moran_ward[, <span class="st">"k"</span>],</a>
-<a class="sourceLine" id="cb43-8" title="8">               <span class="dt">moran =</span> moran_greedy[, <span class="st">"Moran's I"</span>]),</a>
-<a class="sourceLine" id="cb43-9" title="9">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"greedy"</span>, <span class="dt">k =</span> moran_greedy[, <span class="st">"k"</span>],</a>
-<a class="sourceLine" id="cb43-10" title="10">               <span class="dt">moran =</span> moran_lpawb[, <span class="st">"Moran's I"</span>]),</a>
-<a class="sourceLine" id="cb43-11" title="11">    <span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">algo =</span> <span class="st">"infomap"</span>, <span class="dt">k =</span> moran_infomap[, <span class="st">"k"</span>],</a>
-<a class="sourceLine" id="cb43-12" title="12">               <span class="dt">moran =</span> moran_infomap[, <span class="st">"Moran's I"</span>])</a>
-<a class="sourceLine" id="cb43-13" title="13">  )</a>
-<a class="sourceLine" id="cb43-14" title="14"></a>
-<a class="sourceLine" id="cb43-15" title="15"><span class="kw">ggplot</span>(all_moran, <span class="kw">aes</span>(k, moran)) <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-16" title="16"><span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(algo))) <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-17" title="17"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(algo))) <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-18" title="18"><span class="st">  </span><span class="kw">scale_color_viridis_d</span>(<span class="st">"Method"</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-19" title="19"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"# of neighbours"</span>, <span class="dt">y =</span> <span class="st">"Moran's I"</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-20" title="20"><span class="st">  </span><span class="kw">theme_classic</span>() <span class="op">+</span></a>
-<a class="sourceLine" id="cb43-21" title="21"><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill=</span> <span class="ot">NA</span>, <span class="dt">color =</span> <span class="st">"black"</span>))</a></code></pre></div>
-<p><img src="tutorial_files/figure-html/autocorrelation-6.png" width="1152"></p>
 <p>We can as well compare each pair of bioregion to each other.</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="co"># sabre package: test between oslom and ward</span></a>
-<a class="sourceLine" id="cb44-2" title="2"><span class="co"># Spatial Association Between REgionalizations</span></a>
-<a class="sourceLine" id="cb44-3" title="3"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(sabre)</a>
-<a class="sourceLine" id="cb44-4" title="4"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(sf)</a>
-<a class="sourceLine" id="cb44-5" title="5"></a>
-<a class="sourceLine" id="cb44-6" title="6">bioregions_sf &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(all_bioregions, <span class="dt">coords =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"x"</span>, <span class="st">"y"</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb44-7" title="7"><span class="st">  </span><span class="kw">st_cast</span>(<span class="dt">to =</span> <span class="st">"MULTILINESTRING"</span>)</a>
-<a class="sourceLine" id="cb44-8" title="8"></a>
-<a class="sourceLine" id="cb44-9" title="9">po &lt;-<span class="st"> </span><span class="kw">vmeasure_calc</span>(<span class="dt">x =</span> bioregions_sf, <span class="dt">x_name =</span> oslom,</a>
-<a class="sourceLine" id="cb44-10" title="10">                    <span class="dt">y =</span> bioregions_sf, <span class="dt">y_name =</span> ward)</a>
-<a class="sourceLine" id="cb44-11" title="11"></a>
-<a class="sourceLine" id="cb44-12" title="12"><span class="co"># Groups of pixels through the different methods</span></a>
-<a class="sourceLine" id="cb44-13" title="13">list_group_oslom &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>oslom, identity)</a>
-<a class="sourceLine" id="cb44-14" title="14">list_group_oslom &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_oslom, as.character)</a>
-<a class="sourceLine" id="cb44-15" title="15"></a>
-<a class="sourceLine" id="cb44-16" title="16">list_group_ward &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>ward, identity)</a>
-<a class="sourceLine" id="cb44-17" title="17">list_group_ward &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_ward, as.character)</a>
-<a class="sourceLine" id="cb44-18" title="18"></a>
-<a class="sourceLine" id="cb44-19" title="19">list_group_greedy &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>greedy, identity)</a>
-<a class="sourceLine" id="cb44-20" title="20">list_group_greedy&lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_greedy, as.character)</a>
-<a class="sourceLine" id="cb44-21" title="21"></a>
-<a class="sourceLine" id="cb44-22" title="22">list_group_lpawb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>lpawb, identity)</a>
-<a class="sourceLine" id="cb44-23" title="23">list_group_lpawb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_lpawb, as.character)</a>
-<a class="sourceLine" id="cb44-24" title="24"></a>
-<a class="sourceLine" id="cb44-25" title="25">list_group_infomap &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>infomap, identity)</a>
-<a class="sourceLine" id="cb44-26" title="26">list_group_infomap &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_infomap, as.character)</a>
-<a class="sourceLine" id="cb44-27" title="27"></a>
-<a class="sourceLine" id="cb44-28" title="28">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_oslom, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_ward[[<span class="dv">1</span>]]])</a>
-<a class="sourceLine" id="cb44-29" title="29">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_greedy[[<span class="dv">1</span>]]])</a>
-<a class="sourceLine" id="cb44-30" title="30">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_lpawb[[<span class="dv">1</span>]]])</a>
-<a class="sourceLine" id="cb44-31" title="31">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_infomap[[<span class="dv">1</span>]]])</a>
-<a class="sourceLine" id="cb44-32" title="32"></a>
-<a class="sourceLine" id="cb44-33" title="33"><span class="co"># For one combination only</span></a>
-<a class="sourceLine" id="cb44-34" title="34">list1_oslom &lt;-</a>
-<a class="sourceLine" id="cb44-35" title="35"><span class="st">  </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>oslom <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>oslom)[<span class="dv">1</span>]),</a>
-<a class="sourceLine" id="cb44-36" title="36">                 <span class="st">"site"</span>]</a>
-<a class="sourceLine" id="cb44-37" title="37">list1_ward &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>ward <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>ward)[<span class="dv">1</span>]),</a>
-<a class="sourceLine" id="cb44-38" title="38">                             <span class="st">"site"</span>]</a>
-<a class="sourceLine" id="cb44-39" title="39">list1_greedy &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>greedy <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>greedy)[<span class="dv">1</span>]),</a>
-<a class="sourceLine" id="cb44-40" title="40">                               <span class="st">"site"</span>]</a>
-<a class="sourceLine" id="cb44-41" title="41">list1_lpawb &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>lpawb <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>lpawb)[<span class="dv">1</span>]),</a>
-<a class="sourceLine" id="cb44-42" title="42">                              <span class="st">"site"</span>]</a>
-<a class="sourceLine" id="cb44-43" title="43">list1_infomap &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>infomap <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>infomap)[<span class="dv">1</span>]),</a>
-<a class="sourceLine" id="cb44-44" title="44">                                <span class="st">"site"</span>]</a>
-<a class="sourceLine" id="cb44-45" title="45"></a>
-<a class="sourceLine" id="cb44-46" title="46">list1_combined &lt;-<span class="st"> </span>list1_oslom[list1_oslom <span class="op">%in%</span><span class="st"> </span>list1_ward]</a>
-<a class="sourceLine" id="cb44-47" title="47">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_greedy]</a>
-<a class="sourceLine" id="cb44-48" title="48">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_lpawb]</a>
-<a class="sourceLine" id="cb44-49" title="49">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_infomap]</a>
-<a class="sourceLine" id="cb44-50" title="50"></a>
-<a class="sourceLine" id="cb44-51" title="51">all_bioregions<span class="op">$</span>combined &lt;-<span class="st"> </span><span class="ot">NA</span></a>
-<a class="sourceLine" id="cb44-52" title="52">all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>site <span class="op">%in%</span><span class="st"> </span>list1_combined), <span class="st">"combined"</span>] &lt;-<span class="st"> "1"</span></a></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="co"># sabre package: test between oslom and ward</span></a>
+<a class="sourceLine" id="cb39-2" title="2"><span class="co"># Spatial Association Between REgionalizations</span></a>
+<a class="sourceLine" id="cb39-3" title="3"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(sabre)</a>
+<a class="sourceLine" id="cb39-4" title="4"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(sf)</a>
+<a class="sourceLine" id="cb39-5" title="5"></a>
+<a class="sourceLine" id="cb39-6" title="6">bioregions_sf &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(all_bioregions, <span class="dt">coords =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"x"</span>, <span class="st">"y"</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb39-7" title="7"><span class="st">  </span><span class="kw">st_cast</span>(<span class="dt">to =</span> <span class="st">"MULTILINESTRING"</span>)</a>
+<a class="sourceLine" id="cb39-8" title="8"></a>
+<a class="sourceLine" id="cb39-9" title="9">po &lt;-<span class="st"> </span><span class="kw">vmeasure_calc</span>(<span class="dt">x =</span> bioregions_sf, <span class="dt">x_name =</span> oslom,</a>
+<a class="sourceLine" id="cb39-10" title="10">                    <span class="dt">y =</span> bioregions_sf, <span class="dt">y_name =</span> ward)</a>
+<a class="sourceLine" id="cb39-11" title="11"></a>
+<a class="sourceLine" id="cb39-12" title="12"><span class="co"># Groups of pixels through the different methods</span></a>
+<a class="sourceLine" id="cb39-13" title="13">list_group_oslom &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>oslom, identity)</a>
+<a class="sourceLine" id="cb39-14" title="14">list_group_oslom &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_oslom, as.character)</a>
+<a class="sourceLine" id="cb39-15" title="15"></a>
+<a class="sourceLine" id="cb39-16" title="16">list_group_ward &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>ward, identity)</a>
+<a class="sourceLine" id="cb39-17" title="17">list_group_ward &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_ward, as.character)</a>
+<a class="sourceLine" id="cb39-18" title="18"></a>
+<a class="sourceLine" id="cb39-19" title="19">list_group_greedy &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>greedy, identity)</a>
+<a class="sourceLine" id="cb39-20" title="20">list_group_greedy&lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_greedy, as.character)</a>
+<a class="sourceLine" id="cb39-21" title="21"></a>
+<a class="sourceLine" id="cb39-22" title="22">list_group_lpawb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>lpawb, identity)</a>
+<a class="sourceLine" id="cb39-23" title="23">list_group_lpawb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_lpawb, as.character)</a>
+<a class="sourceLine" id="cb39-24" title="24"></a>
+<a class="sourceLine" id="cb39-25" title="25">list_group_infomap &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/by.html">by</a></span>(all_bioregions<span class="op">$</span>site, all_bioregions<span class="op">$</span>infomap, identity)</a>
+<a class="sourceLine" id="cb39-26" title="26">list_group_infomap &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_infomap, as.character)</a>
+<a class="sourceLine" id="cb39-27" title="27"></a>
+<a class="sourceLine" id="cb39-28" title="28">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_group_oslom, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_ward[[<span class="dv">1</span>]]])</a>
+<a class="sourceLine" id="cb39-29" title="29">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_greedy[[<span class="dv">1</span>]]])</a>
+<a class="sourceLine" id="cb39-30" title="30">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_lpawb[[<span class="dv">1</span>]]])</a>
+<a class="sourceLine" id="cb39-31" title="31">list_combined &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(list_combined, <span class="cf">function</span>(x) x[x <span class="op">%in%</span><span class="st"> </span>list_group_infomap[[<span class="dv">1</span>]]])</a>
+<a class="sourceLine" id="cb39-32" title="32"></a>
+<a class="sourceLine" id="cb39-33" title="33"><span class="co"># For one combination only</span></a>
+<a class="sourceLine" id="cb39-34" title="34">list1_oslom &lt;-</a>
+<a class="sourceLine" id="cb39-35" title="35"><span class="st">  </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>oslom <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>oslom)[<span class="dv">1</span>]),</a>
+<a class="sourceLine" id="cb39-36" title="36">                 <span class="st">"site"</span>]</a>
+<a class="sourceLine" id="cb39-37" title="37">list1_ward &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>ward <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>ward)[<span class="dv">1</span>]),</a>
+<a class="sourceLine" id="cb39-38" title="38">                             <span class="st">"site"</span>]</a>
+<a class="sourceLine" id="cb39-39" title="39">list1_greedy &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>greedy <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>greedy)[<span class="dv">1</span>]),</a>
+<a class="sourceLine" id="cb39-40" title="40">                               <span class="st">"site"</span>]</a>
+<a class="sourceLine" id="cb39-41" title="41">list1_lpawb &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>lpawb <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>lpawb)[<span class="dv">1</span>]),</a>
+<a class="sourceLine" id="cb39-42" title="42">                              <span class="st">"site"</span>]</a>
+<a class="sourceLine" id="cb39-43" title="43">list1_infomap &lt;-<span class="st"> </span>all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>infomap <span class="op">==</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(all_bioregions<span class="op">$</span>infomap)[<span class="dv">1</span>]),</a>
+<a class="sourceLine" id="cb39-44" title="44">                                <span class="st">"site"</span>]</a>
+<a class="sourceLine" id="cb39-45" title="45"></a>
+<a class="sourceLine" id="cb39-46" title="46">list1_combined &lt;-<span class="st"> </span>list1_oslom[list1_oslom <span class="op">%in%</span><span class="st"> </span>list1_ward]</a>
+<a class="sourceLine" id="cb39-47" title="47">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_greedy]</a>
+<a class="sourceLine" id="cb39-48" title="48">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_lpawb]</a>
+<a class="sourceLine" id="cb39-49" title="49">list1_combined &lt;-<span class="st"> </span>list1_combined[list1_combined <span class="op">%in%</span><span class="st"> </span>list1_infomap]</a>
+<a class="sourceLine" id="cb39-50" title="50"></a>
+<a class="sourceLine" id="cb39-51" title="51">all_bioregions<span class="op">$</span>combined &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb39-52" title="52">all_bioregions[<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(all_bioregions<span class="op">$</span>site <span class="op">%in%</span><span class="st"> </span>list1_combined), <span class="st">"combined"</span>] &lt;-<span class="st"> "1"</span></a></code></pre></div>
 </div>
 </div>
 <div id="run-all-the-steps-together" class="section level1">
 <h1 class="hasAnchor">
 <a href="#run-all-the-steps-together" class="anchor"></a>Run all the steps together</h1>
 <p>All these functions can be called with the wrap-up <code><a href="../reference/all_maps.html">all_maps()</a></code> function.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1">all_res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/all_maps.html">all_maps</a></span>(<span class="dt">dat =</span> sp_df, <span class="dt">form =</span> <span class="st">"tidy"</span>, site, sp, <span class="dt">ab =</span> <span class="ot">NULL</span>,</a>
-<a class="sourceLine" id="cb45-2" title="2">                    <span class="dt">binary =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb45-3" title="3">                    <span class="dt">similarity =</span> <span class="st">"simpson"</span>, <span class="dt">network_algo =</span> <span class="st">"both"</span>,</a>
-<a class="sourceLine" id="cb45-4" title="4">                    saving_directory,</a>
-<a class="sourceLine" id="cb45-5" title="5">                    <span class="dt">bipartite_algo =</span> <span class="st">"greedy"</span>, <span class="dt">weight =</span> <span class="ot">FALSE</span>,</a>
-<a class="sourceLine" id="cb45-6" title="6">                    <span class="dt">clustering =</span> <span class="ot">TRUE</span>, <span class="dt">ward_method =</span> <span class="st">"ward.D2"</span>,</a>
-<a class="sourceLine" id="cb45-7" title="7">                    <span class="dt">optim_method =</span> <span class="st">"firstSEmax"</span>, <span class="dt">nstart =</span> <span class="dv">25</span>, <span class="dt">B =</span> <span class="dv">50</span>,</a>
-<a class="sourceLine" id="cb45-8" title="8">                    <span class="dt">K.max =</span> <span class="dv">20</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">all_res &lt;-<span class="st"> </span><span class="kw"><a href="../reference/all_maps.html">all_maps</a></span>(<span class="dt">dat =</span> sp_df, <span class="dt">form =</span> <span class="st">"tidy"</span>, site, sp, <span class="dt">ab =</span> <span class="ot">NULL</span>,</a>
+<a class="sourceLine" id="cb40-2" title="2">                    <span class="dt">binary =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb40-3" title="3">                    <span class="dt">similarity =</span> <span class="st">"simpson"</span>, <span class="dt">network_algo =</span> <span class="st">"both"</span>,</a>
+<a class="sourceLine" id="cb40-4" title="4">                    saving_directory,</a>
+<a class="sourceLine" id="cb40-5" title="5">                    <span class="dt">bipartite_algo =</span> <span class="st">"greedy"</span>, <span class="dt">weight =</span> <span class="ot">FALSE</span>,</a>
+<a class="sourceLine" id="cb40-6" title="6">                    <span class="dt">clustering =</span> <span class="ot">TRUE</span>, <span class="dt">ward_method =</span> <span class="st">"ward.D2"</span>,</a>
+<a class="sourceLine" id="cb40-7" title="7">                    <span class="dt">optim_method =</span> <span class="st">"firstSEmax"</span>, <span class="dt">nstart =</span> <span class="dv">25</span>, <span class="dt">B =</span> <span class="dv">50</span>,</a>
+<a class="sourceLine" id="cb40-8" title="8">                    <span class="dt">K.max =</span> <span class="dv">20</span>)</a></code></pre></div>
 </div>
 <div id="references" class="section level1">
 <h1 class="hasAnchor">

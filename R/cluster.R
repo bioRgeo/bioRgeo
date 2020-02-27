@@ -1,6 +1,6 @@
 
 cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
-                         nstart = 25, B = 50, K.max = 20){
+                    n_clust = NULL, nstart = 25, B = 50, K.max = 20){
   require(cluster)
 
   if(!is.matrix(dat)){
@@ -21,6 +21,12 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     not available.
      Please chose among the followings:
          globalmax, firstmax, Tibs2001SEmax, firstSEmax or globalSEmax.")
+  }
+
+  if(!is.null(n_clust)){
+    if(!(abs(n_clust - round(n_clust)) < .Machine$double.eps^0.5)){
+      stop("n_clust must be an integer determining the number of clusters.")
+    }
   }
 
   if(!(abs(nstart - round(nstart)) < .Machine$double.eps^0.5)){
@@ -64,17 +70,22 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   h <- fastcluster::hclust(dist_sp_mat, method = method)
   # plot(h)
 
-  # Determine optimal numbers of clusters
-  # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
-  # https://uc-r.github.io/kmeans_clustering#gap
-  # https://uc-r.github.io/hc_clustering
+  if(!is.null(n_clust)){
+    optim_k <- n_clust
+  } else{
 
-  gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
-                      B = B)
+    # Determine optimal numbers of clusters
+    # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
+    # https://uc-r.github.io/kmeans_clustering#gap
+    # https://uc-r.github.io/hc_clustering
 
-  optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
-                   SE.f = gap_stat$Tab[, "SE.sim"],
-                   method = optim_method)
+    gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
+                        B = B)
+
+    optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
+                     SE.f = gap_stat$Tab[, "SE.sim"],
+                     method = optim_method)
+  }
 
   # Cut the tree with optim_k numbers
   dend <- as.dendrogram(h)

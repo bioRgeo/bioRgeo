@@ -15,6 +15,9 @@ contingency(dat, sp, site, ab, binary = FALSE)
 cluster among the followings: globalmax, firstmax, Tibs2001SEmax, firstSEmax
 or globalSEmax.}
 
+\item{n_clust}{An integer determining the number of clusters. If set to NULL,
+an optimal number of clusters will be determined.}
+
 \item{nstart}{An integer determining the number of random centroids
          to start k-means analysis.}
 
@@ -30,6 +33,11 @@ optimal number of clusters and extract them.
 }
 \details{}
 \section{Note}{}
+
+\arguments{
+\item{}{a long format data.frame with sites as rows and the associated
+cluster.}
+}
 
 \examples{
 ex <- data.frame(sites = c(rep("A", 2), rep("B", 3), rep("C", 2)),

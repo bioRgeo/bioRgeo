@@ -27,10 +27,11 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
 
   if(!(algo %in% c("greedy", "girvan", "walktrap", "louvain", "LPAwb",
                    "infomap", "spinglass", "leading_eigen", "label_prop",
-                   "optimal"))){
+                   "optimal", "netcarto"))){
     stop("Provided algorithm to compute modularity is not available. Please
     choose among the followings: greedy, girvan, walktrap, louvain, LPAwb,
-         infomap, spinglass, leading_eigen, label_prop or optimal.")
+         infomap, spinglass, leading_eigen, label_prop, optimal or
+         netcarto.")
   }
 
   if(algo == "optimal"){
@@ -130,6 +131,37 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
       network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
                                 "site", "sp")
     }
+  } else if(algo == "netcarto"){
+    if(input == "data frame"){
+      dat <- contingency(dat, site = site, sp = sp, ab = ab)
+    }
+    # Convert matrix into square matrix (first pixels and then species)
+    rownames_mat <- rownames(dat)
+    dat_sq <- rbind(
+      cbind(array(0, c(nrow(dat), nrow(dat))), as.matrix(dat)),
+      cbind(as.matrix(t(dat)), array(0, c(ncol(dat), ncol(dat)))))
+
+    # Add pixel names to square matrix
+    rownames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
+    colnames(dat_sq)[1:length(rownames_mat)] <- rownames_mat
+    tmp <- rnetcarto::netcarto(web = dat_sq)
+
+    # Create data.frame with modules
+    network_lab <- data.frame(node = tmp[[1]][, "name"],
+                              module = tmp[[1]][, "module"])
+
+    # Add modularity score
+    network_lab$modularity <- tmp[[2]]
+
+    # Add category of the node
+    if(input == "matrix"){
+      network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
+                                "site", "sp")
+    }else if(input == "data frame"){
+      network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
+                                "site", "sp")
+    }
+
   }
 
   return(network_lab)
@@ -139,5 +171,4 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
   #                deleteOriginalFiles = TRUE, steps = 1000000, tolerance = 1e-10,
   #                experimental = FALSE, forceLPA = FALSE)
 
-  # And rnetcarto
 }

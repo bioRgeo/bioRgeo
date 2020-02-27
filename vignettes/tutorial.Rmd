@@ -289,6 +289,21 @@ $$
 \rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
 $$
 
+Formula of Cz scores:
+
+$$
+P_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
+$$
+
+where Pi is the participation coefficient of node i, kis is the number of links of node i to region s, ki is the total number of links of node i and Nm is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
+
+$$
+z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
+$$
+
+The within-module degree z-score measures how well-connected
+node i is to other nodes in the module.
+
 # Interaction between bioregions
 
 Following the equation of the rho score from above.

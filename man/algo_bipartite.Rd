@@ -10,7 +10,8 @@ site = NULL, sp = NULL, ab = NULL)
 
 \item{algo}{An algorithm used to perfom the bipartite community detection.
 Available options are greedy, girvan, walktrap, louvain, infomap,
-infomap, spinglass, leading_eigen, label_prop, optimal, beckett and dorman.}
+infomap, spinglass, leading_eigen, label_prop, optimal, beckett, dorman and
+netcarto.}
 
 \item{weight}{A boolean indicating whether the detection of communities has to
 be weighted or not.}
@@ -29,8 +30,9 @@ species at sites.}
 \description{
 Run a community detection algorithm on a bipartite network.
 Algorithms available are from igraph package (greedy, girvan, walktrap,
-louvain, infomap, spinglass, leading_eigen, label_prop or optimal)
-and also from the bipartite package (beckett and dorman).
+louvain, infomap, spinglass, leading_eigen, label_prop or optimal),
+from the bipartite package (beckett and dorman) and from rnetcarto R package
+(netcarto).
 Algorithm can be weighted in case of a weighted bipartite network.
 }
 \details{}

@@ -57,9 +57,9 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
          the bioregions identified will be saved.")
   }
 
-  # Bioregionalization directory
+  # bioRgeo directory
   Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
-  Bio_dir <- Bio_dir[grep("Bioregionalization", Bio_dir)]
+  Bio_dir <- Bio_dir[grep("bioRgeo", Bio_dir)]
 
   # Save input dataset as a .txt file into OSLOM folder
   write.table(dat, paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
@@ -72,7 +72,7 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
   if(.Platform$OS.type == "windows"){
     cmd <-
       paste0(Bio_dir, "/OSLOM/oslom_undir_win.exe -f OSLOM/dataset.txt -w",
-             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " _hr", hr)
+             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " _hr ", hr)
   } else if(.Platform$OS.type == "unix"){
     stop("To do")
   } else{

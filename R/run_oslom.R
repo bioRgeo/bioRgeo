@@ -1,5 +1,5 @@
 
-run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5,
+run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
                       saving_directory){
   # Controls: dat must be a data.frame with three columns containing id1, id2
   # and similarity metric
@@ -43,6 +43,15 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5,
     stop("cp_param must be comprised between 0 and 1.")
   }
 
+  if(!(abs(hr - round(hr)) < .Machine$double.eps^0.5)){
+    stop("hr must be an integer setting the number of hierarchical levels.")
+  }
+
+  if(hr < 0){
+    stop("hr must be positive.")
+  }
+
+
   if(!(is.character(saving_directory))){
     stop("saving_directory must be a path where the OSLOM .tp file containing
          the bioregions identified will be saved.")
@@ -63,7 +72,7 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5,
   if(.Platform$OS.type == "windows"){
     cmd <-
       paste0(Bio_dir, "/OSLOM/oslom_undir_win.exe -f OSLOM/dataset.txt -w",
-             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param)
+             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " _hr", hr)
   } else if(.Platform$OS.type == "unix"){
     stop("To do")
   } else{

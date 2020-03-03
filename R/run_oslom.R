@@ -72,7 +72,7 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
   if(.Platform$OS.type == "windows"){
     cmd <-
       paste0(Bio_dir, "/OSLOM/oslom_undir_win.exe -f OSLOM/dataset.txt -w",
-             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " _hr ", hr)
+             " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " -hr ", hr)
   } else if(.Platform$OS.type == "unix"){
     stop("To do")
   } else{

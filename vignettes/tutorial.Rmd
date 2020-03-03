@@ -8,10 +8,10 @@ output:
   word_vignette:
     number_sections: true
 vignette: >
-%\VignetteIndexEntry{Tutorial for bioRgeo R package}
+ %\VignetteIndexEntry{Tutorial for bioRgeo R package}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8} 
- editor_options: 
+editor_options: 
  chunk_output_type: console
 ---
 
@@ -179,7 +179,7 @@ bip_site_infomap <- bip_infomap %>%
 
 ### Infomap
 
-```{r infomap}
+```{r infomap, eval = FALSE}
 
 db <- data.frame(sites = c("site1", "site1", "site2", "site2"),
                  species = c("A", "B", "A", "C"),

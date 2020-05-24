@@ -51,7 +51,6 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
     stop("hr must be positive.")
   }
 
-
   if(!(is.character(saving_directory))){
     stop("saving_directory must be a path where the OSLOM .tp file containing
          the bioregions identified will be saved.")
@@ -60,6 +59,11 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
   # bioRgeo directory
   Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
   Bio_dir <- Bio_dir[grep("bioRgeo", Bio_dir)]
+
+  # Add control: only one package should match
+  if(length(Bio_dir) > 1){
+    stop("Two conflicting versions of bioRgeo seem to coexist.")
+  }
 
   # Save input dataset as a .txt file into OSLOM folder
   write.table(dat, paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
@@ -81,6 +85,13 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
 
   # Execute the command from R
   system(command = cmd)
+
+  # Control: if the command line did not work, previous working directory reset
+  if(!("tp" %in% list.files(paste0(Bio_dir,
+                                   "/OSLOM/dataset.txt_oslo_files")))){
+    stop("Command line was wrongly implemented. OSLOM did not run.")
+    setwd(current_path)
+  }
 
   # Import tp file created
   tp_res <- readLines(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/tp"))

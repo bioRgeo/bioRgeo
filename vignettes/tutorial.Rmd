@@ -63,7 +63,7 @@ virtual raster contains 10000 cells and was simulated using `gstat` R package.
 Each site having XY coordinates, we can plot the raster of the virtual
 environment layer:
 
-```{r dataset}
+```{r dataset, fig.width = 4, fig.height = 4}
 # Import virtual dataset
 data("virtual_sp")
 
@@ -79,7 +79,7 @@ sp_df %>%
   scale_color_distiller("Value", palette = "OrRd") +
   scale_fill_distiller("Value", palette = "OrRd") +
   coord_equal() +
-  labs(title = "Environmental variable") +
+  labs(title = "Environmental raster") +
   theme(panel.background = element_rect(fill = "transparent", colour = NA))
 
 ```
@@ -109,7 +109,7 @@ structure of the input.
 User can switch from one input or the other using either
 *contingency()* or *contingency_to_dataframe()* functions.
 
-```{r input_figure, fig.label = "Two possible inputs."}
+```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
 knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
 ```
 
@@ -217,11 +217,12 @@ writePajek <- function(db, site.field = 1, species.field = 2, filename, abundanc
             sep = ""), file = filename)
 }
 
-writePajek(fish, 
-           site.field = "X1.Basin.Name", # Name of your site column
-           species.field = "X6.Fishbase.Valid.Species.Name", # Name of your species column
-           filename = "fish.net", # Name of the output file
-           abundance.field = NULL)
+writePajek(
+  fish, 
+  site.field = "X1.Basin.Name", # Name of your site column
+  species.field = "X6.Fishbase.Valid.Species.Name", # Name of your sp column
+  filename = "fish.net", # Name of the output file
+  abundance.field = NULL)
 
 Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
 Bio_dir <- Bio_dir[grep("bioRgeo", Bio_dir)]

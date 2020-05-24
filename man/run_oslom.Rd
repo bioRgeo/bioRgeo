@@ -1,7 +1,6 @@
 \name{run_oslom}
 \alias{run_oslom}
-\title{Convert the .tp output of OSLOM algorithm into a data.frame,
-with each site having its bioregion.}
+\title{Run OSLOM algorithm on a projected network.}
 \usage{
 run_oslom(dat, n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
 saving_directory)
@@ -28,8 +27,13 @@ Must be a positive integer.}
 
 }
 \description{
-Run OSLOM algorithm and save .tp file with the identified bioregions in a
-chosen directory.
+This function applies on a data.frame containing 3 columns. The first two columns
+contain each pair of nodes of the network. The third column uses some metric to
+quantify the similarity between each pair.
+On this object, run_oslom() applies the OSLOM algorithm that identify bioregions
+based on sites similarity. The code of the function is a compilation of the algorithm
+provided on http://www.oslom.org.
+It saves a .tp file with the identified bioregions in a chosen directory.
 See http://www.oslom.org/code/ReadMe.pdf for more precisions.
 }
 \details{}

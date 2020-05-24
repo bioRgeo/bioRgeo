@@ -79,9 +79,9 @@ library(bioRgeo) # to add OSLOM
 xy <- expand.grid(1:20, 1:20)
 names(xy) <- c("x","y")
 # Spatial model
-g_ex <- gstat(formula = z ~ 1, locations  = ~x+y, dummy = TRUE,
-              beta = 1, nmax = 20,
-              model = vgm(psill = 0.025, range = 5, model = "Exp"))
+g_ex <- gstat(formula = z ~ 1 + x + y, locations = ~ x + y, dummy = TRUE,
+                 beta = c(1, 0.01, 0.005), nmax = 20,
+                 model = vgm(psill = 0.025, range = 50, model = "Exp"))
 
 # Four layers created
 yy <- predict(g_ex, newdata = xy, nsim = 4)
@@ -94,14 +94,16 @@ plot_grid(spplot(obj = yy[1]), spplot(obj = yy[2]),
           nrow = 2)
 
 # Data.frame with pixel and environmental value
-env_dat <- cbind(yy[3]@coords, yy[3]@data)
+env_dat <- cbind(yy[2]@coords, yy[2]@data)
 env_dat$site <- paste0("site", 1:nrow(env_dat))
 
 colnames(env_dat) <- c("x", "y", "env", "site")
 
 # Environmental raster
-env_raster <- stack(yy[3])
-names(env_raster) <- "env"
+env_raster <- env_dat[, c("x", "y", "env")]
+coordinates(env_raster) <- ~ x + y
+gridded(env_raster) <- TRUE
+env_raster <- raster(env_raster)
 
 ## Virtual species ------------------------------------------------------------
 # http://borisleroy.com/files/virtualspecies-tutorial.html

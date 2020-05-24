@@ -51,7 +51,8 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
     stop("hr must be positive.")
   }
 
-  if(!(is.character(saving_directory))){
+  if(!(is.character(saving_directory)) |
+     !dir.exists(saving_directory)){
     stop("saving_directory must be a path where the OSLOM .tp file containing
          the bioregions identified will be saved.")
   }

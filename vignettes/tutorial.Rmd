@@ -60,6 +60,96 @@ relies on the response curve of virtual species to a virtual raster. The
 virtual raster contains 10000 cells and was simulated using `gstat` R package.
 [See here for details.](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/)
 
+The code to generate the virtual dataset is provided in the chunk below. This chunk is not run when loading the vignette, since the outputs are directly stored with the package.
+
+```{r virtual_dataset, eval = FALSE}
+library(gstat) # virtual rasters with autocorrelation
+library(sp) # spatial plots
+library(cowplot) # combining plots
+library(ggplot2) # plot
+library(raster)
+library(virtualspecies) # simulate virtual species
+library(dplyr)
+library(bioRgeo) # to add OSLOM
+
+## Virtual raster layer -------------------------------------------------------
+# http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/
+
+# XY coordinates
+xy <- expand.grid(1:20, 1:20)
+names(xy) <- c("x","y")
+# Spatial model
+g_ex <- gstat(formula = z ~ 1, locations  = ~x+y, dummy = TRUE,
+              beta = 1, nmax = 20,
+              model = vgm(psill = 0.025, range = 5, model = "Exp"))
+
+# Four layers created
+yy <- predict(g_ex, newdata = xy, nsim = 4)
+
+# Plottind rasters
+gridded(yy) = ~x+y
+
+plot_grid(spplot(obj = yy[1]), spplot(obj = yy[2]),
+          spplot(obj = yy[3]), spplot(obj = yy[4]),
+          nrow = 2)
+
+# Data.frame with pixel and environmental value
+env_dat <- cbind(yy[3]@coords, yy[3]@data)
+env_dat$site <- paste0("site", 1:nrow(env_dat))
+
+colnames(env_dat) <- c("x", "y", "env", "site")
+
+# Environmental raster
+env_raster <- stack(yy[3])
+names(env_raster) <- "env"
+
+## Virtual species ------------------------------------------------------------
+# http://borisleroy.com/files/virtualspecies-tutorial.html
+
+# Generating 100 species with mean all along Bio1 gradient
+env_value <- env_dat$env
+mean_gdt <- sort(rep(seq(min(env_value), max(env_value), length.out = 10),
+                     10))
+sd_gdt <- rep(seq(var(env_value), 2*var(env_value), length.out = 10), 10)
+
+# Generating 100 species with 500 occurrences
+sampled_points <- rep(500, length(env_dat$env))
+
+# Example of response curve
+param_i <- formatFunctions(
+  env = c(fun = "dnorm", mean = mean_gdt[1], sd = sd_gdt[100]))
+# Generation of the virtual species
+sp_i <- generateSpFromFun(raster.stack = env_raster,
+                          parameters = param_i, plot = TRUE)
+plotResponse(sp_i)
+
+sp_df <- c()
+for (i in 1:100){
+  param_i <- formatFunctions(
+    env = c(fun = "dnorm", mean = mean_gdt[i], sd = sd_gdt[i]))
+  # Generation of the virtual species
+  sp_i <- generateSpFromFun(raster.stack = env_raster,
+                            parameters = param_i, plot = TRUE)
+  # plotResponse(sp_i)
+
+  # Conversion to presence/absence
+  pa_i <- convertToPA(sp_i, plot = FALSE, beta = 0.7)
+
+  occ_i <- data.frame(sp = paste0("sp", i),
+                      rasterToPoints(pa_i$suitab.raster),
+                      pa = data.frame(rasterToPoints(pa_i$pa.raster))$layer)
+  colnames(occ_i)[colnames(occ_i) == "layer"] <- "suitab"
+
+  # Binding results
+  sp_df <- rbind(sp_df, occ_i)
+  print(i)
+}
+
+# Add site and environment columns
+sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
+
+```
+
 Each site having XY coordinates, we can plot the raster of the virtual
 environment layer:
 

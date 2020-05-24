@@ -69,6 +69,10 @@ comparison <- function(dat, bio_col, thres = 10){
   #                                  bioregion_cols)
   all100$pair_bio <- apply(all100[, bioregion_cols] , 1, paste, collapse = "_")
 
+  # Add a column with easier names
+  all100$uni <- as.factor(all100$pair_bio)
+  levels(all100$uni) <- as.character(seq(1:length(levels(all100$uni))))
+
   # Remove pairs of pixels under a threshold of 10 pixels
   thresh <- names(table(all100$pair_bio)[table(all100$pair_bio) > thres])
 

@@ -8,11 +8,11 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   }
 
   if(!(method %in% c("ward.D", "ward.D2", "single", "complete", "average",
-                     "mcquitty", "median", "centroid"))){
+                     "mcquitty", "median", "centroid", "dbscan"))){
     stop("Hierarchical clustering method chosen is not available.
      Please chose among the followings:
          ward.D, ward.D2, single, complete, average,
-         mcquitty, median or centroid.")
+         mcquitty, median, centroid or dbscan.")
   }
 
   if(!(optim_method %in% c("globalmax", "firstmax", "Tibs2001SEmax",
@@ -63,38 +63,50 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   }
 
   dist_sp_mat <- euc_dist(dat)
-  dist_sp_mat <- as.dist(dist_sp_mat)
 
-  #h <- hclust(dist_sp_mat, method = method)
-  require(fastcluster)
-  h <- fastcluster::hclust(dist_sp_mat, method = method)
-  # plot(h)
+  if(method == "dbscan"){
 
-  if(!is.null(n_clust)){
-    optim_k <- n_clust
+    db_clust <- dbscan(x = dist_sp_mat,
+                       eps = mean(kNNdist(dist_sp_mat, k = 5)),
+           MinPts = 5)
+
+    # Data.frame of results
+    res <- data.frame(site = rownames(dist_sp_mat),
+                      cluster = as.character(db_clust$cluster))
   } else{
+    # Conversion to dist object
+    dist_sp_mat <- as.dist(dist_sp_mat)
 
-    # Determine optimal numbers of clusters
-    # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
-    # https://uc-r.github.io/kmeans_clustering#gap
-    # https://uc-r.github.io/hc_clustering
+    #h <- hclust(dist_sp_mat, method = method)
+    require(fastcluster)
+    h <- fastcluster::hclust(dist_sp_mat, method = method)
+    # plot(h)
 
-    gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
-                        B = B)
+    if(!is.null(n_clust)){
+      optim_k <- n_clust
+    } else{
 
-    optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
-                     SE.f = gap_stat$Tab[, "SE.sim"],
-                     method = optim_method)
+      # Determine optimal numbers of clusters
+      # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
+      # https://uc-r.github.io/kmeans_clustering#gap
+      # https://uc-r.github.io/hc_clustering
+
+      gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
+                          B = B)
+
+      optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
+                       SE.f = gap_stat$Tab[, "SE.sim"],
+                       method = optim_method)
+    }
+
+    # Cut the tree with optim_k numbers
+    dend <- as.dendrogram(h)
+    # Data.frame of results
+    res <- data.frame(site = names(dendextend::cutree(dend,
+                                                      k = optim_k)),
+                      cluster = as.character(dendextend::cutree(dend,
+                                                                k = optim_k)))
   }
-
-  # Cut the tree with optim_k numbers
-  dend <- as.dendrogram(h)
-  # Data.frame of results
-  res <- data.frame(site = names(dendextend::cutree(dend,
-                                                    k = optim_k)),
-                    cluster = as.character(dendextend::cutree(dend,
-                                                              k = optim_k)))
-
   return(res)
   # Visualization
   # factoextra::fviz_nbclust(dat, kmeans, method = "gap_stat", k.max = 20)

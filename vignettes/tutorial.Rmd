@@ -8,10 +8,10 @@ output:
   word_vignette:
     number_sections: true
 vignette: >
- %\VignetteIndexEntry{Tutorial for bioRgeo R package}
+%\VignetteIndexEntry{Tutorial for bioRgeo R package}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8} 
-editor_options: 
+ editor_options: 
  chunk_output_type: console
 ---
 
@@ -80,8 +80,8 @@ xy <- expand.grid(1:20, 1:20)
 names(xy) <- c("x","y")
 # Spatial model
 g_ex <- gstat(formula = z ~ 1 + x + y, locations = ~ x + y, dummy = TRUE,
-                 beta = c(1, 0.01, 0.005), nmax = 20,
-                 model = vgm(psill = 0.025, range = 50, model = "Exp"))
+              beta = c(1, 0.01, 0.005), nmax = 20,
+              model = vgm(psill = 0.025, range = 50, model = "Exp"))
 
 # Four layers created
 yy <- predict(g_ex, newdata = xy, nsim = 4)
@@ -133,15 +133,15 @@ for (i in 1:100){
   sp_i <- generateSpFromFun(raster.stack = env_raster,
                             parameters = param_i, plot = TRUE)
   # plotResponse(sp_i)
-
+  
   # Conversion to presence/absence
   pa_i <- convertToPA(sp_i, plot = FALSE, beta = 0.7)
-
+  
   occ_i <- data.frame(sp = paste0("sp", i),
                       rasterToPoints(pa_i$suitab.raster),
                       pa = data.frame(rasterToPoints(pa_i$pa.raster))$layer)
   colnames(occ_i)[colnames(occ_i) == "layer"] <- "suitab"
-
+  
   # Binding results
   sp_df <- rbind(sp_df, occ_i)
   print(i)
@@ -168,8 +168,8 @@ sp_df %>%
   ggplot(aes(x, y)) +
   geom_tile(aes(fill = env, color = env),
             alpha = 0.8, width = 1, height = 1) +
-  scale_color_distiller("Value", palette = "OrRd") +
-  scale_fill_distiller("Value", palette = "OrRd") +
+  scale_color_distiller("Value", palette = "RdYlBu") +
+  scale_fill_distiller("Value", palette = "RdYlBu") + #OrRd
   coord_equal() +
   labs(title = "Environmental raster") +
   theme(panel.background = element_rect(fill = "transparent", colour = NA))
@@ -193,6 +193,12 @@ Species with suitability index inferior to 0.15 were arbitrarily set absent.
 ```{r virtual_sp_map, fig.label = "Example of suitability map for one virtual species."}
 knitr::include_graphics("../figures/sp50_suitability.png")
 ```
+
+In total, the 100 suitability maps of our virtual species are distributed like this:
+```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
+knitr::include_graphics("../figures/100_suitability.jpeg")
+```
+
 
 # Inputs of the package
 *bioRgeo* R package relies on two possible inputs as illustrated in the
@@ -277,8 +283,8 @@ db <- data.frame(sites = c("site1", "site1", "site2", "site2"),
                  species = c("A", "B", "A", "C"),
                  abundance = c(5, 2, 7, 1))
 
-po=writePajek(db = db, site.field = "sites", species.field = "species",
-           filename = "pajektest.net")
+po <- writePajek(db = db, site.field = "sites", species.field = "species",
+                 filename = "pajektest.net")
 
 writePajek <- function(db, site.field = 1, species.field = 2, filename, abundance.field = NULL){
   if(!is.factor(db[, species.field])){
@@ -326,31 +332,31 @@ current_path <- getwd()
 setwd(Bio_dir)
 
 # Convert dat to Pajek format (readable by Infomap)
-  if(!is.factor(dat[, sp])){
-    dat[, sp] <- as.factor(dat[, sp])
-  }
-  if(!is.factor(dat[, site])){
-    dat[, site] <- as.factor(dat[, site])
-  }
+if(!is.factor(dat[, sp])){
+  dat[, sp] <- as.factor(dat[, sp])
+}
+if(!is.factor(dat[, site])){
+  dat[, site] <- as.factor(dat[, site])
+}
 
-  species <- data.frame(sp = levels(dat[, sp]),
-                        id = 1:length(levels(dat[, sp])))
-  sites <- data.frame(site = levels(dat[, site]),
-                      id = length(levels(dat[, sp])) +
-                        1:length(levels(dat[, site])))
+species <- data.frame(sp = levels(dat[, sp]),
+                      id = 1:length(levels(dat[, sp])))
+sites <- data.frame(site = levels(dat[, site]),
+                    id = length(levels(dat[, sp])) +
+                      1:length(levels(dat[, site])))
 
-  links <- data.frame(from = species$id[match(dat[, sp], species$sp)],
-                      to = sites$id[match(dat[, site], sites$site)],
-                      weight = ifelse(rep(length(ab), nrow(dat)),
-                                      dat[, ab],
-                                      rep(1, nrow(dat))))
+links <- data.frame(from = species$id[match(dat[, sp], species$sp)],
+                    to = sites$id[match(dat[, site], sites$site)],
+                    weight = ifelse(rep(length(ab), nrow(dat)),
+                                    dat[, ab],
+                                    rep(1, nrow(dat))))
 
-  cat(paste0("*Vertices ", max(sites$id), "\n",
-             paste0(species$id, ' "', species$sp, '"', collapse = "\n"), "\n",
-             paste0(sites$id, ' "', sites$site, '"', collapse = "\n"),
-             "\n", "*Edges\n",
-             paste(apply(links, 1, paste, collapse = " "), collapse = "\n")),
-      file = "dat_Pajek.net")
+cat(paste0("*Vertices ", max(sites$id), "\n",
+           paste0(species$id, ' "', species$sp, '"', collapse = "\n"), "\n",
+           paste0(sites$id, ' "', sites$site, '"', collapse = "\n"),
+           "\n", "*Edges\n",
+           paste(apply(links, 1, paste, collapse = " "), collapse = "\n")),
+    file = "dat_Pajek.net")
 
 # Set up the command with required parameters
 cmd <-
@@ -358,7 +364,6 @@ cmd <-
          "Infomap_win -N 10 --undirected --two-level --map --clu --tree
              --markov-time 0.5 test_uni_inf.txt test")
 system(command = cmd)
-
 
 ```
 
@@ -447,7 +452,10 @@ to add more methods.
 
 ```{r cluster}
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 6)
+ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
+
+dbscan_res <- cluster(sp_mat, method = "dbscan")
+
 ```
 
 # Species' contributions
@@ -646,6 +654,19 @@ plot_grid(
     labs(title = "Ward bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
+  # Plot of DBSCAN bioregions
+  sp_df %>%
+    left_join(dbscan_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "DBSCAN bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
   # Plot of fastgreedy bioregions
   sp_df %>%
     left_join(bip_site, by = "site") %>%
@@ -736,7 +757,7 @@ plot_grid(
     left_join(all_bioregions[, c("site", "x", "y")], by = c("id1" = "site")) %>%
     distinct(id1, .keep_all = TRUE) %>%
     ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(pair_bio), color = as.factor(pair_bio)),
+    geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
               alpha = 0.8, width = 1, height = 1) +
     scale_color_viridis_d("Bioregions", option = "E") +
     scale_fill_viridis_d("Bioregions", option = "E") +

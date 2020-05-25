@@ -70,7 +70,7 @@ library(ggplot2) # plot
 library(raster)
 library(virtualspecies) # simulate virtual species
 library(dplyr)
-library(bioRgeo) # to add OSLOM
+library(bioRgeo)
 
 ## Virtual raster layer -------------------------------------------------------
 # http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/
@@ -84,6 +84,7 @@ g_ex <- gstat(formula = z ~ 1 + x + y, locations = ~ x + y, dummy = TRUE,
               model = vgm(psill = 0.025, range = 50, model = "Exp"))
 
 # Four layers created
+set.seed(1)
 yy <- predict(g_ex, newdata = xy, nsim = 4)
 
 # Plottind rasters
@@ -198,7 +199,6 @@ In total, the 100 suitability maps of our virtual species are distributed like t
 ```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
 knitr::include_graphics("../figures/100_suitability.jpeg")
 ```
-
 
 # Inputs of the package
 *bioRgeo* R package relies on two possible inputs as illustrated in the
@@ -406,7 +406,8 @@ within the virtual dataset, but the following chunk can be run independently.
 Output of OSLOM are stored in a chosen directory and can be import into R with
 the command `readRDS()`.
 
-Code compiled, original from here. Lancichinetti et al. (2011)
+Code compiled, original from http://www.oslom.org
+Lancichinetti et al. (2011)
 
 ```{r run_OSLOM, eval = FALSE}
 run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
@@ -423,7 +424,7 @@ res_w <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
 
 ```
 
-Converting the OSLOM .tp file into a list.
+oslom_output() functions converts the OSLOM .tp file into a list.
 
 ```{r conversion_OSLOM}
 # Format OSLOM output into a data.frame
@@ -455,6 +456,8 @@ to add more methods.
 ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
 
 dbscan_res <- cluster(sp_mat, method = "dbscan")
+
+gmm_res <- cluster(sp_mat, method = "gmm")
 
 ```
 
@@ -612,19 +615,19 @@ distinct bioregions are segregated through space.
 ## Projection on a map.
 
 ```{r map_virtual_dataset}
+# Plot of environmental values
+sp_df %>%
+  distinct(site, .keep_all = TRUE) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(aes(fill = env, color = env),
+            alpha = 0.8, width = 1, height = 1) +
+  scale_color_distiller("Value", palette = "RdYlBu") +
+  scale_fill_distiller("Value", palette = "RdYlBu") +
+  coord_equal() +
+  labs(title = "Environmental variable") +
+  theme(panel.background = element_rect(fill = "transparent",colour = NA))
+
 plot_grid(
-  # Plot of environmental values
-  sp_df %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = env, color = env),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_distiller("Value", palette = "OrRd") +
-    scale_fill_distiller("Value", palette = "OrRd") +
-    coord_equal() +
-    labs(title = "Environmental variable") +
-    theme(panel.background = element_rect(fill = "transparent",colour = NA)),
-  
   # Plot of OSLOM bioregions
   sp_df %>%
     left_join(oslom_vignette, by = "site") %>%
@@ -667,6 +670,19 @@ plot_grid(
     labs(title = "DBSCAN bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
+  # Plot of DBSCAN bioregions
+  sp_df %>%
+    left_join(gmm_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "GMM bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
   # Plot of fastgreedy bioregions
   sp_df %>%
     left_join(bip_site, by = "site") %>%
@@ -706,7 +722,7 @@ plot_grid(
     labs(title = "Infomap bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
-  nrow = 2)
+  nrow = 3)
 
 ```
 

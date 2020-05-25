@@ -8,11 +8,11 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   }
 
   if(!(method %in% c("ward.D", "ward.D2", "single", "complete", "average",
-                     "mcquitty", "median", "centroid", "dbscan"))){
+                     "mcquitty", "median", "centroid", "dbscan", "gmm"))){
     stop("Hierarchical clustering method chosen is not available.
      Please chose among the followings:
          ward.D, ward.D2, single, complete, average,
-         mcquitty, median, centroid or dbscan.")
+         mcquitty, median, centroid, dbscan or gmm.")
   }
 
   if(!(optim_method %in% c("globalmax", "firstmax", "Tibs2001SEmax",
@@ -65,14 +65,28 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   dist_sp_mat <- euc_dist(dat)
 
   if(method == "dbscan"){
-
-    db_clust <- dbscan(x = dist_sp_mat,
-                       eps = mean(kNNdist(dist_sp_mat, k = 5)),
-           MinPts = 5)
+    require(dbscan)
+    # Size of the epsilon neighborhood: normally determined by observing the
+    # knee-plot
+    eps <- quantile(kNNdist(dist_sp_mat, k = 5)[
+      kNNdist(dist_sp_mat, k = 5) > 0], 0.25)
+    # eps <- mean(kNNdist(dist_sp_mat, k = 5))
+    db_clust <- dbscan(x = dist_sp_mat, eps = eps, minPts = 5)
 
     # Data.frame of results
     res <- data.frame(site = rownames(dist_sp_mat),
                       cluster = as.character(db_clust$cluster))
+
+  } else if(method == "gmm"){
+    # Conversion to dist object
+    dist_sp_mat <- as.dist(dist_sp_mat)
+    require(mclust)
+    gmm_mclust <- Mclust(dist_sp_mat)
+
+    # Data.frame of results
+    res <- data.frame(site = names(gmm_mclust$classification),
+                      cluster = as.character(gmm_mclust$classification))
+
   } else{
     # Conversion to dist object
     dist_sp_mat <- as.dist(dist_sp_mat)

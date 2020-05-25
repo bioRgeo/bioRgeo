@@ -1,15 +1,15 @@
 \name{cluster}
 \alias{cluster}
-\title{Performs a CA analysis and k-means clustering from a contingency table}
+\title{Clustering analysis from a contingency table}
 \usage{
-contingency(dat, sp, site, ab, binary = FALSE)
+cluster(dat, method = "ward.D2", n_clust = 4)
 }
 \arguments{
 \item{dat}{a contingency table}
 
 \item{method}{Hierarchical clustering method chosen among the followings:
-         ward.D, ward.D2, single, complete, average, mcquitty, median or
-         centroid.}
+         ward.D, ward.D2, single, complete, average, mcquitty, median,
+         centroid, dbscan or gmm.}
 
 \item{optim_method}{Chosen gap statistic to determine the optimal number of
 cluster among the followings: globalmax, firstmax, Tibs2001SEmax, firstSEmax
@@ -28,7 +28,7 @@ an optimal number of clusters will be determined.}
          to consider.}
 }
 \description{
-Performs a clustering analysis such as k-means clustering, determine the
+Performs a clustering analysis such as k-means clustering, determines the
 optimal number of clusters and extract them.
 }
 \details{}

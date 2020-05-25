@@ -257,6 +257,12 @@ bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
 # With Infomap
 bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
 
+# With Louvain
+bip_louvain <- algo_bipartite(dat = sp_mat, algo = "louvain", weight = FALSE)
+
+# With Walktrap
+bip_walktrap <- algo_bipartite(dat = sp_mat, algo = "walktrap", weight = FALSE)
+
 # Only sites
 bip_site <- bip %>%
   filter(cat == "site") %>%
@@ -269,6 +275,16 @@ bip_site2 <- bip2 %>%
   dplyr::select(site, module)
 
 bip_site_infomap <- bip_infomap %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site_louvain <- bip_louvain %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
+
+bip_site_walktrap <- bip_walktrap %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
   dplyr::select(site, module)
@@ -461,171 +477,15 @@ gmm_res <- cluster(sp_mat, method = "gmm")
 
 ```
 
-# Species' contributions
-
-This part aims at evaluating the contributions of species to the different
-bioregions created.
-
-```{r contrib}
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
-# table(tmp$sp, tmp$bioregion)
-
-scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                     bioregion_col = "bioregion")
-
-```
-
-The following figure illustrates how the rho score from Lenormand et al. 2019
-is calculated.
-
-```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
-knitr::include_graphics("../figures/zscore_scheme.png")
-```
-
-$$
-\rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
-$$
-
-Formula of Cz scores:
-
-$$
-P_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
-$$
-
-where Pi is the participation coefficient of node i, kis is the number of links of node i to region s, ki is the total number of links of node i and Nm is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
-
-$$
-z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
-$$
-
-The within-module degree z-score measures how well-connected
-node i is to other nodes in the module.
-
-# Interaction between bioregions
-
-Following the equation of the rho score from above.
-
-The interactions between the different bioregions can then be calculated following
-these equations:
-
-$$
-\hat\rho_{ij}^{+} = {\rho_{ij}}_{\rho_{ij}>1.96}
-$$
-We normalize the rows:
-
-$$
-\hat\rho_{ij}^{+} = \frac{\rho_{ij}^{+}}{\sum_i\rho_{ij}^{+}}
-$$
-
-Finally, we determine for each bioregion how each set of species contributes
-to it.
-
-$$
-\lambda_{jj'} = \frac{1}{|A_j|}\sum_{i \in A_{j}}\hat\rho_{jj'}^{+}
-$$
-
-```{r z_scores_dummy}
-
-# 10 sites with species richness belonging to [1, 3]
-set.seed(1)
-sites <- sapply(paste0("site", seq(1:10)),
-                function(x) rep(x, sample(c(1:3), 1)))
-# Pool of 5 species distributed across the sites
-species <- lapply(sites,
-                  function(x) sample(paste0("sp", seq(1:5)), 
-                                     length(x), replace = TRUE))
-# 3 bioregions assigned randomly
-bioregions <- sample(paste0("bio", seq(1:3)), length(sites), replace = TRUE)
-bioregions <- data.frame(site = names(sites),
-                         bioregion = bioregions)
-
-# Conversion to data frame
-fuzzy <- data.frame(site = as.character(unlist(sites)),
-                    sp = as.character(unlist(species)))
-fuzzy <- left_join(fuzzy, bioregions, by = "site")
-
-table(fuzzy$sp, fuzzy$bioregion)
-
-# Compute zscores
-zscores <- zscore(fuzzy, sp_col = "sp", site_col = "site",
-                  bioregion_col = "bioregion", output_format = "matrix")
-zscores
-
-# Interactions between bioregions
-interact(input_network = "projected",
-         dat = zscores, plot = TRUE, output_format = "matrix")
-
-```
-
-```{r lambda}
-# tmp <- left_join(sp_df, oslom_vignette, by = "site")
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
-# table(tmp$sp, tmp$bioregion)
-
-z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
-                   bioregion_col = "bioregion", output_format = "dataframe")
-
-top10 <- z_scores %>%
-  group_by(bioregion) %>%
-  top_n(n = 10, zscore) %>% # extract top 10
-  mutate(rank = rank(-zscore, # ranking zcore in an ascending order
-                     ties.method = "first")) %>% # if tie zscore, first species
-  dplyr::select(sp, bioregion, zscore, rank) %>%
-  mutate(zscore = round(zscore, 1)) %>% # rounding zscore to 1 digit
-  as.data.frame()
-
-knitr::kable(top10[which(top10$bioregion == "2"), ])
-
-z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
-                   bioregion_col = "bioregion", output_format = "matrix")
-
-lambda <- interact(input_network = "projected",
-                   dat = z_scores, plot = TRUE, output_format = "matrix")
-knitr::kable(head(lambda[[1]]))
-# Plot
-lambda[[2]]
-```
-
-## Cz
-Cz computation on bipartite results.
-
-```{r cz}
-bip_cz <- bip[, c("node", "module", "cat")]
-colnames(bip_cz) <- c("node", "mod", "cat")
-
-cz_bip <- cz(dat = sp_df[which(sp_df$pa > 0), ], sp_col = "sp",
-             site_col = "site", bip = bip_cz, ab = NULL)
-
-head(cz_bip[[1]])
-
-# Interaction
-# lambda <- interact(input_network = "bipartite",
-#                    dat = link_cz, plot = TRUE, output_format = "matrix")
-# knitr::kable(head(lambda[[1]]))
-# # Plot
-# lambda[[2]]
-
-```
 
 # Comparison of different bioregionalizations
 
 If sites have coordinates, we can apply several functions to compare how the
 distinct bioregions are segregated through space.
 
-## Projection on a map.
+## Maps
 
 ```{r map_virtual_dataset}
-# Plot of environmental values
-sp_df %>%
-  distinct(site, .keep_all = TRUE) %>%
-  ggplot(aes(x, y)) +
-  geom_tile(aes(fill = env, color = env),
-            alpha = 0.8, width = 1, height = 1) +
-  scale_color_distiller("Value", palette = "RdYlBu") +
-  scale_fill_distiller("Value", palette = "RdYlBu") +
-  coord_equal() +
-  labs(title = "Environmental variable") +
-  theme(panel.background = element_rect(fill = "transparent",colour = NA))
 
 plot_grid(
   # Plot of OSLOM bioregions
@@ -670,7 +530,7 @@ plot_grid(
     labs(title = "DBSCAN bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
-  # Plot of DBSCAN bioregions
+  # Plot of GMM bioregions
   sp_df %>%
     left_join(gmm_res, by = "site") %>%
     distinct(site, .keep_all = TRUE) %>%
@@ -722,11 +582,37 @@ plot_grid(
     labs(title = "Infomap bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
+  # Plot of Louvain bioregions
+  sp_df %>%
+    left_join(bip_site_louvain, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "Louvain bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
+  # Plot of Walktrap bioregions
+  sp_df %>%
+    left_join(bip_site_walktrap, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "Walktrap bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
   nrow = 3)
 
 ```
 
-## Identical plots
+## Coherent areas
 
 ```{r comparison, eval = TRUE}
 # Gather all the bioregionalizations
@@ -909,6 +795,7 @@ ggplot(all_moran, aes(k, moran)) +
 
 ```
 
+## Pairs of maps
 We can as well compare each pair of bioregion to each other.
 
 ```{r pair_sabre, eval = FALSE}
@@ -964,6 +851,232 @@ list1_combined <- list1_combined[list1_combined %in% list1_infomap]
 
 all_bioregions$combined <- NA
 all_bioregions[which(all_bioregions$site %in% list1_combined), "combined"] <- "1"
+
+```
+
+# Structuration vs bioregionalizations
+
+```{r structuration}
+# 
+nbopt <- sp_df %>%
+  left_join(oslom_vignette, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "bioregion"] <- "oslom"
+
+# Plot of Ward bioregions
+nbopt <- nbopt %>%
+  left_join(ward_res, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "cluster"] <- "ward"
+
+# Plot of DBSCAN bioregions
+nbopt <- nbopt %>%
+  left_join(dbscan_res, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "cluster"] <- "dbscan"
+
+# Plot of GMM bioregions
+nbopt <- nbopt %>%
+  left_join(gmm_res, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "cluster"] <- "gmm"
+
+# Plot of fastgreedy bioregions
+nbopt <- nbopt %>%
+  left_join(bip_site, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "module"] <- "fastgreedy"
+
+# Plot of LPAwb bioregions
+nbopt <- nbopt %>%
+  left_join(bip_site2, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "module"] <- "lpawb"
+
+# Plot of Infomap bioregions
+nbopt <- nbopt %>%
+  left_join(bip_site_infomap, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "module"] <- "infomap"
+
+# Plot of Louvain bioregions
+nbopt <- nbopt %>%
+  left_join(bip_site_louvain, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "module"] <- "louvain"
+
+# Plot of Walktrap bioregions
+nbopt <- nbopt %>%
+  left_join(bip_site_walktrap, by = "site") %>%
+  distinct(site, .keep_all = TRUE)
+colnames(nbopt)[colnames(nbopt) == "module"] <- "walktrap"
+
+# Import results
+po <- data.frame(nbopt = length(unique(sp_df$opt)),
+                 nb_oslom = length(unique(nbopt$oslom)),
+                 nb_ward = length(unique(nbopt$ward)),
+                 nb_dbscan = length(unique(nbopt$dbscan)),
+                 nb_gmm = length(unique(nbopt$gmm)),
+                 nb_fastgreedy = length(unique(nbopt$fastgreedy)),
+                 nb_lpawb = length(unique(nbopt$lpawb)),
+                 nb_infomap = length(unique(nbopt$infomap)),
+                 nb_louvain = length(unique(nbopt$louvain)),
+                 nb_walktrap = length(unique(nbopt$walktrap)))
+
+pop <- tidyr::gather(po, bioregions, nb, contains("nb_"))
+
+# Plot: number of unique topt vs variance of bioregions
+ggplot(pop, aes(nbopt, nb)) +
+  geom_boxplot() +
+  labs(x = "Number of optimums", y = "Number of bioregions") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = "transparent"))
+
+```
+
+# Species' contributions
+
+This part aims at evaluating the contributions of species to the different
+bioregions created.
+
+```{r contrib}
+tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
+# table(tmp$sp, tmp$bioregion)
+
+scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
+                     bioregion_col = "bioregion")
+
+```
+
+The following figure illustrates how the rho score from Lenormand et al. 2019
+is calculated.
+
+```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
+knitr::include_graphics("../figures/zscore_scheme.png")
+```
+
+$$
+\rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
+$$
+
+Formula of Cz scores:
+
+$$
+P_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
+$$
+
+where Pi is the participation coefficient of node i, kis is the number of links of node i to region s, ki is the total number of links of node i and Nm is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
+
+$$
+z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
+$$
+
+The within-module degree z-score measures how well-connected
+node i is to other nodes in the module.
+
+# Interaction between bioregions
+
+Following the equation of the rho score from above.
+
+The interactions between the different bioregions can then be calculated following
+these equations:
+
+$$
+\hat\rho_{ij}^{+} = {\rho_{ij}}_{\rho_{ij}>1.96}
+$$
+We normalize the rows:
+
+$$
+\hat\rho_{ij}^{+} = \frac{\rho_{ij}^{+}}{\sum_i\rho_{ij}^{+}}
+$$
+
+Finally, we determine for each bioregion how each set of species contributes
+to it.
+
+$$
+\lambda_{jj'} = \frac{1}{|A_j|}\sum_{i \in A_{j}}\hat\rho_{jj'}^{+}
+$$
+
+```{r z_scores_dummy}
+
+# 10 sites with species richness belonging to [1, 3]
+set.seed(1)
+sites <- sapply(paste0("site", seq(1:10)),
+                function(x) rep(x, sample(c(1:3), 1)))
+# Pool of 5 species distributed across the sites
+species <- lapply(sites,
+                  function(x) sample(paste0("sp", seq(1:5)), 
+                                     length(x), replace = TRUE))
+# 3 bioregions assigned randomly
+bioregions <- sample(paste0("bio", seq(1:3)), length(sites), replace = TRUE)
+bioregions <- data.frame(site = names(sites),
+                         bioregion = bioregions)
+
+# Conversion to data frame
+fuzzy <- data.frame(site = as.character(unlist(sites)),
+                    sp = as.character(unlist(species)))
+fuzzy <- left_join(fuzzy, bioregions, by = "site")
+
+table(fuzzy$sp, fuzzy$bioregion)
+
+# Compute zscores
+zscores <- zscore(fuzzy, sp_col = "sp", site_col = "site",
+                  bioregion_col = "bioregion", output_format = "matrix")
+zscores
+
+# Interactions between bioregions
+interact(input_network = "projected",
+         dat = zscores, plot = TRUE, output_format = "matrix")
+
+```
+
+```{r lambda}
+# tmp <- left_join(sp_df, oslom_vignette, by = "site")
+tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
+# table(tmp$sp, tmp$bioregion)
+
+z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
+                   bioregion_col = "bioregion", output_format = "dataframe")
+
+top10 <- z_scores %>%
+  group_by(bioregion) %>%
+  top_n(n = 10, zscore) %>% # extract top 10
+  mutate(rank = rank(-zscore, # ranking zcore in an ascending order
+                     ties.method = "first")) %>% # if tie zscore, first species
+  dplyr::select(sp, bioregion, zscore, rank) %>%
+  mutate(zscore = round(zscore, 1)) %>% # rounding zscore to 1 digit
+  as.data.frame()
+
+knitr::kable(top10[which(top10$bioregion == "2"), ])
+
+z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
+                   bioregion_col = "bioregion", output_format = "matrix")
+
+lambda <- interact(input_network = "projected",
+                   dat = z_scores, plot = TRUE, output_format = "matrix")
+knitr::kable(head(lambda[[1]]))
+# Plot
+lambda[[2]]
+```
+
+## Cz
+Cz computation on bipartite results.
+
+```{r cz}
+bip_cz <- bip[, c("node", "module", "cat")]
+colnames(bip_cz) <- c("node", "mod", "cat")
+
+cz_bip <- cz(dat = sp_df[which(sp_df$pa > 0), ], sp_col = "sp",
+             site_col = "site", bip = bip_cz, ab = NULL)
+
+head(cz_bip[[1]])
+
+# Interaction
+# lambda <- interact(input_network = "bipartite",
+#                    dat = link_cz, plot = TRUE, output_format = "matrix")
+# knitr::kable(head(lambda[[1]]))
+# # Plot
+# lambda[[2]]
 
 ```
 

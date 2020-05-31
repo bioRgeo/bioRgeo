@@ -53,6 +53,12 @@ methods, ranging from bipartite network modularity to classical clustering.
 
 From these segregations, we show how different maps can be compared.
 
+# Glossary
+*contingency table*
+*long format table*
+*adjacency table*
+
+
 # Virtual dataset
 
 `virtual_sp` is a dataset simulated that comes with the package. This dataset

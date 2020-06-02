@@ -1,0 +1,1 @@
+This folder contains the outputs of run_infomap() function.

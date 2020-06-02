@@ -1,16 +1,10 @@
 
-run_infomap <- function(dat, weight = FALSE, site = NULL, sp = NULL,
-                        ab = NULL, saving_directory,
-                        N = 10){
+run_infomap <- function(dat, site = NULL, sp = NULL, ab = NULL,
+                        saving_directory, N = 10){
 
   if(!is.data.frame(dat)){
     stop("dat should be a long format data frame with each row being the
     presence of a species in a given site.")
-  }
-
-  if(weight == TRUE & is.null(ab)){
-    stop("With weight = TRUE and input = 'data frame', input data frame
-      should have a column containg the abundances of species at sites.")
   }
 
   if(!is.character(site)){
@@ -135,9 +129,10 @@ run_infomap <- function(dat, weight = FALSE, site = NULL, sp = NULL,
   saveRDS(dat, file = paste0(saving_directory, "/dat_infomap.rds"))
 
   # Remove the input dataset
-  file.remove(paste0(Bio_dir, "dat.net"))
+  file.remove(paste0(Bio_dir, "/INFOMAP/dat.net"))
 
   # Remove output files created (.clu .tree .map)
-  file.remove(paste0(Bio_dir, "output/", dir(paste0(Bio_dir, "output/"),
+  file.remove(paste0(Bio_dir, "/INFOMAP/output/",
+                     dir(paste0(Bio_dir, "INFOMAP/output/"),
                                              pattern = "dat.")))
 }

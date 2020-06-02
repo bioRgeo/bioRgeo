@@ -299,94 +299,16 @@ bip_site_walktrap <- bip_walktrap %>%
 
 ### Infomap
 
-```{r infomap, eval = FALSE}
+```{r infomap}
 
-db <- data.frame(sites = c("site1", "site1", "site2", "site2"),
-                 species = c("A", "B", "A", "C"),
-                 abundance = c(5, 2, 7, 1))
+po <- run_infomap(
+  dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",
+  ab = NULL,
+  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
+  N = 10)
 
-po <- writePajek(db = db, site.field = "sites", species.field = "species",
-                 filename = "pajektest.net")
-
-writePajek <- function(db, site.field = 1, species.field = 2, filename, abundance.field = NULL){
-  if(!is.factor(db[, species.field])){
-    db[, species.field] <- as.factor(db[, species.field])
-  }
-  if(!is.factor(db[, site.field])){
-    db[, site.field] <- as.factor(db[, site.field])
-  }
-  
-  species <- data.frame(sp = levels(db[, species.field]),
-                        id = 1:length(levels(db[, species.field])))
-  sites <- data.frame(site = levels(db[, site.field]),
-                      id = length(levels(db[, species.field])) +
-                        1:length(levels(db[, site.field])))
-  
-  links <- data.frame(from = species$id[match(db[, species.field], species$sp)],
-                      to = sites$id[match(db[, site.field], sites$site)],
-                      weight = ifelse(rep(length(abundance.field), nrow(db)),
-                                      db[, abundance.field],
-                                      rep(1, nrow(db))))
-  
-  cat(paste("*Vertices ", max(sites$id), "\n",
-            paste(species$id, ' "', species$sp, '"', sep = "",
-                  collapse = "\n"), "\n",
-            paste(sites$id, ' "', sites$site, '"', sep = "", collapse = "\n"),
-            "\n", "*Edges\n",
-            paste(apply(links, 1, paste, collapse = " "), collapse = "\n"),
-            sep = ""), file = filename)
-}
-
-writePajek(
-  fish, 
-  site.field = "X1.Basin.Name", # Name of your site column
-  species.field = "X6.Fishbase.Valid.Species.Name", # Name of your sp column
-  filename = "fish.net", # Name of the output file
-  abundance.field = NULL)
-
-Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
-Bio_dir <- Bio_dir[grep("bioRgeo", Bio_dir)]
-
-Bio_dir <- "D:/Irstea/CarHab/Bioregionalization_extra/bin/INFOMAP/"
-
-# Change working directory so the file is saved in the proper place
-current_path <- getwd()
-setwd(Bio_dir)
-
-# Convert dat to Pajek format (readable by Infomap)
-if(!is.factor(dat[, sp])){
-  dat[, sp] <- as.factor(dat[, sp])
-}
-if(!is.factor(dat[, site])){
-  dat[, site] <- as.factor(dat[, site])
-}
-
-species <- data.frame(sp = levels(dat[, sp]),
-                      id = 1:length(levels(dat[, sp])))
-sites <- data.frame(site = levels(dat[, site]),
-                    id = length(levels(dat[, sp])) +
-                      1:length(levels(dat[, site])))
-
-links <- data.frame(from = species$id[match(dat[, sp], species$sp)],
-                    to = sites$id[match(dat[, site], sites$site)],
-                    weight = ifelse(rep(length(ab), nrow(dat)),
-                                    dat[, ab],
-                                    rep(1, nrow(dat))))
-
-cat(paste0("*Vertices ", max(sites$id), "\n",
-           paste0(species$id, ' "', species$sp, '"', collapse = "\n"), "\n",
-           paste0(sites$id, ' "', sites$site, '"', collapse = "\n"),
-           "\n", "*Edges\n",
-           paste(apply(links, 1, paste, collapse = " "), collapse = "\n")),
-    file = "dat_Pajek.net")
-
-# Set up the command with required parameters
-cmd <-
-  paste0(Bio_dir,
-         "Infomap_win -N 10 --undirected --two-level --map --clu --tree
-             --markov-time 0.5 test_uni_inf.txt test")
-system(command = cmd)
-
+res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
+table(res[!duplicated(res$site), "module"])
 ```
 
 ## Projected networks

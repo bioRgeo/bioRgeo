@@ -4,8 +4,12 @@ author: "Pierre Denelle"
 date: "`r Sys.Date()`"
 output: 
   html_vignette:
+    toc: true
+    toc_depth: 2
     number_sections: true
   word_vignette:
+    toc: true
+    toc_depth: 2
     number_sections: true
 vignette: >
 %\VignetteIndexEntry{Tutorial for bioRgeo R package}
@@ -20,11 +24,36 @@ body {
 text-align: justify}
 </style>
 
+# 1. Overview
+
+In the following vignette, we show how *bioRgeo* package works. We use a simulated dataset of virtual species distributed across sites to illustrate how we can detect communities, i.e. groups of sites that are closely related regarding their species composition.
+
+To detect these large-scale communities, *bioRgeo* uses a variety of methods, ranging from bipartite network modularity to classical clustering. Each method enables identifying groups of sites that are more similar between each other than compared with the rest of the sites available.
+
+Our example and package is mostly designed for ecologists interested in detecting large-scale patterns in the distribution of species across environments but it can also be used in other fields interested in the detection of large-scale patterns.
+
 The principle of the package is illustrated by the following figure.
 
 ```{r package_scheme, fig.label = "Workflow of the package."}
 knitr::include_graphics("../figures/Bioregionalization_scheme3.png")
 ```
+
+## 1.1. Glossary
+Some terms that design the types of inputs this package needs and their associated format are repeatedly used in this vignette. We here define how we use these terms.
+
+*contingency table* a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. This table is the first possible input of the *bioRgeo* functions.
+
+*long format table* a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site. This format is the second possible input of the *bioRgeo* functions.
+
+*adjacency table* a square matrix that contains the occurrences of species within sites. Both sites and species are in rows and columns. In case of a bipartite network, there are no links between the same type of nodes, meaning that the adjacency matrix is filled with a lot of 0. For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+
+Since *bioRgeo* relies on two possible inputs, we let the option to users to switch from one format to the other using either *contingency()* or *contingency_to_dataframe()* functions as illustrated in the following figure: 
+
+```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
+knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
+```
+
+Several functions of the package necessitate to define the structure of the input.
 
 ```{r setup, include=FALSE}
 
@@ -47,25 +76,60 @@ options(tinytex.verbose = TRUE)
 
 ```
 
-In the following vignette, we show how *bioRgeo* package works. We use
-simulated datasets to illustrate how we can detect communities using various
-methods, ranging from bipartite network modularity to classical clustering.
+## 1.2 Virtual dataset
+To illustrate how *bioRgeo* works, we use a virtual dataset. This dataset comes with the installation of the package and can be loaded using the following command:
 
-From these segregations, we show how different maps can be compared.
+```{r loading_virtual_data}
+data("virtual_sp")
+```
 
-# Glossary
-*contingency table*
-*long format table*
-*adjacency table*
+This command returns a list of three elements. The first element corresponds to the virtual dataset. The second and third element correspond to the partition found by the OSLOM algorithm (see below).
+The virtual dataset has been constructed by simulating the response curves of 100 species to a virtual raster.
+The virtual raster contains 10000 cells and was simulated using `gstat` R package. See [here](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/) for details.
 
+After loading the virtual data, and since each site has XY coordinates, we can plot the raster of the virtual environment layer.
 
-# Virtual dataset
+```{r plot_virtual_raster, fig.width = 4, fig.height = 4}
+# Only species data.frame
+sp_df <- virtual[[1]]
 
-`virtual_sp` is a dataset simulated that comes with the package. This dataset
-relies on the response curve of virtual species to a virtual raster. The
-virtual raster contains 10000 cells and was simulated using `gstat` R package.
-[See here for details.](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/)
+# Plot of environmental values
+sp_df %>%
+  distinct(site, .keep_all = TRUE) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(aes(fill = env, color = env),
+            alpha = 0.8, width = 1, height = 1) +
+  scale_color_distiller("Value", palette = "RdYlBu") +
+  scale_fill_distiller("Value", palette = "RdYlBu") + #OrRd
+  coord_equal() +
+  labs(title = "Environmental raster") +
+  theme(panel.background = element_rect(fill = "transparent", colour = NA))
 
+```
+
+Based on this raster, we used the *virtualspecies* R package [(Leroy et al. 2015)](https://doi.org/10.1111/ecog.01388) to simulate a Gaussian response curve of 100 virtual species. The mean and standard deviation of the response function varied among species, drawing a continuum of generalist and specialist species.
+
+The following figure illustrates a response curve for one virtual species:
+
+```{r virtual_sp_response_curve, fig.label = "Example of response curve for one virtual species."}
+knitr::include_graphics("../figures/sp_response_curve_example.jpeg")
+```
+
+For every species in every cell, we could derive a suitability index and produce suitability maps as shown below.
+Species with suitability index inferior to 0.15 were arbitrarily set absent.
+
+```{r virtual_sp_map, fig.label = "Example of suitability map for one virtual species."}
+knitr::include_graphics("../figures/sp_suitability_example.jpeg")
+```
+
+In total, the 100 suitability maps of our virtual species are distributed like this:
+```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
+knitr::include_graphics("../figures/100_suitability.jpeg")
+```
+
+See [here](http://borisleroy.com/virtualspecies/) for further information on the "virtualspecies* R package.
+
+### 1.2.1. Code to generate the virtual data
 The code to generate the virtual dataset is provided in the chunk below. This chunk is not run when loading the vignette, since the outputs are directly stored with the package.
 
 ```{r virtual_dataset, eval = FALSE}
@@ -159,66 +223,11 @@ sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
 
 ```
 
-Each site having XY coordinates, we can plot the raster of the virtual
-environment layer:
+# 2. Community detection
+The core of the package relies on the aggregation of several methods that
+perform community detection based on distinct methods.
 
-```{r dataset, fig.width = 4, fig.height = 4}
-# Import virtual dataset
-data("virtual_sp")
-
-# Only species data.frame
-sp_df <- virtual[[1]]
-
-# Plot of environmental values
-sp_df %>%
-  distinct(site, .keep_all = TRUE) %>%
-  ggplot(aes(x, y)) +
-  geom_tile(aes(fill = env, color = env),
-            alpha = 0.8, width = 1, height = 1) +
-  scale_color_distiller("Value", palette = "RdYlBu") +
-  scale_fill_distiller("Value", palette = "RdYlBu") + #OrRd
-  coord_equal() +
-  labs(title = "Environmental raster") +
-  theme(panel.background = element_rect(fill = "transparent", colour = NA))
-
-```
-
-Based on this raster, we used `virtualspecies` R package (Leroy et al. 2015)
-to simulate a Gaussian response curve of 100 virtual species. The mean and
-standard deviation of the response function varied among species, drawing a
-continuum of generalist and specialist species.
-
-We here illustrate two contrasted response curves:
-
-```{r virtual_sp_response_curve, fig.label = "Example of response curve for one virtual species."}
-knitr::include_graphics("../figures/sp50_response_curve.png")
-```
-
-For every species in every cell, we could derive a suitability index.
-Species with suitability index inferior to 0.15 were arbitrarily set absent.
-
-```{r virtual_sp_map, fig.label = "Example of suitability map for one virtual species."}
-knitr::include_graphics("../figures/sp50_suitability.png")
-```
-
-In total, the 100 suitability maps of our virtual species are distributed like this:
-```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
-knitr::include_graphics("../figures/100_suitability.jpeg")
-```
-
-# Inputs of the package
-*bioRgeo* R package relies on two possible inputs as illustrated in the
-following figure. Several functions of the package necessitate to define the
-structure of the input.
-User can switch from one input or the other using either
-*contingency()* or *contingency_to_dataframe()* functions.
-
-```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
-knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
-```
-
-In our case, we can easily convert the input data.frame into a contingency
-table, using the *contingency()* function:
+According to the preference of the user, we can convert the input data.frame into a contingency table, using the *contingency()* function:
 
 ```{r contingency_matrix}
 sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
@@ -230,11 +239,7 @@ sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5])
 ```
 
-# Community detection
-The core of the package relies on the aggregation of several methods that
-perform community detection based on distinct methods.
-
-## Bipartite networks
+## 2.1. Bipartite networks
 Networks are called bipartite when they are constituted by two types of nodes.
 Each type of node can only be linked with the other type. For example, if
 species occur in sites, sites and species constitute two types of nodes and

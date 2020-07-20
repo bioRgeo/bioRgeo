@@ -41,11 +41,13 @@ knitr::include_graphics("../figures/Bioregionalization_scheme3.png")
 ## 1.1. Glossary
 Some terms that design the types of inputs this package needs and their associated format are repeatedly used in this vignette. We here define how we use these terms.
 
-*contingency table* a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. This table is the first possible input of the *bioRgeo* functions.
+*contingency matrix* a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. This table is the first possible input of the *bioRgeo* functions.
 
 *long format table* a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site. This format is the second possible input of the *bioRgeo* functions.
 
-*adjacency table* a square matrix that contains the occurrences of species within sites. Both sites and species are in rows and columns. In case of a bipartite network, there are no links between the same type of nodes, meaning that the adjacency matrix is filled with a lot of 0. For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+*adjacency matrix* a square matrix that contains the occurrences of species within sites. Both sites and species are in rows and columns. In case of a bipartite network, there are no links between the same type of nodes, meaning that the adjacency matrix is filled with a lot of 0. For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+
+*distance matrix* a square matrix containing the distances between each pairs of a set, usually sites. Different metrics to compute the distance can be used. This type of matrix is usually stored as a **dist** object in R.
 
 Since *bioRgeo* relies on two possible inputs, we let the option to users to switch from one format to the other using either *contingency()* or *contingency_to_dataframe()* functions as illustrated in the following figure: 
 
@@ -225,9 +227,10 @@ sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
 
 # 2. Community detection
 The core of the package relies on the aggregation of several methods that
-perform community detection based on distinct methods.
+perform community detection.
 
-According to the preference of the user, we can convert the input data.frame into a contingency table, using the *contingency()* function:
+Before applying any of the available method, and according to the preference of the user, we can convert the input data.frame into a contingency table, using the *contingency()* function.
+This transformation can consider the abundances of species.
 
 ```{r contingency_matrix}
 sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
@@ -239,7 +242,152 @@ sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5])
 ```
 
-## 2.1. Bipartite networks
+Available methods can be classed among three main groups: distance-based clustering, projected networks and bipartite networks.
+
+## 2.1. Clustering
+
+Clustering techniques aim at partitionning *n* observations into
+*k* clusters. They can be divided in supervised and unsupervised algorithms. When supervised, the user needs to tell how many groups are expected to be found in the data. If the algorithm used in unsupervised, it will identify on its own how many groups structure the data.
+When using supervised algorithms, optimizations algorithms can help the users to decide how many groups should structure the data.
+
+*bioRgeo* contains a function **cluster()** that gathers several classical methods of clustering. Before applying any of the available method, **cluster()** computes a distance matrix based on Euclidean distances between pairs of sites.
+Available unsupervised algorithms are the following:
+
+Available supervised algorithms are the following:
+
+They come with optimization procedures to identify the optimal number of clusters. These optimization methods are the following:
+globalmax, firstmax, Tibs2001SEmax, firstSEmax or globalSEmax
+
+ward.D", "ward.D2", "single", "complete", "average",
+"mcquitty", "median", "centroid", "dbscan", "gmm
+
+The methods can either fall into the supervised or unsupervised category.
+They are directly imported from existing packages (cluster, dendextend, fastcluster).
+
+Available methods are the following: ward.D, ward.D2, single, complete, average, mcquitty, median, centroid, dbscan and gmm.
+
+Agglomerative Hierarchical Clustering.
+
+See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
+to add more methods.
+
+```{r cluster}
+euc_dist <- function(m) {
+  mtm <- Matrix::tcrossprod(m)
+  sq <- rowSums(m*m)
+  sqrt(outer(sq, sq, "+") - 2*mtm)
+}
+
+# euc dist details
+sp_mat[1:5, 1:5]
+dim(Matrix::tcrossprod(sp_mat))
+
+dist_sp_mat <- euc_dist(sp_mat)
+dist_sp_mat[upper.tri(dist_sp_mat)] <- NA
+diag(dist_sp_mat) <- NA
+
+# Conversion to dataframe
+dist_sp_mat <- reshape2::melt(dist_sp_mat, varnames = c("id1", "id2"))
+# Remove NAs
+dist_sp_mat <- dist_sp_mat[complete.cases(dist_sp_mat), ]
+colnames(dist_sp_mat) <- c("id1", "id2", "euclid")
+
+# similarity function
+sp_proj <- similarity(sp_mat, similarity = "simpson")
+sp_proj <- sp_proj[, c("id1_name", "id2_name", "simpson")]
+knitr::kable(head(sp_proj))
+
+# Comparison
+po <- left_join(sp_proj, dist_sp_mat, by = c("id1_name" = "id2",
+                                             "id2_name" = "id1"))
+
+ggplot(po, aes(simpson, euclid)) +
+  geom_point()
+
+##
+# CA_res <- CA_cluster(sp_mat)
+ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
+
+dbscan_res <- cluster(sp_mat, method = "dbscan")
+
+gmm_res <- cluster(sp_mat, method = "gmm")
+
+```
+
+## Projected networks
+
+A projected network considers the similarity between each pair of nodes. In
+our case, nodes can represent different sites that are linked together
+according the proportion of species they share together.
+
+### Projection of the network
+
+To project the network, we can use the *similarity()* function.
+
+```{r projection}
+sp_proj <- similarity(sp_mat, similarity = "simpson")
+sp_proj <- sp_proj[, c("id1", "id2", "simpson")]
+
+knitr::kable(head(sp_proj))
+
+# With data frame input
+sp_proj_df <- similarity(sp_df[which(sp_df$pa != 0), ],
+                              similarity = "simpson", input = "data frame",
+                              site = "site", sp = "sp")
+sp_proj_df <- sp_proj_df[, c("id1", "id2", "simpson")]
+
+knitr::kable(head(sp_proj_df))
+
+# Bray-Curtis dissimilarity can take into account abundances of species
+sp_proj_w <- similarity(sp_mat_w, similarity = "bray")
+sp_proj_w <- sp_proj_w[, c("id1", "id2", "bray")]
+
+knitr::kable(head(sp_proj_w))
+```
+
+### Order Statistics Local Optimization Method (OSLOM)
+
+Running OSLOM. tp files containing the modularity results are directly stored
+within the virtual dataset, but the following chunk can be run independently.
+
+Output of OSLOM are stored in a chosen directory and can be import into R with
+the command `readRDS()`.
+
+Code compiled, original from http://www.oslom.org
+Lancichinetti et al. (2011)
+
+```{r run_OSLOM, eval = FALSE}
+run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
+          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
+
+res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
+file.rename("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds",
+            "D:/Irstea/CarHab/Bioregionalization_extra/tp_binary.rds")
+# With weights
+run_oslom(sp_proj_w, n_runs = 5, t_param = 0.1, cp_param = 0.5,
+          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/")
+
+res_w <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
+
+```
+
+oslom_output() functions converts the OSLOM .tp file into a list.
+
+```{r conversion_OSLOM}
+# Format OSLOM output into a data.frame
+oslom_vignette <- oslom_output(virtual[[2]], sp_mat)
+# With weights
+oslom_vignette_w <- oslom_output(virtual[[3]], sp_mat_w)
+
+print(paste0("Number of bioregions detected = ",
+             length(unique(oslom_vignette$bioregion)),
+             " ; and with weights: ",
+             length(unique(oslom_vignette_w$bioregion))))
+
+```
+
+## Bipartite networks
+
 Networks are called bipartite when they are constituted by two types of nodes.
 Each type of node can only be linked with the other type. For example, if
 species occur in sites, sites and species constitute two types of nodes and
@@ -316,99 +464,7 @@ res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
 table(res[!duplicated(res$site), "module"])
 ```
 
-## Projected networks
 
-A projected network considers the similarity between each pair of nodes. In
-our case, nodes can represent different sites that are linked together
-according the proportion of species they share together.
-
-### Projection of the network
-
-To project the network, we can use the *project_network()* function.
-
-```{r projection}
-sp_proj <- project_network(sp_mat, similarity = "simpson")
-sp_proj <- sp_proj[, c("id1", "id2", "simpson")]
-
-knitr::kable(head(sp_proj))
-
-# With data frame input
-sp_proj_df <- project_network(sp_df[which(sp_df$pa != 0), ],
-                              similarity = "simpson", input = "data frame",
-                              site = "site", sp = "sp")
-sp_proj_df <- sp_proj_df[, c("id1", "id2", "simpson")]
-
-knitr::kable(head(sp_proj_df))
-
-# Bray-Curtis dissimilarity can take into account abundances of species
-sp_proj_w <- project_network(sp_mat_w, similarity = "bray")
-sp_proj_w <- sp_proj_w[, c("id1", "id2", "bray")]
-
-knitr::kable(head(sp_proj_w))
-```
-
-### Order Statistics Local Optimization Method (OSLOM)
-
-Running OSLOM. tp files containing the modularity results are directly stored
-within the virtual dataset, but the following chunk can be run independently.
-
-Output of OSLOM are stored in a chosen directory and can be import into R with
-the command `readRDS()`.
-
-Code compiled, original from http://www.oslom.org
-Lancichinetti et al. (2011)
-
-```{r run_OSLOM, eval = FALSE}
-run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
-          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
-
-res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
-file.rename("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds",
-            "D:/Irstea/CarHab/Bioregionalization_extra/tp_binary.rds")
-# With weights
-run_oslom(sp_proj_w, n_runs = 5, t_param = 0.1, cp_param = 0.5,
-          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/")
-
-res_w <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
-
-```
-
-oslom_output() functions converts the OSLOM .tp file into a list.
-
-```{r conversion_OSLOM}
-# Format OSLOM output into a data.frame
-oslom_vignette <- oslom_output(virtual[[2]], sp_mat)
-# With weights
-oslom_vignette_w <- oslom_output(virtual[[3]], sp_mat_w)
-
-print(paste0("Number of bioregions detected = ",
-             length(unique(oslom_vignette$bioregion)),
-             " ; and with weights: ",
-             length(unique(oslom_vignette_w$bioregion))))
-
-```
-
-## Clustering
-
-Other methods to detect communities use more classical clustering approaches.
-For example, k-means clustering aims at partitionning *n* observations into
-*k* clusters in which each observation belongs to the cluster with the nearest
-mean.
-
-Agglomerative Hierarchical Clustering.
-
-See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
-to add more methods.
-
-```{r cluster}
-# CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
-
-dbscan_res <- cluster(sp_mat, method = "dbscan")
-
-gmm_res <- cluster(sp_mat, method = "gmm")
-
-```
 
 
 # Comparison of different bioregionalizations

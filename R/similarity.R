@@ -1,5 +1,5 @@
 
-project_network <- function(dat, similarity = "simpson", input = "matrix",
+similarity <- function(dat, similarity = "simpson", input = "matrix",
                             site = NULL, sp = NULL, ab = NULL, binary = TRUE){
   require(Rcpp)
   require(SMUT)
@@ -25,10 +25,10 @@ project_network <- function(dat, similarity = "simpson", input = "matrix",
   }
 
   if(!(similarity %in% c("simpson", "jaccard", "sorensen", "whittaker",
-                         "bray"))){
+                         "bray", "euclidean"))){
     stop("Similarity metric chosen is not available.
      Please chose among the followings:
-         simpson, jaccard, sorensen, whittaker or bray")
+         simpson, jaccard, sorensen, whittaker, bray or euclidean")
   }
 
   # Convert as matrix to remove names
@@ -44,7 +44,7 @@ project_network <- function(dat, similarity = "simpson", input = "matrix",
     diag(bray) <- NA
 
     # Convert distance matrix into data.frame
-    abc <- melt(bray, varnames = c("id1", "id2"))
+    abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
     # Remove NAs
     abc <- abc[complete.cases(abc), ]
     colnames(abc) <- c("id1", "id2", "bray")
@@ -61,8 +61,26 @@ project_network <- function(dat, similarity = "simpson", input = "matrix",
     # Remove zeros
     abc <- abc[which(abc$bray > 0), ]
 
-  } else{
+  } else if(similarity == "euclidean"){
+    require(reshape2)
+    euc_dist <- function(m) {
+      mtm <- Matrix::tcrossprod(m)
+      sq <- rowSums(m*m)
+      sqrt(outer(sq, sq, "+") - 2*mtm)
+    }
 
+    abc <- euc_dist(dat)
+    # removal of upper part and diagonal
+    abc[upper.tri(abc)] <- NA
+    diag(abc) <- NA
+
+    # Conversion to dataframe
+    abc <- reshape2::melt(abc, varnames = c("id1", "id2"))
+    # Remove NAs
+    abc <- abc[complete.cases(abc), ]
+    colnames(abc) <- c("id1", "id2", "euclid")
+
+  } else{
     # Get the number of species shared by two sites
     # eigenMapMatMult to compute matrix product; equivalent to dat %*% t(dat)
     a <- eigenMapMatMult(dat, t(dat))
@@ -91,18 +109,22 @@ project_network <- function(dat, similarity = "simpson", input = "matrix",
     # Similarity metric
     if(similarity == "simpson"){
       abc$simpson <- 1 - pmin(abc$b, abc$c)/(abc$a + pmin(abc$b, abc$c))
+      abc <- abc[, c("id1", "id2", "simpson")]
     } else if(similarity == "sorensen"){
-      abc$sorensen <- 2*abc$a/(2*abc$a + abc$b + abc$c)
+      abc$sorensen <- 1 - (abc$b + abc$c)/(2*abc$a + abc$b + abc$c)
+      abc <- abc[, c("id1", "id2", "sorensen")]
     } else if(similarity == "jaccard"){
-      abc$jaccard <- abc$a/(abc$a + abc$b + abc$c)
+      abc$jaccard <- 1 - abc$a/(abc$a + abc$b + abc$c)
+      abc <- abc[, c("id1", "id2", "jaccard")]
     } else if(similarity == "whittaker"){
-      abc$whittaker <- (abc$a + abc$b + abc$c)/((2*abc$a + abc$b + abc$c)/2)
+      abc$whittaker <- 1 - (abc$a + abc$b + abc$c)/((2*abc$a + abc$b + abc$c)/2)
+      abc <- abc[, c("id1", "id2", "whittaker")]
     }
   }
-  # If contingency matrix has rownames, ressign them to abc data.frame
+  # If contingency matrix has rownames, reassign them to abc data.frame
   if(!is.null(rownames(dat))){
-    abc$id1_name <- rownames(dat)[abc$id1]
-    abc$id2_name <- rownames(dat)[abc$id2]
+    abc$id1 <- rownames(dat)[abc$id1]
+    abc$id2 <- rownames(dat)[abc$id2]
   }
 
   return(abc)

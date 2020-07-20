@@ -54,6 +54,8 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          contingency matrix.")
   }
 
+  # Use project_network with a certain distance metric
+
   # Euclidean distance matrix
   # dist_sp_mat <- dist(dat)
   euc_dist <- function(m) {

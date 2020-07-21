@@ -247,24 +247,31 @@ Available methods can be classed among three main groups: distance-based cluster
 ## 2.1. Distance matrix
 Most of the methods available in *bioRgeo* package, either clustering or network techniques, rely on the projection of the contingency matrix.
 
-*similarity()* function allows projecting the contingency table into a distance matrix using a given similarity metric.
+*simil()* function allows projecting the contingency table into a distance matrix using a given similarity metric.
 Among the metrics that can be used, only one of them, Bray-Curtis, takes into account the abundances of species. Other similarity metrics deal with presence/absence data only.
 
 If euclidean distances are used to construct the distance matrix, then abundances of species can also be provided.
 
 ```{r projection}
-sp_proj <- similarity(sp_mat, similarity = "simpson")
+sp_proj <- simil(sp_mat, metric = "simpson")
 
 knitr::kable(head(sp_proj))
 
 # With data frame input
-sp_proj_df <- similarity(sp_df[which(sp_df$pa != 0), ],
-                         similarity = "simpson", input = "data frame",
-                         site = "site", sp = "sp")
+sp_proj_df <- simil(sp_df[which(sp_df$pa != 0), ],
+                    metric = "simpson", input = "data frame",
+                    site = "site", sp = "sp")
 identical(sp_proj, sp_proj_df)
+rm(sp_proj_df)
+
+# With matrix output
+sp_proj_mat <- simil(sp_df[which(sp_df$pa != 0), ],
+                    metric = "simpson", input = "data frame",
+                    site = "site", sp = "sp", output = "matrix")
+dim(sp_proj_mat); sp_proj_mat[1:5, 1:5]
 
 # Bray-Curtis dissimilarity can take into account abundances of species
-sp_proj_w <- similarity(sp_mat_w, similarity = "bray")
+sp_proj_w <- simil(sp_mat_w, metric = "bray")
 
 knitr::kable(head(sp_proj_w))
 
@@ -309,12 +316,21 @@ dist_sp_mat <- euc_dist(sp_mat)
 # Need to reconvert sp_proj back to matrix
 head(sp_proj)
 po <- Matrix::sparseMatrix(
-  dims = c(vc, vc), i = el[, 1], j = el[, 2], x = value)
-po <- Matrix::sparseMatrix(
-  dims = c(vc, vc), i = el[, 1], j = el[, 2], x = value)
+  dims = c(length(unique(sp_proj[, 1])),
+           length(unique(sp_proj[, 1]))),
+  i = sp_proj[, 1], j = sp_proj[, 2], x = sp_proj[, 3])
 
+po <- data.matrix(sp_proj)
+po <- reshape2::dcast(sp_proj, id1 ~ id2, value.var = colnames(sp_proj)[3])
+rownames(po) <- po$id1
+po <- po[, !(colnames(po) == "id1")]
+
+po <- tidyr::spread(sp_proj, key = c("id1", "id2"),
+                    value = colnames(sp_proj)[3])
+
+##
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_proj, method = "ward.D2", n_clust = 4)
+ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
 
 dbscan_res <- cluster(sp_proj, method = "dbscan")
 
@@ -1059,7 +1075,7 @@ All these functions can be called with the wrap-up `all_maps()` function.
 ```{r all_maps, eval = FALSE}
 all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
                     binary = TRUE,
-                    similarity = "simpson", network_algo = "both",
+                    metric = "simpson", network_algo = "both",
                     saving_directory,
                     bipartite_algo = "greedy", weight = FALSE,
                     clustering = TRUE, ward_method = "ward.D2",

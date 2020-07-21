@@ -5,13 +5,24 @@
 Project a contingency matrix into a similarity data.frame, the similarity being based upon the sites each pair of species has in common.
 }
 \usage{
-simil(contingency_mat, metric = "simpson")
+simil(dat, metric = "simpson")
 }
 \arguments{
-\item{contingency_mat}{a contingency matrix with sites as rows and species as columns.}
+\item{dat}{a contingency matrix with sites as rows and species as columns.}
 
 \item{metric}{a character string indicating which similarity metric to chose among "simpson", "jaccard", "sorensen", "whittaker" and "euclidean".}
 
+\item{input}{a character string equals to 'matrix' or 'data frame' indicating whether the input of the function is long-format data frame or a wide format matrix.}
+
+\item{output}{a character string indicating whether the output of the function should be a distance matrix or a long-format data frame.}
+
+\item{site}{If input = 'data frame', the column name of the sites.}
+
+\item{sp}{If input = 'data frame', the column name of the species.}
+
+\item{ab}{If input = 'data frame' and species have abundances, the column name of the abundances of species per site.}
+
+\item{binary}{a boolean indicating whether abundances should be taken into account.}
 }
 \details{
 With \code{a} the number of species shared by a pair of sites, \code{b} species only present in the first site and \code{c} species only present in the second site.
@@ -27,7 +38,9 @@ With \code{a} the number of species shared by a pair of sites, \code{b} species 
 Euclidean computes the Euclidean distance between each pair of site.
 }
 \value{
-A data.frame with 3 columns. The first two columns, \code{id1} and \code{id2}, correspond to each pair of sites. The third column indicates the similarity value for the chosen metric between each pair of site.
+If output = 'data frame', a data.frame with 3 columns. The first two columns, \code{id1} and \code{id2}, correspond to each pair of sites. The third column indicates the similarity value for the chosen metric between each pair of site.
+
+If output = 'matrix', a matrix with n_sites rows and n_sites columns. Values of the matrix indicate the similarity value for the chosen metric between each pair of site.
 }
 \details{}
 \section{Note}{}
@@ -39,5 +52,5 @@ count = c(10, 100, 1, 20, 50, 10, 20))
 
 ex_mat <- contingency(dat = ex, sp = "species", site = "sites", ab = "count",
 binary = TRUE)
-simil(ex_mat, metric = "simpson")
+simil(ex_mat, metric = "simpson", input = "matrix")
 }

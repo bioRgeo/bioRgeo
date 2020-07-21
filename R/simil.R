@@ -1,5 +1,6 @@
 
 simil <- function(dat, metric = "simpson", input = "matrix",
+                  output = "data frame",
                   site = NULL, sp = NULL, ab = NULL, binary = TRUE){
   require(Rcpp)
   require(SMUT)
@@ -8,6 +9,11 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     stop("dat must be either a contingency matrix with sites as rows and
     species as columns or a long format data frame with each row being the
     presence of a species in a given site.")
+  }
+
+  if(!(output %in% c("matrix", "data frame"))){
+    stop("output is a character string indicating the format of the output.
+         Either 'matrix' or 'data frame'.")
   }
 
   if(input == "matrix"){
@@ -43,17 +49,19 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     bray[upper.tri(bray)] <- NA
     diag(bray) <- NA
 
-    # Convert distance matrix into data.frame
-    abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
-    # Remove NAs
-    abc <- abc[complete.cases(abc), ]
-    colnames(abc) <- c("id1", "id2", "bray")
-
     # Similarity instead of dissimilarity
-    abc$bray <- 1 - abc$bray
+    bray <- 1 - bray
 
-    # Remove zeros
-    # abc <- abc[which(abc$bray > 0), ]
+    if(output == "data frame"){
+      # Convert distance matrix into data.frame
+      abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
+      # Remove NAs
+      abc <- abc[complete.cases(abc), ]
+      colnames(abc) <- c("id1", "id2", "bray")
+
+      # Remove zeros
+      # abc <- abc[which(abc$bray > 0), ]
+    }
 
   } else if(metric == "euclidean"){
     require(reshape2)
@@ -68,11 +76,13 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     abc[upper.tri(abc)] <- NA
     diag(abc) <- NA
 
-    # Conversion to dataframe
-    abc <- reshape2::melt(abc, varnames = c("id1", "id2"))
-    # Remove NAs
-    abc <- abc[complete.cases(abc), ]
-    colnames(abc) <- c("id1", "id2", "euclid")
+    if(output == "data frame"){
+      # Conversion to dataframe
+      abc <- reshape2::melt(abc, varnames = c("id1", "id2"))
+      # Remove NAs
+      abc <- abc[complete.cases(abc), ]
+      colnames(abc) <- c("id1", "id2", "euclid")
+    }
 
   } else{
     # Get the number of species shared by two sites
@@ -122,9 +132,23 @@ simil <- function(dat, metric = "simpson", input = "matrix",
       abc$whittaker <- 1 - (abc$a + abc$b + abc$c)/((2*abc$a + abc$b + abc$c)/2)
       abc <- abc[, c("id1", "id2", "whittaker")]
     }
+
+    # If contingency matrix has rownames, reassign them to abc data.frame
+    if(!is.null(rownames(dat))){
+      abc$id1 <- rownames(dat)[abc$id1]
+      abc$id2 <- rownames(dat)[abc$id2]
+    }
+
+    if(output == "matrix"){
+      require(reshape2)
+      abc <- reshape2::dcast(abc, id1 ~ id2,
+                             value.var = colnames(abc)[3])
+      rownames(abc) <- abc$id1
+      abc <- abc[, !(colnames(abc) == "id1")]
+    }
   }
   # If contingency matrix has rownames, reassign them to abc data.frame
-  if(!is.null(rownames(dat))){
+  if(output == "data frame" & !is.null(rownames(dat))){
     abc$id1 <- rownames(dat)[abc$id1]
     abc$id2 <- rownames(dat)[abc$id2]
   }

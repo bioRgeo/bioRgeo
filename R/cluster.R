@@ -3,10 +3,8 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                     n_clust = NULL, nstart = 25, B = 50, K.max = 20){
   require(cluster)
 
-  if(!is.data.frame(dat)){
-    stop("dat should be the output of the similarity function, i.e. a data
-         frame with three columns. The first two columns contains each pair of
-         sites and the third column their similarity value.")
+  if(!is.matrix(dat)){
+    stop("dat should be a matrix with sites as rows and species as columns.")
   }
 
   if(!(method %in% c("ward.D", "ward.D2", "single", "complete", "average",
@@ -46,9 +44,12 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          to consider.")
   }
 
-  if(K.max > length(unique(dat[, 1]))){
+  if(K.max > nrow(dat)){
     stop("K.max should not be superior to the number of sites.")
   }
+
+  # Project dat using simil function
+  dat <- simil(dat, metric = "simpson", output = "matrix")
 
   if(method == "dbscan"){
     require(dbscan)

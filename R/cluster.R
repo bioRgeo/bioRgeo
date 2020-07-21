@@ -3,8 +3,10 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                     n_clust = NULL, nstart = 25, B = 50, K.max = 20){
   require(cluster)
 
-  if(!is.matrix(dat)){
-    stop("dat should be a matrix with sites as rows and species as columns.")
+  if(!is.data.frame(dat)){
+    stop("dat should be the output of the similarity function, i.e. a data
+         frame with three columns. The first two columns contains each pair of
+         sites and the third column their similarity value.")
   }
 
   if(!(method %in% c("ward.D", "ward.D2", "single", "complete", "average",
@@ -44,46 +46,28 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          to consider.")
   }
 
-  if(K.max > nrow(dat)){
-    stop("K.max should not be superior to the number of rows of the
-         contingency matrix.")
+  if(K.max > length(unique(dat[, 1]))){
+    stop("K.max should not be superior to the number of sites.")
   }
-
-  if(K.max > nrow(unique(dat))){
-    stop("K.max should not be superior to the unique number of rows of the
-         contingency matrix.")
-  }
-
-  # Use project_network with a certain distance metric
-
-  # Euclidean distance matrix
-  # dist_sp_mat <- dist(dat)
-  euc_dist <- function(m) {
-    mtm <- Matrix::tcrossprod(m)
-    sq <- rowSums(m*m)
-    sqrt(outer(sq,sq,"+") - 2*mtm)
-  }
-
-  dist_sp_mat <- euc_dist(dat)
 
   if(method == "dbscan"){
     require(dbscan)
     # Size of the epsilon neighborhood: normally determined by observing the
     # knee-plot
-    eps <- quantile(kNNdist(dist_sp_mat, k = 5)[
-      kNNdist(dist_sp_mat, k = 5) > 0], 0.25)
-    # eps <- mean(kNNdist(dist_sp_mat, k = 5))
-    db_clust <- dbscan(x = dist_sp_mat, eps = eps, minPts = 5)
+    eps <- quantile(kNNdist(dat, k = 5)[
+      kNNdist(dat, k = 5) > 0], 0.25)
+    # eps <- mean(kNNdist(dat, k = 5))
+    db_clust <- dbscan(x = dat, eps = eps, minPts = 5)
 
     # Data.frame of results
-    res <- data.frame(site = rownames(dist_sp_mat),
+    res <- data.frame(site = rownames(dat),
                       cluster = as.character(db_clust$cluster))
 
   } else if(method == "gmm"){
     # Conversion to dist object
-    dist_sp_mat <- as.dist(dist_sp_mat)
+    dat <- as.dist(dat)
     require(mclust)
-    gmm_mclust <- Mclust(dist_sp_mat)
+    gmm_mclust <- Mclust(dat)
 
     # Data.frame of results
     res <- data.frame(site = names(gmm_mclust$classification),
@@ -91,11 +75,11 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
 
   } else{
     # Conversion to dist object
-    dist_sp_mat <- as.dist(dist_sp_mat)
+    dat <- as.dist(dat)
 
-    #h <- hclust(dist_sp_mat, method = method)
+    #h <- hclust(dat, method = method)
     require(fastcluster)
-    h <- fastcluster::hclust(dist_sp_mat, method = method)
+    h <- fastcluster::hclust(dat, method = method)
     # plot(h)
 
     if(!is.null(n_clust)){

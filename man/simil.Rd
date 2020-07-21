@@ -1,16 +1,16 @@
-\name{similarity}
-\alias{similarity}
+\name{simil}
+\alias{simil}
 \title{Similarity matrix}
 \description{
 Project a contingency matrix into a similarity data.frame, the similarity being based upon the sites each pair of species has in common.
 }
 \usage{
-similarity(contingency_mat, similarity = "simpson")
+simil(contingency_mat, metric = "simpson")
 }
 \arguments{
 \item{contingency_mat}{a contingency matrix with sites as rows and species as columns.}
 
-\item{similarity}{a character string indicating which similarity metric to chose among "simpson", "jaccard", "sorensen", "whittaker" and "euclidean".}
+\item{metric}{a character string indicating which similarity metric to chose among "simpson", "jaccard", "sorensen", "whittaker" and "euclidean".}
 
 }
 \details{
@@ -39,5 +39,5 @@ count = c(10, 100, 1, 20, 50, 10, 20))
 
 ex_mat <- contingency(dat = ex, sp = "species", site = "sites", ab = "count",
 binary = TRUE)
-similarity(ex_mat, similarity = "simpson")
+simil(ex_mat, metric = "simpson")
 }

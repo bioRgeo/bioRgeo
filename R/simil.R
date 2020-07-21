@@ -1,6 +1,6 @@
 
-similarity <- function(dat, similarity = "simpson", input = "matrix",
-                            site = NULL, sp = NULL, ab = NULL, binary = TRUE){
+simil <- function(dat, metric = "simpson", input = "matrix",
+                  site = NULL, sp = NULL, ab = NULL, binary = TRUE){
   require(Rcpp)
   require(SMUT)
 
@@ -24,8 +24,8 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
     dat <- contingency(dat, site, sp, ab = NULL, binary = TRUE)
   }
 
-  if(!(similarity %in% c("simpson", "jaccard", "sorensen", "whittaker",
-                         "bray", "euclidean"))){
+  if(!(metric %in% c("simpson", "jaccard", "sorensen", "whittaker", "bray",
+                     "euclidean"))){
     stop("Similarity metric chosen is not available.
      Please chose among the followings:
          simpson, jaccard, sorensen, whittaker, bray or euclidean")
@@ -34,7 +34,7 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
   # Convert as matrix to remove names
   dat <- as.matrix(dat)
 
-  if(similarity == "bray"){
+  if(metric == "bray"){
     require(ecodist)
     require(reshape2)
     bray <- bcdist(dat, rmzero = FALSE)
@@ -48,20 +48,14 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
     # Remove NAs
     abc <- abc[complete.cases(abc), ]
     colnames(abc) <- c("id1", "id2", "bray")
-    # Create columns of site names and put id in the id columns
-    if(!is.null(rownames(dat))){
-      abc$id1_name <- abc$id1
-      abc$id2_name <- abc$id2
-      abc$id1 <- match(abc$id1, rownames(dat))
-      abc$id2 <- match(abc$id2, rownames(dat))
-    }
+
     # Similarity instead of dissimilarity
     abc$bray <- 1 - abc$bray
 
     # Remove zeros
-    abc <- abc[which(abc$bray > 0), ]
+    # abc <- abc[which(abc$bray > 0), ]
 
-  } else if(similarity == "euclidean"){
+  } else if(metric == "euclidean"){
     require(reshape2)
     euc_dist <- function(m) {
       mtm <- Matrix::tcrossprod(m)
@@ -87,6 +81,14 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
 
     abc <- which(a > 0, arr.ind = TRUE)
     abc <- cbind(abc, a[a > 0])
+
+    # Sites entirely dissimilar (no species shared)
+    abc_0 <- which(a == 0, arr.ind = TRUE)
+    abc_0 <- cbind(abc_0, a[a == 0])
+
+    abc <- rbind(abc, abc_0)
+    rm(abc_0)
+
     # Remove upper part of the matrix
     abc <- abc[abc[, 1] < abc[, 2], ]
 
@@ -107,16 +109,16 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
     abc <- as.data.frame(abc)
 
     # Similarity metric
-    if(similarity == "simpson"){
+    if(metric == "simpson"){
       abc$simpson <- 1 - pmin(abc$b, abc$c)/(abc$a + pmin(abc$b, abc$c))
       abc <- abc[, c("id1", "id2", "simpson")]
-    } else if(similarity == "sorensen"){
+    } else if(metric == "sorensen"){
       abc$sorensen <- 1 - (abc$b + abc$c)/(2*abc$a + abc$b + abc$c)
       abc <- abc[, c("id1", "id2", "sorensen")]
-    } else if(similarity == "jaccard"){
-      abc$jaccard <- 1 - abc$a/(abc$a + abc$b + abc$c)
+    } else if(metric == "jaccard"){
+      abc$jaccard <- abc$a/(abc$a + abc$b + abc$c)
       abc <- abc[, c("id1", "id2", "jaccard")]
-    } else if(similarity == "whittaker"){
+    } else if(metric == "whittaker"){
       abc$whittaker <- 1 - (abc$a + abc$b + abc$c)/((2*abc$a + abc$b + abc$c)/2)
       abc <- abc[, c("id1", "id2", "whittaker")]
     }
@@ -126,6 +128,5 @@ similarity <- function(dat, similarity = "simpson", input = "matrix",
     abc$id1 <- rownames(dat)[abc$id1]
     abc$id2 <- rownames(dat)[abc$id2]
   }
-
   return(abc)
 }

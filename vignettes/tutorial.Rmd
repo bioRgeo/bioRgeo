@@ -244,7 +244,33 @@ knitr::kable(sp_mat_w[1:5, 1:5])
 
 Available methods can be classed among three main groups: distance-based clustering, projected networks and bipartite networks.
 
-## 2.1. Clustering
+## 2.1. Distance matrix
+Most of the methods available in *bioRgeo* package, either clustering or network techniques, rely on the projection of the contingency matrix.
+
+*similarity()* function allows projecting the contingency table into a distance matrix using a given similarity metric.
+Among the metrics that can be used, only one of them, Bray-Curtis, takes into account the abundances of species. Other similarity metrics deal with presence/absence data only.
+
+If euclidean distances are used to construct the distance matrix, then abundances of species can also be provided.
+
+```{r projection}
+sp_proj <- similarity(sp_mat, similarity = "simpson")
+
+knitr::kable(head(sp_proj))
+
+# With data frame input
+sp_proj_df <- similarity(sp_df[which(sp_df$pa != 0), ],
+                         similarity = "simpson", input = "data frame",
+                         site = "site", sp = "sp")
+identical(sp_proj, sp_proj_df)
+
+# Bray-Curtis dissimilarity can take into account abundances of species
+sp_proj_w <- similarity(sp_mat_w, similarity = "bray")
+
+knitr::kable(head(sp_proj_w))
+
+```
+
+## 2.2. Clustering
 
 Clustering techniques aim at partitionning *n* observations into
 *k* clusters. They can be divided in supervised and unsupervised algorithms. When supervised, the user needs to tell how many groups are expected to be found in the data. If the algorithm used in unsupervised, it will identify on its own how many groups structure the data.
@@ -275,42 +301,24 @@ to add more methods.
 euc_dist <- function(m) {
   mtm <- Matrix::tcrossprod(m)
   sq <- rowSums(m*m)
-  sqrt(outer(sq, sq, "+") - 2*mtm)
+  sqrt(outer(sq,sq,"+") - 2*mtm)
 }
 
-# euc dist details
-sp_mat[1:5, 1:5]
-dim(Matrix::tcrossprod(sp_mat))
-
 dist_sp_mat <- euc_dist(sp_mat)
-dist_sp_mat[upper.tri(dist_sp_mat)] <- NA
-diag(dist_sp_mat) <- NA
 
-# Conversion to dataframe
-dist_sp_mat <- reshape2::melt(dist_sp_mat, varnames = c("id1", "id2"))
-# Remove NAs
-dist_sp_mat <- dist_sp_mat[complete.cases(dist_sp_mat), ]
-colnames(dist_sp_mat) <- c("id1", "id2", "euclid")
+# Need to reconvert sp_proj back to matrix
+head(sp_proj)
+po <- Matrix::sparseMatrix(
+  dims = c(vc, vc), i = el[, 1], j = el[, 2], x = value)
+po <- Matrix::sparseMatrix(
+  dims = c(vc, vc), i = el[, 1], j = el[, 2], x = value)
 
-# similarity function
-sp_proj <- similarity(sp_mat, similarity = "simpson")
-sp_proj <- sp_proj[, c("id1_name", "id2_name", "simpson")]
-knitr::kable(head(sp_proj))
-
-# Comparison
-po <- left_join(sp_proj, dist_sp_mat, by = c("id1_name" = "id2",
-                                             "id2_name" = "id1"))
-
-ggplot(po, aes(simpson, euclid)) +
-  geom_point()
-
-##
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
+ward_res <- cluster(sp_proj, method = "ward.D2", n_clust = 4)
 
-dbscan_res <- cluster(sp_mat, method = "dbscan")
+dbscan_res <- cluster(sp_proj, method = "dbscan")
 
-gmm_res <- cluster(sp_mat, method = "gmm")
+gmm_res <- cluster(sp_proj, method = "gmm")
 
 ```
 
@@ -319,31 +327,6 @@ gmm_res <- cluster(sp_mat, method = "gmm")
 A projected network considers the similarity between each pair of nodes. In
 our case, nodes can represent different sites that are linked together
 according the proportion of species they share together.
-
-### Projection of the network
-
-To project the network, we can use the *similarity()* function.
-
-```{r projection}
-sp_proj <- similarity(sp_mat, similarity = "simpson")
-sp_proj <- sp_proj[, c("id1", "id2", "simpson")]
-
-knitr::kable(head(sp_proj))
-
-# With data frame input
-sp_proj_df <- similarity(sp_df[which(sp_df$pa != 0), ],
-                              similarity = "simpson", input = "data frame",
-                              site = "site", sp = "sp")
-sp_proj_df <- sp_proj_df[, c("id1", "id2", "simpson")]
-
-knitr::kable(head(sp_proj_df))
-
-# Bray-Curtis dissimilarity can take into account abundances of species
-sp_proj_w <- similarity(sp_mat_w, similarity = "bray")
-sp_proj_w <- sp_proj_w[, c("id1", "id2", "bray")]
-
-knitr::kable(head(sp_proj_w))
-```
 
 ### Order Statistics Local Optimization Method (OSLOM)
 

@@ -7,12 +7,14 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("dat should be a matrix with sites as rows and species as columns.")
   }
 
-  if(!(method %in% c("ward.D", "ward.D2", "single", "complete", "average",
-                     "mcquitty", "median", "centroid", "dbscan", "gmm"))){
+  if(!(method %in% c("kmeans", "ward.D", "ward.D2", "single", "complete",
+                     "average", "mcquitty", "median", "centroid", "dbscan",
+                     "gmm", "diana", "pam"))){
     stop("Hierarchical clustering method chosen is not available.
      Please chose among the followings:
-         ward.D, ward.D2, single, complete, average,
-         mcquitty, median, centroid, dbscan or gmm.")
+         'kmeans', 'ward.D', 'ward.D2', 'single', 'complete', 'average',
+         'mcquitty', 'median', 'centroid', 'dbscan', 'gmm', 'diana' or
+         'pam'.")
   }
 
   if(!(optim_method %in% c("globalmax", "firstmax", "Tibs2001SEmax",
@@ -48,7 +50,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("K.max should not be superior to the number of sites.")
   }
 
-  if(method != "dbscan"){
+  if(!(method %in% c("dbscan", "diana"))){
     # Project dat using simil function
     dat <- simil(dat, metric = "simpson", output = "dist")
   }
@@ -78,13 +80,9 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
 
   } else{
     # Conversion to dist object
-    dat <- as.dist(dat)
+    # dat <- as.dist(dat)
 
-    #h <- hclust(dat, method = method)
-    require(fastcluster)
-    h <- fastcluster::hclust(dat, method = method)
-    # plot(h)
-
+    # Number of clusters for supervised algorithms
     if(!is.null(n_clust)){
       optim_k <- n_clust
     } else{
@@ -102,13 +100,32 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                        method = optim_method)
     }
 
-    # Cut the tree with optim_k numbers
-    dend <- as.dendrogram(h)
-    # Data.frame of results
-    res <- data.frame(site = names(dendextend::cutree(dend,
-                                                      k = optim_k)),
-                      cluster = as.character(dendextend::cutree(dend,
-                                                                k = optim_k)))
+    if(!(method %in% c("kmeans", "pam"))){
+      if(method == "diana"){
+        h <- cluster::diana(dat)
+      } else{
+        #h <- hclust(dat, method = method)
+        require(fastcluster)
+        h <- fastcluster::hclust(dat, method = method)
+        # plot(h)
+      }
+
+      # Cut the tree with optim_k numbers
+      dend <- as.dendrogram(h)
+      # Data.frame of results
+      res <- data.frame(site = names(dendextend::cutree(dend,
+                                                        k = optim_k)),
+                        cluster = as.character(dendextend::cutree(dend,
+                                                                  k = optim_k)))
+    } else if(method == "kmeans"){
+      h <- kmeans(dat, centers = optim_k, iter.max = 10, nstart = 1)
+      res <- data.frame(site = names(h$cluster),
+                        cluster = as.numeric(h$cluster))
+    } else if(method == "pam"){
+      h <- cluster::pam(dat, k = optim_k, metric = "euclidean")
+      res <- data.frame(site = names(h$clustering),
+                        cluster = as.numeric(h$clustering))
+    }
   }
   return(res)
   # Visualization

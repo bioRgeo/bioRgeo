@@ -302,12 +302,37 @@ They are directly imported from existing packages (cluster, dendextend, fastclus
 
 Available methods are the following: ward.D, ward.D2, single, complete, average, mcquitty, median, centroid, dbscan and gmm.
 
-Agglomerative Hierarchical Clustering.
+Some of the methods available in *bioRgeo* package follow an agglomerative Hierarchical Clustering.
+Each agglomerative clustering starts by assigning each data point to a singleton cluster. It then joins iteratively the two clusters that have the minimal distance among all pairwise distances into a bigger cluster. This step is then repeated until each data point belongs to the same big cluster.
+The choice of the agglomerative clustering method affects the calculation of the minimal distance between sets of points. 
+
+The [vignette](https://cran.r-project.org/web/packages/fastcluster/vignettes/fastcluster.pdf) of fastcluster package provides further details about some of the available methods.
 
 See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
 to add more methods.
 
+When using a supervised algorithm with no clue about the optimal number of clusters, we can use an optimization procedure maximising a silhouette index.
+Quick description of Silhouette.
+
+Quick description of each method.
+
 ```{r cluster}
+
+c("ward.D", "ward.D2", "single", "complete", "average",
+                     "mcquitty", "median", "centroid", "dbscan", "gmm",
+                     "diana", "pam")
+
+knitr::kable(data.frame(
+  Acronym = c("ward.D", "ward.D2", "single", "complete", "average",
+              "mcquitty", "median", "centroid", "dbscan", "gmm", "diana",
+              "pam"),
+  Method = c("Ward.D", "Ward.D2", "single", "complete", "UPGMA",
+              "WPGMA", "WPGMC", "UPGMC", "dbscan", "GMM", "diana",
+              "PAM"),
+  Category = c("Hierarchical", "Partitionning"),
+  Supervision = c("Yes", "No"),
+  `Short description` = c()))
+
 # CA_res <- CA_cluster(sp_mat)
 ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
 
@@ -315,6 +340,27 @@ dbscan_res <- cluster(sp_mat, method = "dbscan")
 
 gmm_res <- cluster(sp_mat, method = "gmm")
 
+diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
+
+pam_res <- cluster(sp_mat, method = "pam", n_clust = 4)
+
+km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
+
+# Add Kmeans algorithm
+po <- kmeans(sp_mat, centers = 4, iter.max = 10, nstart = 1)
+po <- kmeans(sp_proj_dist, centers = 4, iter.max = 10, nstart = 1)
+
+factoextra::fviz_dend(po, cex = 0.5,
+                      k = 4, # Cut in four groups
+                      palette = "jco")
+
+dend <- as.dendrogram(po)
+# Data.frame of results
+optim_k <- 4
+res <- data.frame(site = names(dendextend::cutree(dend,
+                                                  k = optim_k)),
+                  cluster = as.character(dendextend::cutree(dend,
+                                                            k = optim_k)))
 
 ```
 
@@ -444,9 +490,7 @@ table(res[!duplicated(res$site), "module"])
 ```
 
 
-
-
-# Comparison of different bioregionalizations
+# 3. Comparison of different bioregionalizations
 
 If sites have coordinates, we can apply several functions to compare how the
 distinct bioregions are segregated through space.
@@ -509,6 +553,32 @@ plot_grid(
     scale_fill_brewer("Bioregions", palette = "Paired") +
     coord_equal() +
     labs(title = "GMM bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
+  # Plot of DIANA bioregions
+  sp_df %>%
+    left_join(diana_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "DIANA bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
+  # Plot of PAM bioregions
+  sp_df %>%
+    left_join(pam_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "PAM bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
   # Plot of fastgreedy bioregions

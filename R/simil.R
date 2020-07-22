@@ -11,9 +11,9 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     presence of a species in a given site.")
   }
 
-  if(!(output %in% c("matrix", "data frame"))){
+  if(!(output %in% c("matrix", "data frame", "dist"))){
     stop("output is a character string indicating the format of the output.
-         Either 'matrix' or 'data frame'.")
+         Either 'matrix', 'data frame' or 'dist'.")
   }
 
   if(input == "matrix"){
@@ -46,23 +46,38 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     bray <- bcdist(dat, rmzero = FALSE)
     # Conversion as matrix and removal of upper part and diagonal
     bray <- as.matrix(bray)
-    bray[upper.tri(bray)] <- NA
-    diag(bray) <- NA
 
-    # Similarity instead of dissimilarity
-    bray <- 1 - bray
-
-    if(output == "data frame"){
-      # Convert distance matrix into data.frame
-      abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
-      # Remove NAs
-      abc <- abc[complete.cases(abc), ]
-      colnames(abc) <- c("id1", "id2", "bray")
-
-      # Remove zeros
-      # abc <- abc[which(abc$bray > 0), ]
+    if(output == "dist"){
+      # Similarity instead of dissimilarity
+      bray <- 1 - bray
+      # Conversion to a dist object
+      abc <- as.dist(bray)
     }
+    else{
+      # Removal of upper part and diagonal of the matrix
+      bray[upper.tri(bray)] <- NA
+      diag(bray) <- NA
 
+      # Similarity instead of dissimilarity
+      bray <- 1 - bray
+
+      if(output == "data frame"){
+        # Convert distance matrix into data.frame
+        abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
+        # Remove NAs
+        abc <- abc[complete.cases(abc), ]
+        colnames(abc) <- c("id1", "id2", "bray")
+
+        # Remove zeros
+        # abc <- abc[which(abc$bray > 0), ]
+
+        # If contingency matrix has rownames, reassign them to abc data.frame
+        if(output == "data frame" & !is.null(rownames(dat))){
+          abc$id1 <- rownames(dat)[abc$id1]
+          abc$id2 <- rownames(dat)[abc$id2]
+        }
+      }
+    }
   } else if(metric == "euclidean"){
     require(reshape2)
     euc_dist <- function(m) {
@@ -72,16 +87,27 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     }
 
     abc <- euc_dist(dat)
-    # removal of upper part and diagonal
-    abc[upper.tri(abc)] <- NA
-    diag(abc) <- NA
+
+    if(output == "dist"){
+      abc <- as.dist(abc)
+    }
 
     if(output == "data frame"){
+      # Removal of upper part and diagonal
+      abc[upper.tri(abc)] <- NA
+      diag(abc) <- NA
+
       # Conversion to dataframe
       abc <- reshape2::melt(abc, varnames = c("id1", "id2"))
       # Remove NAs
       abc <- abc[complete.cases(abc), ]
       colnames(abc) <- c("id1", "id2", "euclid")
+
+      # If contingency matrix has rownames, reassign them to abc data.frame
+      if(output == "data frame" & !is.null(rownames(dat))){
+        abc$id1 <- rownames(dat)[abc$id1]
+        abc$id2 <- rownames(dat)[abc$id2]
+      }
     }
 
   } else{
@@ -99,8 +125,11 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     abc <- rbind(abc, abc_0)
     rm(abc_0)
 
-    # Remove upper part of the matrix
-    abc <- abc[abc[, 1] < abc[, 2], ]
+    if(output == "data frame"){
+      # Remove upper part of the matrix (not if outputs = 'matrix' or 'dist' to
+      # have symmetrical matrices)
+      abc <- abc[abc[, 1] < abc[, 2], ]
+    }
 
     a <- diag(a) # number of species per sites
     b <- a[abc[, 1]] # number of species in first column
@@ -139,18 +168,16 @@ simil <- function(dat, metric = "simpson", input = "matrix",
       abc$id2 <- rownames(dat)[abc$id2]
     }
 
-    if(output == "matrix"){
+    if(output %in% c("matrix", "dist")){
       require(reshape2)
       abc <- reshape2::dcast(abc, id1 ~ id2,
                              value.var = colnames(abc)[3])
       rownames(abc) <- abc$id1
       abc <- abc[, !(colnames(abc) == "id1")]
+      if(output == "dist"){
+        abc <- as.dist(as.matrix(abc))
+      }
     }
-  }
-  # If contingency matrix has rownames, reassign them to abc data.frame
-  if(output == "data frame" & !is.null(rownames(dat))){
-    abc$id1 <- rownames(dat)[abc$id1]
-    abc$id2 <- rownames(dat)[abc$id2]
   }
   return(abc)
 }

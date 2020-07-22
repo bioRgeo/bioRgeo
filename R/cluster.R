@@ -48,8 +48,10 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("K.max should not be superior to the number of sites.")
   }
 
-  # Project dat using simil function
-  dat <- simil(dat, metric = "simpson", output = "matrix")
+  if(method != "dbscan"){
+    # Project dat using simil function
+    dat <- simil(dat, metric = "simpson", output = "dist")
+  }
 
   if(method == "dbscan"){
     require(dbscan)

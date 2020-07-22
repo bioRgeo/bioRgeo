@@ -14,7 +14,7 @@ simil(dat, metric = "simpson")
 
 \item{input}{a character string equals to 'matrix' or 'data frame' indicating whether the input of the function is long-format data frame or a wide format matrix.}
 
-\item{output}{a character string indicating whether the output of the function should be a distance matrix or a long-format data frame.}
+\item{output}{a character string indicating whether the output of the function should be a symmetrical matrix, a long-format data frame or a distance object.}
 
 \item{site}{If input = 'data frame', the column name of the sites.}
 
@@ -41,6 +41,8 @@ Euclidean computes the Euclidean distance between each pair of site.
 If output = 'data frame', a data.frame with 3 columns. The first two columns, \code{id1} and \code{id2}, correspond to each pair of sites. The third column indicates the similarity value for the chosen metric between each pair of site.
 
 If output = 'matrix', a matrix with n_sites rows and n_sites columns. Values of the matrix indicate the similarity value for the chosen metric between each pair of site.
+
+If output = 'dist', a dist object based on the symmetrical matrix.
 }
 \details{}
 \section{Note}{}

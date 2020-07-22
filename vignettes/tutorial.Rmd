@@ -266,9 +266,12 @@ rm(sp_proj_df)
 
 # With matrix output
 sp_proj_mat <- simil(sp_df[which(sp_df$pa != 0), ],
-                    metric = "simpson", input = "data frame",
-                    site = "site", sp = "sp", output = "matrix")
+                     metric = "simpson", input = "data frame",
+                     site = "site", sp = "sp", output = "matrix")
 dim(sp_proj_mat); sp_proj_mat[1:5, 1:5]
+
+sp_proj_dist <- simil(sp_mat, metric = "bray", output = "dist")
+str(sp_proj_dist)
 
 # Bray-Curtis dissimilarity can take into account abundances of species
 sp_proj_w <- simil(sp_mat_w, metric = "bray")
@@ -305,36 +308,13 @@ See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-n
 to add more methods.
 
 ```{r cluster}
-euc_dist <- function(m) {
-  mtm <- Matrix::tcrossprod(m)
-  sq <- rowSums(m*m)
-  sqrt(outer(sq,sq,"+") - 2*mtm)
-}
-
-dist_sp_mat <- euc_dist(sp_mat)
-
-# Need to reconvert sp_proj back to matrix
-head(sp_proj)
-po <- Matrix::sparseMatrix(
-  dims = c(length(unique(sp_proj[, 1])),
-           length(unique(sp_proj[, 1]))),
-  i = sp_proj[, 1], j = sp_proj[, 2], x = sp_proj[, 3])
-
-po <- data.matrix(sp_proj)
-po <- reshape2::dcast(sp_proj, id1 ~ id2, value.var = colnames(sp_proj)[3])
-rownames(po) <- po$id1
-po <- po[, !(colnames(po) == "id1")]
-
-po <- tidyr::spread(sp_proj, key = c("id1", "id2"),
-                    value = colnames(sp_proj)[3])
-
-##
 # CA_res <- CA_cluster(sp_mat)
 ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
 
-dbscan_res <- cluster(sp_proj, method = "dbscan")
+dbscan_res <- cluster(sp_mat, method = "dbscan")
 
-gmm_res <- cluster(sp_proj, method = "gmm")
+gmm_res <- cluster(sp_mat, method = "gmm")
+
 
 ```
 

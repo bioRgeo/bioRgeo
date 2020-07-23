@@ -7,12 +7,14 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("dat should be a matrix with sites as rows and species as columns.")
   }
 
-  if(!(method %in% c("kmeans", "ward.D", "ward.D2", "single", "complete",
+  if(!(method %in% c("kmeans", "meanshift",
+                     "ward.D", "ward.D2", "single", "complete",
                      "average", "mcquitty", "median", "centroid", "dbscan",
                      "gmm", "diana", "pam"))){
     stop("Hierarchical clustering method chosen is not available.
      Please chose among the followings:
-         'kmeans', 'ward.D', 'ward.D2', 'single', 'complete', 'average',
+         'kmeans', 'meanshift',
+         'ward.D', 'ward.D2', 'single', 'complete', 'average',
          'mcquitty', 'median', 'centroid', 'dbscan', 'gmm', 'diana' or
          'pam'.")
   }
@@ -50,12 +52,21 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("K.max should not be superior to the number of sites.")
   }
 
-  if(!(method %in% c("dbscan", "diana"))){
+  if(!(method %in% c("meanshift", "dbscan", "diana"))){
     # Project dat using simil function
     dat <- simil(dat, metric = "simpson", output = "dist")
   }
 
-  if(method == "dbscan"){
+  if(method == "meanshift"){
+    require(meanShiftR)
+    tmp <- meanShift(queryData = dat, algorithm = "LINEAR", alpha = 0,
+                     iterations = 100)
+
+    # Data.frame of results
+    res <- data.frame(site = rownames(dat),
+                      cluster = tmp$assignment)
+
+  } else if(method == "dbscan"){
     require(dbscan)
     # Size of the epsilon neighborhood: normally determined by observing the
     # knee-plot

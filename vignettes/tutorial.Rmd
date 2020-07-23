@@ -315,23 +315,25 @@ When using a supervised algorithm with no clue about the optimal number of clust
 Quick description of Silhouette.
 
 Quick description of each method.
+PAM less sensitive to outliers than Kmeans.
 
 ```{r cluster}
 
-c("ward.D", "ward.D2", "single", "complete", "average",
-                     "mcquitty", "median", "centroid", "dbscan", "gmm",
-                     "diana", "pam")
-
 knitr::kable(data.frame(
-  Acronym = c("ward.D", "ward.D2", "single", "complete", "average",
-              "mcquitty", "median", "centroid", "dbscan", "gmm", "diana",
-              "pam"),
-  Method = c("Ward.D", "Ward.D2", "single", "complete", "UPGMA",
-              "WPGMA", "WPGMC", "UPGMC", "dbscan", "GMM", "diana",
-              "PAM"),
-  Category = c("Hierarchical", "Partitionning"),
-  Supervision = c("Yes", "No"),
-  `Short description` = c()))
+  Acronym = c("kmeans", "pam", "meanshift", "dbscan", "gmm",
+              "ward.D", "ward.D2", "single", "complete", "average",
+              "mcquitty", "median", "centroid", "diana"),
+  Method = c("K-Means", "Partitioning Around Medoids", "Mean-Shift",
+             "Density-Based Spatial Clustering of Applications with Noise",
+             "Gaussian Mixture Models",
+             "Ward.D", "Ward.D2", "single", "complete", "UPGMA",
+             "WPGMA", "WPGMC", "UPGMC",
+             "DIvisive ANAlysis Clustering"),
+  Category = c(rep("Partitionning", 5), rep("Hierarchical", 9)),
+  Supervision = c("Yes", "Yes", "No", "No", "No", rep("Yes", 9)),
+  `Short description` = NA,
+  `Source R package` = c("stats", "cluster", "meanShiftR", "dbscan", "mclust",
+                         rep("fastcluster", 8), "cluster")))
 
 # CA_res <- CA_cluster(sp_mat)
 ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
@@ -346,9 +348,18 @@ pam_res <- cluster(sp_mat, method = "pam", n_clust = 4)
 
 km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
 
-# Add Kmeans algorithm
-po <- kmeans(sp_mat, centers = 4, iter.max = 10, nstart = 1)
-po <- kmeans(sp_proj_dist, centers = 4, iter.max = 10, nstart = 1)
+mshift_res <- cluster(sp_mat, method = "meanshift")
+
+# Add Mean Shift algorithm
+library(meanShiftR)
+po <- meanShift(queryData = sp_mat, trainData = sp_mat, algorithm = "LINEAR",
+                alpha = 0, iterations = 100)
+
+pop <- meanShift(queryData = sp_mat, algorithm = "KDTREE",
+                 alpha = 0, iterations = 100, parameters = c(10, 100))
+
+msh_res <- data.frame(site = rownames(sp_mat),
+                      cluster = po$assignment)
 
 factoextra::fviz_dend(po, cex = 0.5,
                       k = 4, # Cut in four groups
@@ -491,15 +502,46 @@ table(res[!duplicated(res$site), "module"])
 
 
 # 3. Comparison of different bioregionalizations
+## 3.1. Microbenchmark
 
+```{r microbenchmark}
+require(microbenchmark)
+
+```
+
+## 3.2. Maps
 If sites have coordinates, we can apply several functions to compare how the
 distinct bioregions are segregated through space.
-
-## Maps
 
 ```{r map_virtual_dataset}
 
 plot_grid(
+  # Plot of Kmeans bioregions
+  sp_df %>%
+    left_join(km_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "Kmeans bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
+  # Plot of Mean Shift bioregions
+  sp_df %>%
+    left_join(mshift_res, by = "site") %>%
+    distinct(site, .keep_all = TRUE) %>%
+    ggplot(aes(x, y)) +
+    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
+              alpha = 0.8, width = 1, height = 1) +
+    scale_color_brewer("Bioregions", palette = "Paired") +
+    scale_fill_brewer("Bioregions", palette = "Paired") +
+    coord_equal() +
+    labs(title = "Mean Shift bioregions") +
+    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
+  
   # Plot of OSLOM bioregions
   sp_df %>%
     left_join(oslom_vignette, by = "site") %>%

@@ -22,7 +22,7 @@ run_infomap <- function(dat, site = NULL, sp = NULL, ab = NULL,
 
   if(!(is.character(saving_directory)) |
      !dir.exists(saving_directory)){
-    stop("saving_directory must be a path where the OSLOM .tp file containing
+    stop("saving_directory must be a path where the Infomap file containing
          the bioregions identified will be saved.")
   }
 

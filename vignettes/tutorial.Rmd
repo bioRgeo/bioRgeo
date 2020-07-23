@@ -373,7 +373,9 @@ diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
 
 ```
 
-## Projected networks
+## 2.3. Network modularity
+
+### 2.3.1. Projected networks
 
 A projected network considers the similarity between each pair of nodes. In
 our case, nodes can represent different sites that are linked together
@@ -420,7 +422,7 @@ print(paste0("Number of bioregions detected = ",
 
 ```
 
-## Bipartite networks
+### 2.3.2. Bipartite networks
 
 Networks are called bipartite when they are constituted by two types of nodes.
 Each type of node can only be linked with the other type. For example, if
@@ -496,6 +498,16 @@ po <- run_infomap(
 
 res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
 table(res[!duplicated(res$site), "module"])
+
+# Merging run_infomap with algo_bipartite
+pop <- algo_bipartite(
+  dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
+  input = "data frame", site = "site", sp = "sp",
+  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/tmp",
+  N = 10)
+
+# rename algo_bipartite
+
 ```
 
 

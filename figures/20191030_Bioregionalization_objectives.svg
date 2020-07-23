@@ -812,9 +812,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.64144687"
-     inkscape:cx="267.23035"
-     inkscape:cy="621.39038"
+     inkscape:zoom="0.45357143"
+     inkscape:cx="381.64708"
+     inkscape:cy="533.2014"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1340,7 +1340,7 @@
       </g>
     </g>
     <flowRoot
-       transform="matrix(0.73880533,0,0,0.73880533,270.31966,219.94826)"
+       transform="matrix(0.73880533,0,0,0.73880533,312.31966,221.94826)"
        xml:space="preserve"
        id="flowRoot4136-5-1-0-5"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
@@ -1352,7 +1352,7 @@
            y="26.886175"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
          id="flowPara4142-4-00-2-8"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:27.07073021px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">similarity()</flowPara></flowRoot>    <flowRoot
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:27.07073021px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">simil()</flowPara></flowRoot>    <flowRoot
        transform="matrix(0.73880533,0,0,0.73880533,551.06075,340.75317)"
        xml:space="preserve"
        id="flowRoot4136-5-1-0-5-2"
@@ -1395,7 +1395,7 @@
        xml:space="preserve"
        id="flowRoot4136-5-1-0-5-2-8-4-35-8"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Corbel;-inkscape-font-specification:Corbel;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(234.62898,145.02823)"><flowRegion
+       transform="translate(272.62898,135.02823)"><flowRegion
          id="flowRegion4138-8-1-0-6-5-5-5-41-6"><rect
            id="rect4140-3-7-2-5-1-5-6-8-7"
            width="353.00278"
@@ -1404,7 +1404,7 @@
            y="301.11618"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Corbel;-inkscape-font-specification:Corbel" /></flowRegion><flowPara
          id="flowPara4142-4-00-2-8-4-0-8-8-0"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:20px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">ward_cluster()</flowPara></flowRoot>    <flowRoot
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:20px;line-height:1.25;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#3e4cff;fill-opacity:1">cluster()</flowPara></flowRoot>    <flowRoot
        transform="translate(384.89527,604.04329)"
        xml:space="preserve"
        id="flowRoot4136-5-1-6-9"

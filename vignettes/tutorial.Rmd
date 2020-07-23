@@ -286,16 +286,13 @@ Clustering techniques aim at partitionning *n* observations into
 *k* clusters. They can be divided in supervised and unsupervised algorithms. When supervised, the user needs to tell how many groups are expected to be found in the data. If the algorithm used in unsupervised, it will identify on its own how many groups structure the data.
 When using supervised algorithms, optimizations algorithms can help the users to decide how many groups should structure the data.
 
-*bioRgeo* contains a function **cluster()** that gathers several classical methods of clustering. Before applying any of the available method, **cluster()** computes a distance matrix based on Euclidean distances between pairs of sites.
+*bioRgeo* contains a function \code{**cluster()**} that gathers several classical methods of clustering. Before applying any of the available method, **cluster()** computes a distance matrix based on Euclidean distances between pairs of sites.
 Available unsupervised algorithms are the following:
 
 Available supervised algorithms are the following:
 
 They come with optimization procedures to identify the optimal number of clusters. These optimization methods are the following:
 globalmax, firstmax, Tibs2001SEmax, firstSEmax or globalSEmax
-
-ward.D", "ward.D2", "single", "complete", "average",
-"mcquitty", "median", "centroid", "dbscan", "gmm
 
 The methods can either fall into the supervised or unsupervised category.
 They are directly imported from existing packages (cluster, dendextend, fastcluster).
@@ -308,9 +305,6 @@ The choice of the agglomerative clustering method affects the calculation of the
 
 The [vignette](https://cran.r-project.org/web/packages/fastcluster/vignettes/fastcluster.pdf) of fastcluster package provides further details about some of the available methods.
 
-See https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
-to add more methods.
-
 When using a supervised algorithm with no clue about the optimal number of clusters, we can use an optimization procedure maximising a silhouette index.
 Quick description of Silhouette.
 
@@ -321,57 +315,61 @@ PAM less sensitive to outliers than Kmeans.
 
 knitr::kable(data.frame(
   Acronym = c("kmeans", "pam", "meanshift", "dbscan", "gmm",
-              "ward.D", "ward.D2", "single", "complete", "average",
+              "ward.D", "ward.D2",
+              "single", "complete", "average",
               "mcquitty", "median", "centroid", "diana"),
-  Method = c("K-Means", "Partitioning Around Medoids", "Mean-Shift",
-             "Density-Based Spatial Clustering of Applications with Noise",
-             "Gaussian Mixture Models",
-             "Ward.D", "Ward.D2", "single", "complete", "UPGMA",
-             "WPGMA", "WPGMC", "UPGMC",
-             "DIvisive ANAlysis Clustering"),
+  Method = c(
+    "K-Means", "Partitioning Around Medoids", "Mean-Shift",
+    "Density-Based Spatial Clustering of Applications with Noise",
+    "Gaussian Mixture Models",
+    "Ward.D", "Ward.D2",
+    "single", "complete",
+    "Unweighted pair-group method using arithmetic averages (UPGMA, average linkage)",
+    "Weighted pair-group method using arithmetic averages (WPGMA, McQuitty’s method)",
+    "Weighted pair-group method using centroids (WPGMC, median linkage)",
+    "Unweighted pair-group method using centroids (UPGMC, centroid linkage)",
+    "DIvisive ANAlysis Clustering"),
   Category = c(rep("Partitionning", 5), rep("Hierarchical", 9)),
   Supervision = c("Yes", "Yes", "No", "No", "No", rep("Yes", 9)),
-  `Short description` = NA,
+  `Short description` = c(
+    "kmeans",
+    "pam",
+    "meanshift",
+    "dbscan",
+    "gmm",
+    "Uses an ANOVA approach and minimizes the sum of squares of any two clusters thatcan be formed at each step",
+    "ward.D2",
+    "single",
+    "complete",
+    "Distance between two clusters is the average distance between all objects of each cluster",
+    "Distance between two clusters is the arithmetic average distance between objects ofeach cluster weighted by the number of objects in each cluster",
+    "Distance between two clusters is the Euclidean distance between their weightedcentroids",
+    "Distance between the centroids (‘mean point’ or centre of gravity) of each cluster",
+    "Starting with all observations forming one single large cluster, groups are repeatedlydivided until each cluster contains only a single observation. At each stage, thecluster with the largest diameter in terms of the maximum observed dissimilarity isselected (Kaufman & Rousseeuw, 1990)"),
   `Source R package` = c("stats", "cluster", "meanShiftR", "dbscan", "mclust",
                          rep("fastcluster", 8), "cluster")))
 
 # CA_res <- CA_cluster(sp_mat)
-ward_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
+km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
+
+pam_res <- cluster(sp_mat, method = "pam", n_clust = 4)
+
+mshift_res <- cluster(sp_mat, method = "meanshift")
 
 dbscan_res <- cluster(sp_mat, method = "dbscan")
 
 gmm_res <- cluster(sp_mat, method = "gmm")
 
+ward_res <- cluster(sp_mat, method = "ward.D", n_clust = 4)
+ward2_res <- cluster(sp_mat, method = "ward.D2", n_clust = 4)
+single_res <- cluster(sp_mat, method = "single", n_clust = 4)
+complete_res <- cluster(sp_mat, method = "complete", n_clust = 4)
+average_res <- cluster(sp_mat, method = "average", n_clust = 4)
+mcquitty_res <- cluster(sp_mat, method = "mcquitty", n_clust = 4)
+median_res <- cluster(sp_mat, method = "median", n_clust = 4) # BUG
+centroid_res <- cluster(sp_mat, method = "centroid", n_clust = 4)
+
 diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
-
-pam_res <- cluster(sp_mat, method = "pam", n_clust = 4)
-
-km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
-
-mshift_res <- cluster(sp_mat, method = "meanshift")
-
-# Add Mean Shift algorithm
-library(meanShiftR)
-po <- meanShift(queryData = sp_mat, trainData = sp_mat, algorithm = "LINEAR",
-                alpha = 0, iterations = 100)
-
-pop <- meanShift(queryData = sp_mat, algorithm = "KDTREE",
-                 alpha = 0, iterations = 100, parameters = c(10, 100))
-
-msh_res <- data.frame(site = rownames(sp_mat),
-                      cluster = po$assignment)
-
-factoextra::fviz_dend(po, cex = 0.5,
-                      k = 4, # Cut in four groups
-                      palette = "jco")
-
-dend <- as.dendrogram(po)
-# Data.frame of results
-optim_k <- 4
-res <- data.frame(site = names(dendextend::cutree(dend,
-                                                  k = optim_k)),
-                  cluster = as.character(dendextend::cutree(dend,
-                                                            k = optim_k)))
 
 ```
 
@@ -1176,9 +1174,23 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 ```
 
 # References
-
+## Articles
 Guimerà, R., Nunes Amaral, L. Functional cartography of complex metabolic networks. Nature 433, 895–900 (2005). https://doi.org/10.1038/nature03288
+
+Kaufman, L. & Rousseeuw, P.J. (1990)Finding groups in data:an introduction to cluster analysis. Wiley Series in Probabilityand Mathematical Statistics. Wiley, New York.
 
 Lancichinetti A, Radicchi F, Ramasco JJ, Fortunato S (2011) Finding Statistically Significant Communities in Networks. PLoS ONE 6(4): e18961. https://doi.org/10.1371/journal.pone.0018961
 
 Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607. doi:10.1111/ecog.01388
+
+## R packages
+
+http://meanmean.me/meanshift/r/cran/2016/08/28/meanShiftR.html
+
+Hahsler M, Piekenbrock M, Doran D (2019). “dbscan: Fast Density-Based Clustering with R.” Journal of Statistical Software, 91(1), 1–30. doi: 10.18637/jss.v091.i01. 
+
+Scrucca L, Fop M, Murphy TB, Raftery AE (2016). “mclust 5: clustering, classification and density estimation using Gaussian finite mixture models.” The R Journal, 8(1), 289–317. https://doi.org/10.32614/RJ-2016-021. 
+
+Maechler, M., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2019). cluster: Cluster Analysis Basics and Extensions. R package version 2.1.0.
+
+Daniel Müllner (2013). fastcluster: Fast Hierarchical, Agglomerative Clustering Routines for R and Python. Journal of Statistical Software, 53(9), 1-18. URL http://www.jstatsoft.org/v53/i09/. 

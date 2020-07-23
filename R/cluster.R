@@ -3,6 +3,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                     n_clust = NULL, nstart = 25, B = 50, K.max = 20){
   require(cluster)
 
+  ## 1. Controls ----
   if(!is.matrix(dat)){
     stop("dat should be a matrix with sites as rows and species as columns.")
   }
@@ -33,6 +34,15 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     }
   }
 
+  if(is.null(n_clust) & method %in%
+     c("kmeans", "ward.D", "ward.D2", "single", "complete",
+       "average", "mcquitty", "median", "centroid", "diana", "pam")){
+    warning("The chosen method is a supervised algorithm that needs a number of
+            clusters. Since 'n_clust = NULL', an optimization algorithm is
+            first executed to determine the optimal numbers of clusters.
+            This step may take a while.")
+  }
+
   if(!(abs(nstart - round(nstart)) < .Machine$double.eps^0.5)){
     stop("nstart must be an integer determining the number of random centroids
          to start k-means analysis.")
@@ -52,11 +62,17 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     stop("K.max should not be superior to the number of sites.")
   }
 
+  ## 2. Input conversion ----
   if(!(method %in% c("meanshift", "dbscan", "diana"))){
-    # Project dat using simil function
+    if(is.null(n_clust)){
+      # Storing the matrix input, necessary to find the optimal nb of clusters
+      dat1 <- dat
+    }
+    # Project dat using simil function to get a dist object (distance matrix)
     dat <- simil(dat, metric = "simpson", output = "dist")
   }
 
+  ## 3. Clustering ----
   if(method == "meanshift"){
     require(meanShiftR)
     tmp <- meanShift(queryData = dat, algorithm = "LINEAR", alpha = 0,
@@ -97,14 +113,18 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     if(!is.null(n_clust)){
       optim_k <- n_clust
     } else{
-
       # Determine optimal numbers of clusters
       # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
       # https://uc-r.github.io/kmeans_clustering#gap
       # https://uc-r.github.io/hc_clustering
 
-      gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
-                          B = B)
+      if(method == "diana"){
+        gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
+                            B = B)
+      } else{
+        gap_stat <- clusGap(dat1, FUN = kmeans, nstart = nstart, K.max = K.max,
+                            B = B)
+      }
 
       optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
                        SE.f = gap_stat$Tab[, "SE.sim"],
@@ -115,7 +135,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
       if(method == "diana"){
         h <- cluster::diana(dat)
       } else{
-        #h <- hclust(dat, method = method)
+        # h <- hclust(dat, method = method)
         require(fastcluster)
         h <- fastcluster::hclust(dat, method = method)
         # plot(h)
@@ -129,7 +149,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                         cluster = as.character(dendextend::cutree(dend,
                                                                   k = optim_k)))
     } else if(method == "kmeans"){
-      h <- kmeans(dat, centers = optim_k, iter.max = 10, nstart = 1)
+      h <- kmeans(dat, centers = optim_k, iter.max = 10, nstart = nstart)
       res <- data.frame(site = names(h$cluster),
                         cluster = as.numeric(h$cluster))
     } else if(method == "pam"){

@@ -4,7 +4,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   require(cluster)
 
   ## 1. Controls ----
-  if(!is.matrix(dat) | !(class(dat) == "dist")){
+  if(!is.matrix(dat) & !(class(dat) == "dist")){
     stop("dat should be either a matrix with sites as rows and species as
          columns or a 'dist' object.")
   }
@@ -59,10 +59,15 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          to consider.")
   }
 
-  if(K.max > nrow(dat)){
-    stop("K.max should not be superior to the number of sites.")
+  if(is.matrix(dat)){
+    if(K.max > nrow(dat)){
+      stop("K.max should not be superior to the number of sites.")
+    }
+  }else if(class(dat) == "dist"){
+    if(K.max > length(labels(dat))){
+      stop("K.max should not be superior to the number of sites.")
+    }
   }
-
   ## 2. Input conversion ----
   if(!(method %in% c("meanshift", "dbscan", "diana"))){
     if(is.null(n_clust)){

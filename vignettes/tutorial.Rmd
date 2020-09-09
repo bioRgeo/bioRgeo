@@ -299,31 +299,23 @@ Clustering techniques aim at partitionning *n* observations into
 If the algorithm used is unsupervised, it will identify on its own how many groups structure the data.  
 When using supervised algorithms, the user needs to tell how many groups are expected to be found in the data. In that case, optimizations algorithms can help the users to decide how many groups should structure the data.
 
-`bioRgeo` contains a function \code{**cluster()**} that gathers several classical methods of clustering. Some available method are based on a distance matrix. For these methods, you can directly provide the output of `simil()` function. If you feed `cluster()` with a long-format table, `cluster()` will compute a distance matrix based on Simpson dissimilarity metric.  
+`bioRgeo` contains a function \code{**cluster()**} that gathers several classical methods of clustering. Some available methods are based on a distance matrix. When using these methods, you can directly provide the output of `simil()` function. If you feed `cluster()` with a long-format table, `cluster()` will compute a distance matrix based on *Simpson* dissimilarity metric.  
+Available methods are directly imported from existing packages (\code{cluster}, \code{dbscan}, \code{dendextend}, \code{fastcluster}, \code{mclust}, \code{meanShiftR} and \code{stats}).  
 
-Available unsupervised algorithms are the following:
+Available unsupervised algorithms are the following: *meanshift*, *dbscan* and *gmm*.  
 
 Available supervised algorithms are the following:
-
-They come with optimization procedures to identify the optimal number of clusters. These optimization methods are the following:
-*globalmax*, *firstmax*, *Tibs2001SEmax*, *firstSEmax* or *globalSEmax*
-
-The methods can either fall into the supervised or unsupervised category.
-They are directly imported from existing packages (cluster, dendextend, fastcluster).
-
-Available methods are the following: *ward.D*, *ward.D2*, *single*, *complete*, *average*, *mcquitty*, *median*, *centroid*, *dbscan* and *gmm.*
-
-Some of the methods available in `bioRgeo` package follow an agglomerative Hierarchical Clustering.
-Each agglomerative clustering starts by assigning each data point to a singleton cluster. It then joins iteratively the two clusters that have the minimal distance among all pairwise distances into a bigger cluster. This step is then repeated until each data point belongs to the same big cluster.
-The choice of the agglomerative clustering method affects the calculation of the minimal distance between sets of points. 
-
-The [vignette](https://cran.r-project.org/web/packages/fastcluster/vignettes/fastcluster.pdf) of fastcluster package provides further details about some of the available methods.
+*kmeans* and *pam* and the so-called Agglomerative Hierarchical Clustering methods: *ward.D*, *ward.D2*, *single*, *complete*, *average*, *mcquitty*, *median*, *centroid* and *diana*.  
+ 
+Agglomerative Hierarchical Clustering starts by assigning each data point to a singleton cluster. It then joins iteratively the two clusters that have the minimal distance among all pairwise distances into a bigger cluster. This step is then repeated until each data point belongs to the same big cluster. This procedure creates a tree where each branching splits the data in two different groups.  
+The choice of the agglomerative clustering method affects the calculation of the minimal distance between sets of points.  
+Since the user has to decide where to cut the tree, all the agglomerative hierarchical clustering methods are supervised algorithm.  
 
 When using a supervised algorithm with no clue about the optimal number of clusters, we can use an optimization procedure maximising a silhouette index.
-Quick description of Silhouette.
+Quick description of Silhouette. They come with optimization procedures to identify the optimal number of clusters. These optimization methods are the following:
+*globalmax*, *firstmax*, *Tibs2001SEmax*, *firstSEmax* or *globalSEmax*.  
 
-Quick description of each method.
-PAM less sensitive to outliers than Kmeans.
+The [vignette](https://cran.r-project.org/web/packages/fastcluster/vignettes/fastcluster.pdf) of \code{fastcluster} package provides further details about some of the available methods.  
 
 ```{r cluster}
 
@@ -366,6 +358,10 @@ knitr::kable(data.frame(
 # CA_res <- CA_cluster(sp_mat)
 km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
 
+# With dist input
+sp_proj_euc <- simil(sp_mat, metric = "euclidean", output = "dist")
+km_res <- cluster(sp_proj_euc, method = "kmeans", n_clust = 4)
+
 pam_res <- cluster(sp_mat, method = "pam", n_clust = 4)
 
 mshift_res <- cluster(sp_mat, method = "meanshift")
@@ -380,7 +376,7 @@ single_res <- cluster(sp_mat, method = "single", n_clust = 4)
 complete_res <- cluster(sp_mat, method = "complete", n_clust = 4)
 average_res <- cluster(sp_mat, method = "average", n_clust = 4)
 mcquitty_res <- cluster(sp_mat, method = "mcquitty", n_clust = 4)
-median_res <- cluster(sp_mat, method = "median", n_clust = 4) # BUG
+# median_res <- cluster(sp_mat, method = "median", n_clust = 4) # BUG
 centroid_res <- cluster(sp_mat, method = "centroid", n_clust = 4)
 
 diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)

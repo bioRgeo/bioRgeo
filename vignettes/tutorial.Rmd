@@ -26,9 +26,9 @@ text-align: justify}
 
 # 1. Overview
 
-In the following vignette, we show how *bioRgeo* package works. We use a simulated dataset of virtual species distributed across sites to illustrate how we can detect communities, i.e. groups of sites that are closely related regarding their species composition.
+In the following vignette, we show how `bioRgeo` package works. We use a simulated dataset of virtual species distributed across sites to illustrate how we can detect communities, i.e. groups of sites that are closely related regarding their species composition.
 
-To detect these large-scale communities, *bioRgeo* uses a variety of methods, ranging from bipartite network modularity to classical clustering. Each method enables identifying groups of sites that are more similar between each other than compared with the rest of the sites available.
+To detect these large-scale communities, `bioRgeo` uses a variety of methods, ranging from bipartite network modularity to classical clustering. Each method enables identifying groups of sites that are more similar between each other than compared with the rest of the sites available.
 
 Our example and package is mostly designed for ecologists interested in detecting large-scale patterns in the distribution of species across environments but it can also be used in other fields interested in the detection of large-scale patterns.
 
@@ -39,17 +39,25 @@ knitr::include_graphics("../figures/Bioregionalization_scheme3.png")
 ```
 
 ## 1.1. Glossary
-Some terms that design the types of inputs this package needs and their associated format are repeatedly used in this vignette. We here define how we use these terms.
+Four types of formats are used in the package.
 
-*contingency matrix* a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. This table is the first possible input of the *bioRgeo* functions.
+*contingency matrix*  
+a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. The matrix can either contain presences/absences or abundances of species within sites.  
+This object is the first possible input of the `bioRgeo` functions.
 
-*long format table* a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site. This format is the second possible input of the *bioRgeo* functions.
+*long format table*  
+a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site.  
+This format is the second possible input of the `bioRgeo` functions.
 
-*adjacency matrix* a square matrix that contains the occurrences of species within sites. Both sites and species are in rows and columns. In case of a bipartite network, there are no links between the same type of nodes, meaning that the adjacency matrix is filled with a lot of 0. For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+*adjacency matrix*  
+a square matrix that contains *nm* rowns and columns, with *n* the number of sites and *m* the number of species. Both sites and species are in rows and columns. The matrix can be divided into four parts, the top-left corner being the contingency matrix. The bottom-right corner is the transposed contingency matrix. Since site-species matrix correspond to a bipartite network, there are no links between the same type of nodes. This means that there are no links between pairs of sites or between pairs of species. Top-right and bottom-left parts of this matrix are thus filled with 0.  
+For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
 
-*distance matrix* a square matrix containing the distances between each pairs of a set, usually sites. Different metrics to compute the distance can be used. This type of matrix is usually stored as a **dist** object in R.
+*distance matrix* 
+a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
+This type of matrix is usually stored as a `dist` object in R.
 
-Since *bioRgeo* relies on two possible inputs, we let the option to users to switch from one format to the other using either *contingency()* or *contingency_to_dataframe()* functions as illustrated in the following figure: 
+Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_dataframe()` functions as illustrated in the following figure: 
 
 ```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
 knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
@@ -79,15 +87,18 @@ options(tinytex.verbose = TRUE)
 ```
 
 ## 1.2 Virtual dataset
-To illustrate how *bioRgeo* works, we use a virtual dataset. This dataset comes with the installation of the package and can be loaded using the following command:
+To illustrate how `bioRgeo` works, we use a virtual dataset. This dataset comes with the installation of the package and can be loaded using the following command:
 
 ```{r loading_virtual_data}
 data("virtual_sp")
 ```
 
-This command returns a list of three elements. The first element corresponds to the virtual dataset. The second and third element correspond to the partition found by the OSLOM algorithm (see below).
-The virtual dataset has been constructed by simulating the response curves of 100 species to a virtual raster.
-The virtual raster contains 10000 cells and was simulated using `gstat` R package. See [here](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/) for details.
+This command loads an object called `virtual` containing a list of three elements. 
+
+The first element corresponds to the virtual dataset and comes as a `data.frame` with 40000 rows and 9 columns. The second and third element correspond to the partition found by the OSLOM algorithm (see below).  
+
+The virtual dataset has been constructed by simulating the response curves of 100 species to a virtual raster.  
+The virtual raster contains 10000 cells and was simulated using `gstat` R package. See [here](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/) for details.  
 
 After loading the virtual data, and since each site has XY coordinates, we can plot the raster of the virtual environment layer.
 
@@ -109,7 +120,7 @@ sp_df %>%
 
 ```
 
-Based on this raster, we used the *virtualspecies* R package [(Leroy et al. 2015)](https://doi.org/10.1111/ecog.01388) to simulate a Gaussian response curve of 100 virtual species. The mean and standard deviation of the response function varied among species, drawing a continuum of generalist and specialist species.
+Based on this raster, we used the `virtualspecies` R package [(Leroy et al. 2015)](https://doi.org/10.1111/ecog.01388) to simulate a Gaussian response curve of 100 virtual species. The mean and standard deviation of the response function varied among species, drawing a continuum of generalist and specialist species.  
 
 The following figure illustrates a response curve for one virtual species:
 
@@ -117,7 +128,7 @@ The following figure illustrates a response curve for one virtual species:
 knitr::include_graphics("../figures/sp_response_curve_example.jpeg")
 ```
 
-For every species in every cell, we could derive a suitability index and produce suitability maps as shown below.
+For every species in every cell, we could derive a suitability index and produce suitability maps as shown below.  
 Species with suitability index inferior to 0.15 were arbitrarily set absent.
 
 ```{r virtual_sp_map, fig.label = "Example of suitability map for one virtual species."}
@@ -128,8 +139,8 @@ In total, the 100 suitability maps of our virtual species are distributed like t
 ```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
 knitr::include_graphics("../figures/100_suitability.jpeg")
 ```
-
-See [here](http://borisleroy.com/virtualspecies/) for further information on the "virtualspecies* R package.
+  
+See [here](http://borisleroy.com/virtualspecies/) for further information on the `virtualspecies` R package.
 
 ### 1.2.1. Code to generate the virtual data
 The code to generate the virtual dataset is provided in the chunk below. This chunk is not run when loading the vignette, since the outputs are directly stored with the package.
@@ -198,6 +209,7 @@ sp_i <- generateSpFromFun(raster.stack = env_raster,
                           parameters = param_i, plot = TRUE)
 plotResponse(sp_i)
 
+# Loop to generate the occurrences of 100 species
 sp_df <- c()
 for (i in 1:100){
   param_i <- formatFunctions(
@@ -222,14 +234,13 @@ for (i in 1:100){
 
 # Add site and environment columns
 sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
-
 ```
-
+  
 # 2. Community detection
-The core of the package relies on the aggregation of several methods that
-perform community detection.
+The core of `bioRgeo` relies on the aggregation of several methods that
+perform community detection.  
 
-Before applying any of the available method, and according to the preference of the user, we can convert the input data.frame into a contingency table, using the *contingency()* function.
+Before applying any of the available method, and according to the preference of the user, we can convert the input data.frame into a contingency table, using the `contingency()` function.  
 This transformation can consider the abundances of species.
 
 ```{r contingency_matrix}
@@ -237,7 +248,7 @@ sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
                       "site", "sp", ab = NULL, binary = TRUE)
 knitr::kable(sp_mat[1:5, 1:5])
 
-# With weights
+# With weights (abundances of species within sites)
 sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5])
 ```
@@ -245,13 +256,13 @@ knitr::kable(sp_mat_w[1:5, 1:5])
 Available methods can be classed among three main groups: distance-based clustering, projected networks and bipartite networks.
 
 ## 2.1. Distance matrix
-Most of the methods available in *bioRgeo* package, either clustering or network techniques, rely on the projection of the contingency matrix.
+Most of the methods available in `bioRgeo` package, either clustering or network techniques, rely on the projection of the contingency matrix. Projecting the contingency matrix means creating a distance matrix from the contingency table, i.e. evaluating how pairs of sites are different regarding their species compositions.  
 
-*simil()* function allows projecting the contingency table into a distance matrix using a given similarity metric.
-Among the metrics that can be used, only one of them, Bray-Curtis, takes into account the abundances of species. Other similarity metrics deal with presence/absence data only.
+`simil()` function allows projecting the contingency table into a distance matrix. Several similarity metrics can be used to evaluate the distances between each pair of sites.  
 
-If euclidean distances are used to construct the distance matrix, then abundances of species can also be provided.
+Most of the similarity metrics deal with presence/absence data only. To take into account the abundances of species, Bray-Curtis or Euclidean distances can be used.  
 
+As shown in the chunk of code below, the function `simil()` can accept and return both data.frame and matrix.  
 ```{r projection}
 sp_proj <- simil(sp_mat, metric = "simpson")
 
@@ -279,27 +290,30 @@ sp_proj_w <- simil(sp_mat_w, metric = "bray")
 knitr::kable(head(sp_proj_w))
 
 ```
-
+  
 ## 2.2. Clustering
 
 Clustering techniques aim at partitionning *n* observations into
-*k* clusters. They can be divided in supervised and unsupervised algorithms. When supervised, the user needs to tell how many groups are expected to be found in the data. If the algorithm used in unsupervised, it will identify on its own how many groups structure the data.
-When using supervised algorithms, optimizations algorithms can help the users to decide how many groups should structure the data.
+*k* clusters. They can be divided in supervised and unsupervised algorithms.  
 
-*bioRgeo* contains a function \code{**cluster()**} that gathers several classical methods of clustering. Before applying any of the available method, **cluster()** computes a distance matrix based on Euclidean distances between pairs of sites.
+If the algorithm used is unsupervised, it will identify on its own how many groups structure the data.  
+When using supervised algorithms, the user needs to tell how many groups are expected to be found in the data. In that case, optimizations algorithms can help the users to decide how many groups should structure the data.
+
+`bioRgeo` contains a function \code{**cluster()**} that gathers several classical methods of clustering. Some available method are based on a distance matrix. For these methods, you can directly provide the output of `simil()` function. If you feed `cluster()` with a long-format table, `cluster()` will compute a distance matrix based on Simpson dissimilarity metric.  
+
 Available unsupervised algorithms are the following:
 
 Available supervised algorithms are the following:
 
 They come with optimization procedures to identify the optimal number of clusters. These optimization methods are the following:
-globalmax, firstmax, Tibs2001SEmax, firstSEmax or globalSEmax
+*globalmax*, *firstmax*, *Tibs2001SEmax*, *firstSEmax* or *globalSEmax*
 
 The methods can either fall into the supervised or unsupervised category.
 They are directly imported from existing packages (cluster, dendextend, fastcluster).
 
-Available methods are the following: ward.D, ward.D2, single, complete, average, mcquitty, median, centroid, dbscan and gmm.
+Available methods are the following: *ward.D*, *ward.D2*, *single*, *complete*, *average*, *mcquitty*, *median*, *centroid*, *dbscan* and *gmm.*
 
-Some of the methods available in *bioRgeo* package follow an agglomerative Hierarchical Clustering.
+Some of the methods available in `bioRgeo` package follow an agglomerative Hierarchical Clustering.
 Each agglomerative clustering starts by assigning each data point to a singleton cluster. It then joins iteratively the two clusters that have the minimal distance among all pairwise distances into a bigger cluster. This step is then repeated until each data point belongs to the same big cluster.
 The choice of the agglomerative clustering method affects the calculation of the minimal distance between sets of points. 
 

@@ -4,8 +4,9 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
   require(cluster)
 
   ## 1. Controls ----
-  if(!is.matrix(dat)){
-    stop("dat should be a matrix with sites as rows and species as columns.")
+  if(!is.matrix(dat) | !(class(dat) == "dist")){
+    stop("dat should be either a matrix with sites as rows and species as
+         columns or a 'dist' object.")
   }
 
   if(!(method %in% c("kmeans", "meanshift",
@@ -68,8 +69,10 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
       # Storing the matrix input, necessary to find the optimal nb of clusters
       dat1 <- dat
     }
-    # Project dat using simil function to get a dist object (distance matrix)
-    dat <- simil(dat, metric = "simpson", output = "dist")
+    if(class(dat) != "dist"){
+      # Project dat using simil() function with simpson metric
+      dat <- simil(dat, metric = "simpson", output = "dist")
+    }
   }
 
   ## 3. Clustering ----

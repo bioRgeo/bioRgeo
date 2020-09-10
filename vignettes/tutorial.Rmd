@@ -139,7 +139,7 @@ In total, the 100 suitability maps of our virtual species are distributed like t
 ```{r 100_suitabilities, fig.label = "100 suitability maps for the virtual species."}
 knitr::include_graphics("../figures/100_suitability.jpeg")
 ```
-  
+
 See [here](http://borisleroy.com/virtualspecies/) for further information on the `virtualspecies` R package.
 
 ### 1.2.1. Code to generate the virtual data
@@ -235,7 +235,7 @@ for (i in 1:100){
 # Add site and environment columns
 sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
 ```
-  
+
 # 2. Community detection
 The core of `bioRgeo` relies on the aggregation of several methods that
 perform community detection.  
@@ -290,7 +290,7 @@ sp_proj_w <- simil(sp_mat_w, metric = "bray")
 knitr::kable(head(sp_proj_w))
 
 ```
-  
+
 ## 2.2. Clustering
 
 Clustering techniques aim at partitionning *n* observations into
@@ -306,7 +306,7 @@ Available unsupervised algorithms are the following: *meanshift*, *dbscan* and *
 
 Available supervised algorithms are the following:
 *kmeans* and *pam* and the so-called Agglomerative Hierarchical Clustering methods: *ward.D*, *ward.D2*, *single*, *complete*, *average*, *mcquitty*, *median*, *centroid* and *diana*.  
- 
+
 Agglomerative Hierarchical Clustering starts by assigning each data point to a singleton cluster. It then joins iteratively the two clusters that have the minimal distance among all pairwise distances into a bigger cluster. This step is then repeated until each data point belongs to the same big cluster. This procedure creates a tree where each branching splits the data in two different groups.  
 The choice of the agglomerative clustering method affects the calculation of the minimal distance between sets of points.  
 Since the user has to decide where to cut the tree, all the agglomerative hierarchical clustering methods are supervised algorithm.  
@@ -399,8 +399,11 @@ within the virtual dataset, but the following chunk can be run independently.
 Output of OSLOM are stored in a chosen directory and can be import into R with
 the command `readRDS()`.
 
-Code compiled, original from http://www.oslom.org
-Lancichinetti et al. (2011)
+Code compiled, original from [OSLOM webpage](http://www.oslom.org).
+[Lancichinetti et al. (2011)](https://doi.org/10.1371/journal.pone.0018961
+)
+
+The next chunk is not run when loading the vignette, the result being directly stored with the package. 
 
 ```{r run_OSLOM, eval = FALSE}
 run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
@@ -442,7 +445,7 @@ nodes.
 
 ### igraph
 Several algorithms to detect community within bipartite networks. Several of
-them are implemented within the *igraph* package.
+them are implemented within the `igraph` package.
 
 ```{r bipartite}
 # With fastgreedy
@@ -459,9 +462,6 @@ table(bip$module); table(bip_df$module)
 # With Beckett algorithm
 bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
 
-# With Infomap
-bip_infomap <- algo_bipartite(dat = sp_mat, algo = "infomap", weight = FALSE)
-
 # With Louvain
 bip_louvain <- algo_bipartite(dat = sp_mat, algo = "louvain", weight = FALSE)
 
@@ -475,11 +475,6 @@ bip_site <- bip %>%
   dplyr::select(site, module)
 
 bip_site2 <- bip2 %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
-
-bip_site_infomap <- bip_infomap %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
   dplyr::select(site, module)
@@ -499,11 +494,19 @@ bip_site_walktrap <- bip_walktrap %>%
 ### Infomap
 
 ```{r infomap}
+# Previous version
+bip_infomap <- algo_bipartite(
+  dat = sp_mat, algo = "infomap", weight = FALSE,
+  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
+
+bip_site_infomap <- bip_infomap %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
 
 po <- run_infomap(
   dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",
-  ab = NULL,
-  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
+  ab = NULL, saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
   N = 10)
 
 res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
@@ -523,6 +526,7 @@ pop <- algo_bipartite(
 
 # 3. Comparison of different bioregionalizations
 ## 3.1. Microbenchmark
+The following `microbenchmark` provides a comparison of the different methods available in `bioRgeo` in terms of computation time.
 
 ```{r microbenchmark}
 require(microbenchmark)
@@ -533,183 +537,50 @@ require(microbenchmark)
 If sites have coordinates, we can apply several functions to compare how the
 distinct bioregions are segregated through space.
 
-```{r map_virtual_dataset}
+```{r map_virtual_dataset_tidy}
+# Tidy dataset
+bio_maps <- sp_df %>%
+  distinct(site, .keep_all = TRUE) %>% # remove duplicates per site
+  dplyr::select(-suitab, -pa, -opt, -width) %>% # removing useless columns
+  left_join(km_res, by = "site") %>% # add kmeans
+  rename(cluster_km = cluster) %>%
+  left_join(mshift_res, by = "site") %>% # add meanshift
+  rename(cluster_mshift = cluster) %>%
+  left_join(oslom_vignette, by = "site") %>% # add oslom
+  rename(cluster_oslom = bioregion) %>%
+  left_join(ward_res, by = "site") %>% # add ward
+  rename(cluster_ward = cluster) %>%
+  left_join(dbscan_res, by = "site") %>% # add dbscan
+  rename(cluster_dbscan = cluster) %>%
+  left_join(gmm_res, by = "site") %>% # add gmm
+  rename(cluster_gmm = cluster) %>%
+  left_join(pam_res, by = "site") %>% # add pam
+  rename(cluster_pam = cluster) %>%
+  left_join(diana_res, by = "site") %>% # add diana
+  rename(cluster_diana = cluster) %>%
+  left_join(bip_site, by = "site") %>% # add fastgreedy
+  rename(cluster_fastgreedy = module) %>%
+  left_join(bip_site2, by = "site") %>% # add lpawb
+  rename(cluster_lpawb = module) %>%
+  # left_join(bip_site_infomap, by = "site") %>% # add infomap
+  # rename(cluster_infomap = module) %>%
+  left_join(bip_site_louvain, by = "site") %>% # add louvain
+  rename(cluster_louvain = module) %>%
+  left_join(bip_site_walktrap, by = "site") %>% # add walktrap
+  rename(cluster_walktrap = module) %>%
+  tidyr::gather(mod, val, contains("cluster")) %>% # tidy
+  as.data.frame()
 
-plot_grid(
-  # Plot of Kmeans bioregions
-  sp_df %>%
-    left_join(km_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Kmeans bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of Mean Shift bioregions
-  sp_df %>%
-    left_join(mshift_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Mean Shift bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of OSLOM bioregions
-  sp_df %>%
-    left_join(oslom_vignette, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(bioregion), color = as.factor(bioregion)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    # scale_color_viridis_d("Bioregions", option = "E") +
-    # scale_fill_viridis_d("Bioregions", option = "E") +
-    coord_equal() +
-    labs(title = "OSLOM bioregions") +
-    theme(panel.background = element_rect(fill = "transparent",
-                                          colour = "black")),
-  
-  # Plot of Ward bioregions
-  sp_df %>%
-    left_join(ward_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Ward bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of DBSCAN bioregions
-  sp_df %>%
-    left_join(dbscan_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "DBSCAN bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of GMM bioregions
-  sp_df %>%
-    left_join(gmm_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "GMM bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of DIANA bioregions
-  sp_df %>%
-    left_join(diana_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "DIANA bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of PAM bioregions
-  sp_df %>%
-    left_join(pam_res, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(cluster), color = as.factor(cluster)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "PAM bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of fastgreedy bioregions
-  sp_df %>%
-    left_join(bip_site, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Bipartite greedy bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of LPAwb bioregions
-  sp_df %>%
-    left_join(bip_site2, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "LPAwb+ greedy bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of Infomap bioregions
-  sp_df %>%
-    left_join(bip_site_infomap, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Infomap bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of Louvain bioregions
-  sp_df %>%
-    left_join(bip_site_louvain, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Louvain bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  # Plot of Walktrap bioregions
-  sp_df %>%
-    left_join(bip_site_walktrap, by = "site") %>%
-    distinct(site, .keep_all = TRUE) %>%
-    ggplot(aes(x, y)) +
-    geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
-              alpha = 0.8, width = 1, height = 1) +
-    scale_color_brewer("Bioregions", palette = "Paired") +
-    scale_fill_brewer("Bioregions", palette = "Paired") +
-    coord_equal() +
-    labs(title = "Walktrap bioregions") +
-    theme(panel.background = element_rect(fill = "transparent", colour = NA)),
-  
-  nrow = 3)
-
+# Plot with facetting
+ggplot(bio_maps, aes(x, y)) +
+  geom_tile(aes(fill = as.factor(val), color = as.factor(val)),
+            alpha = 0.8, width = 1, height = 1) +
+  scale_color_brewer("Bioregions", palette = "Paired") +
+  scale_fill_brewer("Bioregions", palette = "Paired") +
+  coord_equal() +
+  labs(title = "Bioregionalizations") +
+  theme(panel.background = element_rect(fill = "transparent", colour = NA)) +
+  facet_wrap(~ mod)
 ```
 
 ## Coherent areas

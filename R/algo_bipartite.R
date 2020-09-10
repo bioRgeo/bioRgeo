@@ -1,7 +1,7 @@
 
 algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
                            input = "matrix", site = NULL, sp = NULL,
-                           ab = NULL, saving_directory, N = 10){
+                           ab = NULL, saving_directory = NULL, N = 10){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -56,10 +56,11 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
     stop("'weight' must be a boolean.")
   }
 
-  if(!(is.character(saving_directory)) |
-     !dir.exists(saving_directory)){
-    stop("saving_directory must be a path where the Infomap file containing
+  if(algo == "infomap"){
+    if(!(is.character(saving_directory)) | !dir.exists(saving_directory)){
+      stop("saving_directory must be a path where the Infomap file containing
          the bioregions identified will be saved.")
+    }
   }
 
   if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){

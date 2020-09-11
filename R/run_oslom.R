@@ -90,8 +90,8 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
   # Control: if the command line did not work, previous working directory reset
   if(!("tp" %in% list.files(paste0(Bio_dir,
                                    "/OSLOM/dataset.txt_oslo_files")))){
-    stop("Command line was wrongly implemented. OSLOM did not run.")
     setwd(current_path)
+    stop("Command line was wrongly implemented. OSLOM did not run.")
   }
 
   # Import tp file created

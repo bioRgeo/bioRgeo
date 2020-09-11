@@ -1,5 +1,5 @@
 
-run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
   ## 1. Controls ----
   # Controls: dat must be a data.frame with three columns containing id1, id2
   # and similarity metric
@@ -68,6 +68,14 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
   current_path <- getwd()
   setwd(Bio_dir)
 
+  # All the columns of dat have to be numeric
+  if(is.character(dat[, 1])){
+    dat[, 1] <- as.numeric(as.factor(dat[, 1]))
+  }
+  if(is.character(dat[, 2])){
+    dat[, 2] <- as.numeric(as.factor(dat[, 2]))
+  }
+
   # Set up the command with required parameters
   if(.Platform$OS.type == "windows"){
     cmd <-
@@ -85,8 +93,8 @@ run_oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
   # Control: if the command line did not work, previous working directory reset
   if(!("tp" %in% list.files(paste0(Bio_dir,
                                    "/OSLOM/dataset.txt_oslo_files")))){
-    stop("Command line was wrongly implemented. OSLOM did not run.")
     setwd(current_path)
+    stop("Command line was wrongly implemented. OSLOM did not run.")
   }
 
   # Import tp file created

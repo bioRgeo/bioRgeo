@@ -9,9 +9,7 @@ site = NULL, sp = NULL, ab = NULL)
 \item{dat}{a contingency matrix with sites as rows and species as columns.}
 
 \item{algo}{An algorithm used to perfom the bipartite community detection.
-Available options are greedy, girvan, walktrap, louvain, infomap,
-infomap, spinglass, leading_eigen, label_prop, optimal, beckett, dorman and
-netcarto.}
+Available options are \emph{greedy}, \emph{girvan}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop}, \emph{optimal}, \emph{beckett}, \emph{dorman} and \emph{netcarto}.}
 
 \item{weight}{A boolean indicating whether the detection of communities has to
 be weighted or not.}
@@ -28,11 +26,8 @@ species at sites.}
 
 }
 \description{
-Run a community detection algorithm on a bipartite network.
-Algorithms available are from igraph package (greedy, girvan, walktrap,
-louvain, infomap, spinglass, leading_eigen, label_prop or optimal),
-from the bipartite package (beckett and dorman) and from rnetcarto R package
-(netcarto).
+Run a community detection algorithm on a \code{bipartite} network.
+Algorithms available are from igraph package (\emph{greedy}, \emph{girvan}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop} or \emph{optimal}), from the \code{bipartite} package (\emph{beckett} and \emph{dorman}) and from rnetcarto R package (\code{netcarto}).
 Algorithm can be weighted in case of a weighted bipartite network.
 }
 \details{}
@@ -45,7 +40,7 @@ sp_df <- virtual[[1]]
 
 # fastgreedy algorithm from igraph
 bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ],
-                         algo = "greedy",
+                         algo = "greedy", saving_directory = NULL,
                          weight = FALSE, input = "data frame", site = "site",
                          sp = "sp", ab = NULL)
 }

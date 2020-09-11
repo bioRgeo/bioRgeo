@@ -385,6 +385,25 @@ diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
 
 ## 2.3. Network modularity
 
+The available methods are described in the following table.
+
+```{r network_methods, eval = FALSE}
+knitr::kable(data.frame(
+  Acronym = c("greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
+              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
+              "dorman", "netcarto"),
+  Method = c(
+    "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
+              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
+              "dorman", "netcarto"),
+  Category = c(rep("Bipartite", 5), rep("Unipartite", 9)),
+  `Short description` = c(
+    "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
+              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
+              "dorman", "netcarto"),
+  `Source R package` = c("bipartite")))
+```
+
 ### 2.3.1. Projected networks
 
 A projected network considers the similarity between each pair of nodes. In
@@ -420,7 +439,7 @@ res_w <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
 
 ```
 
-oslom_output() functions converts the OSLOM .tp file into a list.
+`oslom_output()` functions converts the OSLOM .tp file into a list.
 
 ```{r conversion_OSLOM}
 # Format OSLOM output into a data.frame
@@ -428,10 +447,13 @@ oslom_vignette <- oslom_output(virtual[[2]], sp_mat)
 # With weights
 oslom_vignette_w <- oslom_output(virtual[[3]], sp_mat_w)
 
-print(paste0("Number of bioregions detected = ",
+cat(paste0("Number of bioregions detected = ",
              length(unique(oslom_vignette$bioregion)),
              " ; and with weights: ",
              length(unique(oslom_vignette_w$bioregion))))
+
+# Test with new version
+po <- oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
 ```
 
@@ -524,7 +546,14 @@ pop <- algo_bipartite(
 ```
 
 
-# 3. Comparison of different bioregionalizations
+# 3. Comparison
+In this section, we compare the different bioregionalizations obtained with the distinct methods.  
+We first compare the time necessary to compute the different groups by performing a `microbenchmark`.  
+
+Then, since each site has XY coordinates, we look at the spatial outputs.  
+
+Finally, we introduce a metric that identify the sites classed together in every bioregionalization method.  
+
 ## 3.1. Microbenchmark
 The following `microbenchmark` provides a comparison of the different methods available in `bioRgeo` in terms of computation time.
 
@@ -905,7 +934,7 @@ ggplot(pop, aes(nbopt, nb)) +
 
 ```
 
-# Species' contributions
+# 4. Species' contributions
 
 This part aims at evaluating the contributions of species to the different
 bioregions created.
@@ -945,7 +974,7 @@ $$
 The within-module degree z-score measures how well-connected
 node i is to other nodes in the module.
 
-# Interaction between bioregions
+# 5. Interaction between bioregions
 
 Following the equation of the rho score from above.
 
@@ -1051,7 +1080,7 @@ head(cz_bip[[1]])
 
 ```
 
-# Run all the steps together
+# 6. Run all the steps together
 
 All these functions can be called with the wrap-up `all_maps()` function.
 
@@ -1066,23 +1095,23 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
                     K.max = 20)
 ```
 
-# References
-## Articles
-Guimerà, R., Nunes Amaral, L. Functional cartography of complex metabolic networks. Nature 433, 895–900 (2005). https://doi.org/10.1038/nature03288
+# 7. References
+## 7.1. Articles
+[Guimerà, R., Nunes Amaral, L. Functional cartography of complex metabolic networks. Nature 433, 895–900 (2005).](https://doi.org/10.1038/nature03288)
 
-Kaufman, L. & Rousseeuw, P.J. (1990)Finding groups in data:an introduction to cluster analysis. Wiley Series in Probabilityand Mathematical Statistics. Wiley, New York.
+[Kaufman, L. & Rousseeuw, P.J. (1990) Finding groups in data:an introduction to cluster analysis. Wiley Series in Probabilityand Mathematical Statistics. Wiley, New York.](https://www.wiley.com/en-us/Finding+Groups+in+Data%3A+An+Introduction+to+Cluster+Analysis-p-9780471735786)
 
-Lancichinetti A, Radicchi F, Ramasco JJ, Fortunato S (2011) Finding Statistically Significant Communities in Networks. PLoS ONE 6(4): e18961. https://doi.org/10.1371/journal.pone.0018961
+[Lancichinetti A, Radicchi F, Ramasco JJ, Fortunato S (2011) Finding Statistically Significant Communities in Networks. PLoS ONE 6(4): e18961.](https://doi.org/10.1371/journal.pone.0018961)
 
-Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607. doi:10.1111/ecog.01388
+[Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607.](https://doi.org/10.1111/ecog.01388)
 
-## R packages
+## 7.2. R packages
 
 http://meanmean.me/meanshift/r/cran/2016/08/28/meanShiftR.html
 
 Hahsler M, Piekenbrock M, Doran D (2019). “dbscan: Fast Density-Based Clustering with R.” Journal of Statistical Software, 91(1), 1–30. doi: 10.18637/jss.v091.i01. 
 
-Scrucca L, Fop M, Murphy TB, Raftery AE (2016). “mclust 5: clustering, classification and density estimation using Gaussian finite mixture models.” The R Journal, 8(1), 289–317. https://doi.org/10.32614/RJ-2016-021. 
+[Scrucca L, Fop M, Murphy TB, Raftery AE (2016). “mclust 5: clustering, classification and density estimation using Gaussian finite mixture models.” The R Journal, 8(1), 289–317.](https://doi.org/10.32614/RJ-2016-021)
 
 Maechler, M., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2019). cluster: Cluster Analysis Basics and Extensions. R package version 2.1.0.
 

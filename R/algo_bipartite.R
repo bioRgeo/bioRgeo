@@ -299,7 +299,9 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
       network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
                                 "site", "sp")
     }
-
+    ## 6. OSLOM ----
+  } else if(algo == "OSLOM"){
+    warning("With OSLOM algorithm, the input must be a projected network.")
   }
 
   return(network_lab)

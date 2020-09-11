@@ -456,6 +456,10 @@ cat(paste0("Number of bioregions detected = ",
 oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
                    n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
+# Integrate oslom() into algo_bipartite()
+# Rename algo_bipartite() into network()
+
+
 ```
 
 ### 2.3.2. Bipartite networks

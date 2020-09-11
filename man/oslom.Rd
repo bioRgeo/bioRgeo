@@ -36,4 +36,13 @@ See http://www.oslom.org/code/ReadMe.pdf for more precisions.
 \section{Note}{}
 
 \examples{
+ex <- data.frame(sites = c(rep("A", 2), rep("B", 3), rep("C", 2)),
+species = c("a", "b", "a", "c", "d", "b", "d"),
+count = c(10, 100, 1, 20, 50, 10, 20))
+
+ex_mat <- contingency(dat = ex, sp = "species", site = "sites", ab = "count",
+binary = TRUE)
+ex_proj <- simil(ex_mat, metric = "simpson", input = "matrix")
+
+oslom(ex_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5)
 }

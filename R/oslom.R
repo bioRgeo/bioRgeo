@@ -61,20 +61,20 @@ oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
     stop("Two conflicting versions of bioRgeo seem to coexist.")
   }
 
+  # All the columns of dat have to be numeric
+  if(!is.numeric(dat[, 1])){
+    dat[, 1] <- as.numeric(as.factor(dat[, 1]))
+  }
+  if(!is.numeric(dat[, 2])){
+    dat[, 2] <- as.numeric(as.factor(dat[, 2]))
+  }
+
   # Save input dataset as a .txt file into OSLOM folder
   write.table(dat, paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
 
   # Change working directory so the file is saved in the proper place
   current_path <- getwd()
   setwd(Bio_dir)
-
-  # All the columns of dat have to be numeric
-  if(is.character(dat[, 1])){
-    dat[, 1] <- as.numeric(as.factor(dat[, 1]))
-  }
-  if(is.character(dat[, 2])){
-    dat[, 2] <- as.numeric(as.factor(dat[, 2]))
-  }
 
   # Set up the command with required parameters
   if(.Platform$OS.type == "windows"){

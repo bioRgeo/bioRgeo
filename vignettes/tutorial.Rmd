@@ -453,12 +453,8 @@ cat(paste0("Number of bioregions detected = ",
              length(unique(oslom_vignette_w$bioregion))))
 
 # Test with new version
-po <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
-            n_runs = 5, t_param = 0.1, cp_param = 0.5)
-
-run_oslom(sp_proj[which(sp_proj$simpson > 0), ],
-          n_runs = 5, t_param = 0.1, cp_param = 0.5,
-          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
+oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
+                   n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
 ```
 

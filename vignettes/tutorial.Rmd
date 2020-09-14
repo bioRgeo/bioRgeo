@@ -437,8 +437,8 @@ oslom_mod <- virtual[[2]]
 cat(paste0("Number of bioregions detected = ",
              length(unique(oslom_mod$bioregion))))
 
-# Integrate oslom() into algo_bipartite()
-# Rename algo_bipartite() into network()
+# Change algo_bipartite() name into conceptual figure
+# Add a few lines to describe OSLOM functionning
 
 ```
 
@@ -456,10 +456,10 @@ them are implemented within the `igraph` package.
 
 ```{r bipartite}
 # With fastgreedy
-bip <- algo_bipartite(dat = sp_mat, algo = "greedy", weight = FALSE)
+bip <- network(dat = sp_mat, algo = "greedy", weight = FALSE)
 
 # fastgreedy, input data frame
-bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ],
+bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
                          algo = "greedy",
                          weight = FALSE, input = "data frame", site = "site",
                          sp = "sp", ab = NULL)
@@ -467,13 +467,13 @@ bip_df <- algo_bipartite(dat = sp_df[which(sp_df$pa > 0), ],
 table(bip$module); table(bip_df$module)
 
 # With Beckett algorithm
-bip2 <- algo_bipartite(dat = sp_mat, algo = "LPAwb", weight = FALSE)
+bip2 <- network(dat = sp_mat, algo = "LPAwb", weight = FALSE)
 
 # With Louvain
-bip_louvain <- algo_bipartite(dat = sp_mat, algo = "louvain", weight = FALSE)
+bip_louvain <- network(dat = sp_mat, algo = "louvain", weight = FALSE)
 
 # With Walktrap
-bip_walktrap <- algo_bipartite(dat = sp_mat, algo = "walktrap", weight = FALSE)
+bip_walktrap <- network(dat = sp_mat, algo = "walktrap", weight = FALSE)
 
 # Only sites
 bip_site <- bip %>%
@@ -502,7 +502,7 @@ bip_site_walktrap <- bip_walktrap %>%
 
 ```{r infomap}
 # Previous version
-bip_infomap <- algo_bipartite(
+bip_infomap <- network(
   dat = sp_mat, algo = "infomap", weight = FALSE,
   saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
 
@@ -519,14 +519,12 @@ po <- run_infomap(
 res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
 table(res[!duplicated(res$site), "module"])
 
-# Merging run_infomap with algo_bipartite
-pop <- algo_bipartite(
+# Merging run_infomap with network
+pop <- network(
   dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
   input = "data frame", site = "site", sp = "sp",
   saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/tmp",
   N = 10)
-
-# rename algo_bipartite
 
 ```
 

@@ -1,7 +1,8 @@
 
-algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
+network <- function(dat, algo = "greedy", weight = FALSE,
                            input = "matrix", site = NULL, sp = NULL,
-                           ab = NULL, saving_directory = NULL, N = 10){
+                           ab = NULL, saving_directory = NULL, N = 10,
+                           n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -66,6 +67,59 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
   if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){
     stop("N must be an integer setting the number of outer-most loops to run
          before picking the best solution.")
+  }
+
+  # Controls for OSLOM parameters
+  if(algo == "oslom"){
+    # Controls: dat must be a data.frame with three columns containing id1, id2
+    # and similarity metric
+    if(!(is.data.frame(dat))){
+      stop("dat must be a data.frame with three columns containing id1, id2
+  and a similarity metric. It is the output of 'bioRgeo::simil()' function")
+    }
+
+    if(ncol(dat) != 3){
+      stop("dat must be a data.frame with three columns containing id1, id2
+  and similarity metric")
+    }
+
+    if(!(is.numeric(dat[, 3]))){
+      stop("dat must be a data.frame with three columns containing id1, id2
+  and similarity metric")
+    }
+
+    if(0 %in% dat[, 3]){
+      stop("OSLOM needs strictly positive weights to run. Remove the useless
+         lines from the input data.frame.")
+    }
+
+    if(!(abs(n_runs - round(n_runs)) < .Machine$double.eps^0.5)){
+      stop("n_runs must be an integer setting the number of runs.")
+    }
+
+    if(!(is.numeric(t_param))){
+      stop("t_param must be numeric.")
+    }
+
+    if(t_param > 1 | t_param < 0){
+      stop("t_param must be comprised between 0 and 1.")
+    }
+
+    if(!(is.numeric(cp_param))){
+      stop("cp_param must be numeric.")
+    }
+
+    if(cp_param > 1 | cp_param < 0){
+      stop("cp_param must be comprised between 0 and 1.")
+    }
+
+    if(!(abs(hr - round(hr)) < .Machine$double.eps^0.5)){
+      stop("hr must be an integer setting the number of hierarchical levels.")
+    }
+
+    if(hr < 0){
+      stop("hr must be positive.")
+    }
   }
 
   require(igraph)
@@ -302,6 +356,10 @@ algo_bipartite <- function(dat, algo = "greedy", weight = FALSE,
     ## 6. OSLOM ----
   } else if(algo == "OSLOM"){
     warning("With OSLOM algorithm, the input must be a projected network.")
+
+    network_lab <- oslom(dat, n_runs = n_runs, t_param = t_param,
+                         cp_param = cp_param, hr = hr)
+
   }
 
   return(network_lab)

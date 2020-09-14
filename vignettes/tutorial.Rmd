@@ -95,7 +95,7 @@ data("virtual_sp")
 
 This command loads an object called `virtual` containing a list of three elements. 
 
-The first element corresponds to the virtual dataset and comes as a `data.frame` with 40000 rows and 9 columns. The second and third element correspond to the partition found by the OSLOM algorithm (see below).  
+The first element corresponds to the virtual dataset and comes as a `data.frame` with 40000 rows and 9 columns. The second element corresponds to the partition found by the OSLOM algorithm (see below).  
 
 The virtual dataset has been constructed by simulating the response curves of 100 species to a virtual raster.  
 The virtual raster contains 10000 cells and was simulated using `gstat` R package. See [here](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/) for details.  
@@ -425,40 +425,20 @@ Code compiled, original from [OSLOM webpage](http://www.oslom.org).
 The next chunk is not run when loading the vignette, the result being directly stored with the package. 
 
 ```{r run_OSLOM, eval = FALSE}
-run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
-          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
-
-res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
-file.rename("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds",
-            "D:/Irstea/CarHab/Bioregionalization_extra/tp_binary.rds")
-# With weights
-run_oslom(sp_proj_w, n_runs = 5, t_param = 0.1, cp_param = 0.5,
-          saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/")
-
-res_w <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/tp.rds")
-
-```
-
-`oslom_output()` functions converts the OSLOM .tp file into a list.
-
-```{r conversion_OSLOM}
-# Format OSLOM output into a data.frame
-oslom_vignette <- oslom_output(virtual[[2]], sp_mat)
-# With weights
-oslom_vignette_w <- oslom_output(virtual[[3]], sp_mat_w)
-
-cat(paste0("Number of bioregions detected = ",
-             length(unique(oslom_vignette$bioregion)),
-             " ; and with weights: ",
-             length(unique(oslom_vignette_w$bioregion))))
-
-# Test with new version
 oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
                    n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
+```
+
+```{r OSLOM_output}
+# OSLOM output available in the package
+oslom_mod <- virtual[[2]]
+
+cat(paste0("Number of bioregions detected = ",
+             length(unique(oslom_mod$bioregion))))
+
 # Integrate oslom() into algo_bipartite()
 # Rename algo_bipartite() into network()
-
 
 ```
 
@@ -562,8 +542,19 @@ Finally, we introduce a metric that identify the sites classed together in every
 ## 3.1. Microbenchmark
 The following `microbenchmark` provides a comparison of the different methods available in `bioRgeo` in terms of computation time.
 
-```{r microbenchmark}
+```{r microbenchmark, eval = FALSE}
 require(microbenchmark)
+
+mbm <- microbenchmark(
+  base = aggregate(flights$arr_delay, by=list(flights$carrier), mean, na.rm=TRUE),
+  sqldf = sqldf("SELECT carrier, avg(arr_delay) FROM flights GROUP BY carrier"),
+  datatable = flightsDT[ , mean(arr_delay, na.rm=TRUE), carrier],
+  dplyr = flights %>% group_by(carrier) %>% summarize(mean(arr_delay, na.rm=TRUE)),
+  times = 50)
+mbm
+
+library(ggplot2)
+autoplot(mbm)
 
 ```
 

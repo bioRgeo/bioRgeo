@@ -236,6 +236,8 @@ for (i in 1:100){
 sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
 ```
 
+\newpage
+
 # 2. Community detection
 The core of `bioRgeo` relies on the aggregation of several methods that
 perform community detection.  
@@ -394,13 +396,13 @@ knitr::kable(data.frame(
               "dorman", "netcarto"),
   Method = c(
     "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
-              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
-              "dorman", "netcarto"),
+    "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
+    "dorman", "netcarto"),
   Category = c(rep("Bipartite", 5), rep("Unipartite", 9)),
   `Short description` = c(
     "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
-              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
-              "dorman", "netcarto"),
+    "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
+    "dorman", "netcarto"),
   `Source R package` = c("bipartite")))
 ```
 
@@ -435,7 +437,7 @@ oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
 oslom_mod <- virtual[[2]]
 
 cat(paste0("Number of bioregions detected = ",
-             length(unique(oslom_mod$bioregion))))
+           length(unique(oslom_mod$bioregion))))
 
 # Change algo_bipartite() name into conceptual figure
 # Add a few lines to describe OSLOM functionning
@@ -460,9 +462,9 @@ bip <- network(dat = sp_mat, algo = "greedy", weight = FALSE)
 
 # fastgreedy, input data frame
 bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
-                         algo = "greedy",
-                         weight = FALSE, input = "data frame", site = "site",
-                         sp = "sp", ab = NULL)
+                  algo = "greedy",
+                  weight = FALSE, input = "data frame", site = "site",
+                  sp = "sp", ab = NULL)
 
 table(bip$module); table(bip_df$module)
 
@@ -528,6 +530,7 @@ pop <- network(
 
 ```
 
+\newpage
 
 # 3. Comparison
 In this section, we compare the different bioregionalizations obtained with the distinct methods.  
@@ -544,16 +547,40 @@ The following `microbenchmark` provides a comparison of the different methods av
 require(microbenchmark)
 
 mbm <- microbenchmark(
-  base = aggregate(flights$arr_delay, by=list(flights$carrier), mean, na.rm=TRUE),
-  sqldf = sqldf("SELECT carrier, avg(arr_delay) FROM flights GROUP BY carrier"),
-  datatable = flightsDT[ , mean(arr_delay, na.rm=TRUE), carrier],
-  dplyr = flights %>% group_by(carrier) %>% summarize(mean(arr_delay, na.rm=TRUE)),
+  # cluster methods
+  km = cluster(sp_mat, method = "kmeans", n_clust = 4),
+  pam = cluster(sp_mat, method = "pam", n_clust = 4),
+  mshift = cluster(sp_mat, method = "meanshift"),
+  dbscan = cluster(sp_mat, method = "dbscan"),
+  gmm = cluster(sp_mat, method = "gmm"),
+  ward = cluster(sp_mat, method = "ward.D", n_clust = 4),
+  ward2 = cluster(sp_mat, method = "ward.D2", n_clust = 4),
+  single = cluster(sp_mat, method = "single", n_clust = 4),
+  complete = cluster(sp_mat, method = "complete", n_clust = 4),
+  average = cluster(sp_mat, method = "average", n_clust = 4),
+  mcquitty = cluster(sp_mat, method = "mcquitty", n_clust = 4),
+  # median = cluster(sp_mat, method = "median", n_clust = 4), # BUG
+  centroid = cluster(sp_mat, method = "centroid", n_clust = 4),
+  diana = cluster(sp_mat, method = "diana", n_clust = 4),
+  # network methods
+  fastgreedy = network(dat = sp_mat, algo = "greedy", weight = FALSE),
+  beckett = network(dat = sp_mat, algo = "LPAwb", weight = FALSE),
+  louvain = network(dat = sp_mat, algo = "louvain", weight = FALSE),
+  walktrap = network(dat = sp_mat, algo = "walktrap", weight = FALSE),
+  oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
+                t_param = 0.1, cp_param = 0.5),
+  infomap = run_infomap(
+    dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",
+    ab = NULL, saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
+    N = 10),
+  # number of times for each algorithm
   times = 50)
 mbm
+```
 
+```{r microbenchmark_plot}
 library(ggplot2)
 autoplot(mbm)
-
 ```
 
 ## 3.2. Maps
@@ -928,6 +955,8 @@ ggplot(pop, aes(nbopt, nb)) +
 
 ```
 
+\newpage
+
 # 4. Species' contributions
 
 This part aims at evaluating the contributions of species to the different
@@ -967,6 +996,8 @@ $$
 
 The within-module degree z-score measures how well-connected
 node i is to other nodes in the module.
+
+\newpage
 
 # 5. Interaction between bioregions
 
@@ -1074,6 +1105,8 @@ head(cz_bip[[1]])
 
 ```
 
+\newpage
+
 # 6. Run all the steps together
 
 All these functions can be called with the wrap-up `all_maps()` function.
@@ -1088,6 +1121,8 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
                     optim_method = "firstSEmax", nstart = 25, B = 50,
                     K.max = 20)
 ```
+
+\newpage
 
 # 7. References
 ## 7.1. Articles

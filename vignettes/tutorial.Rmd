@@ -444,6 +444,7 @@ knitr::kable(data.frame(
 # Implement DIRTLPAwb+
 # Clean the following sections
 # Redo main figure
+# Add modularity statistics as an ouput for some algorithms
 
 ```
 

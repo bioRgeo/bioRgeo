@@ -57,6 +57,14 @@ For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
 a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
 This type of matrix is usually stored as a `dist` object in R.
 
+*bipartite network*
+a network, or graph, is an object composed of nodes, or vertices, and links, or edges. Each node is connected with other nodes via some links. In a bipartite network, there are two types of nodes. Each type of node can only be linked with the other type.
+Bipartite networks are therefore another way to describe contingency matrices as shown in the next figure. Sites and species constitute the two types of nodes of the network. Occurrences of species within sites are the links of the network.
+
+```{r sitespmat_bip, fig.label = "Equivalence of contingency table and bipartite network."}
+knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
+```
+
 Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_dataframe()` functions as illustrated in the following figure: 
 
 ```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
@@ -248,11 +256,14 @@ This transformation can consider the abundances of species.
 ```{r contingency_matrix}
 sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
                       "site", "sp", ab = NULL, binary = TRUE)
-knitr::kable(sp_mat[1:5, 1:5])
+knitr::kable(sp_mat[1:5, 1:5],
+             caption = "5 first rows and columns of contingency table.")
 
 # With weights (abundances of species within sites)
 sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
-knitr::kable(sp_mat_w[1:5, 1:5])
+knitr::kable(sp_mat_w[1:5, 1:5],
+             caption = "5 first rows and columns of weighted contingency
+             table.")
 ```
 
 Available methods can be classed among three main groups: distance-based clustering, projected networks and bipartite networks.
@@ -385,25 +396,55 @@ diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
 
 ```
 
-## 2.3. Network modularity
+## 2.3. Network and community detection
 
-The available methods are described in the following table.
+A second 'family' of method exist to classify sites that are more similar to each other regarding their species' composition. The site-species matrix can be described as a **bipartite network** (see Glossary). On networks, modularity algorithm can be applied to detect community structure. Communities are made of sets of nodes that share more links between each other than within the other nodes of the network. Maximising the modularity metric therefore enables to find the groups of sites and species that are related to each other. Bioregions therefore correspond to the different modules of the network.  
+
+Several methods exist and are available in `bioRgeo`. They are briefly described in the following table.
+In our case, every method applies on bipartite networks but most of the following methods rely on the construction of a square adjacency matrix (see Glossary). We therefore classify these algorithms as 'unipartite' in the following table.
 
 ```{r network_methods, eval = FALSE}
 knitr::kable(data.frame(
-  Acronym = c("greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
-              "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
-              "dorman", "netcarto"),
-  Method = c(
-    "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
-    "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
-    "dorman", "netcarto"),
-  Category = c(rep("Bipartite", 5), rep("Unipartite", 9)),
+  Acronym = c("greedy", "betweenness", "walktrap", "louvain", "spinglass",
+              "leading_eigen", "label_prop", "dorman", "netcarto",
+              "beckett", "oslom", "infomap"),
+  Method = c("Fast greedy optimization of modularity",
+             "Betweenness", "Walktrap", "Louvain", "Spinglass",
+             "Leading eigenvector", "Label propragation",
+             "dorman", "netcarto", "LPAwb+",
+             "Order Statistics Local Optimization Method", "Infomap (map equation)"),
+  Category = c(rep("Unipartite", 11), rep("Bipartite", 1)),
   `Short description` = c(
-    "greedy", "girvan", "walktrap", "louvain", "infomap", "infomap",
-    "spinglass", "leading_eigen", "label_prop", "optimal", "beckett",
-    "dorman", "netcarto"),
-  `Source R package` = c("bipartite")))
+    "Recurrently merging communities that maximise modularity function",
+    "Divisive algorithm. Edges connecting separate modules have high edge betweenness as all the shortest paths from one module to another must traverse through them. Gradually remove the edge with the highest edge betweenness score to get a dendrogram of the graph",
+    "Agglomerative algorithm merging similar nodes/communities recursively through random walks",
+    "Fast modularity optimization",
+    "Modularity optimization through simulated annealing",
+    "Modularity optimization",
+    "Each node is initialized with a unique label and at every iteration of the algorithm, each node adopts a label that a maximum number of its neighbors have, with ties broken uniformly randomly. As the labels propagate through the network in this manner, densely connected groups of nodes form a consensus on their labels. At the end of the algorithm, nodes having the same labels are grouped together as communities.",
+    "dorman",
+    "Modularity maximisation with simulated annealing",
+    "Two stages: a ‘bottom up’ step that maximizes modularity on a node-by-node basis using label propagation; and a ‘top down’ step that joins modules together when it results in increased network modularity.",
+    "Iterative process to detect statistically significant communities with respect to a global null model.",
+    "Optimization of the Map Equation."),
+  `Source R package` = c(
+    rep("igraph", 7), "bipartite (not yet implemented)", "rnetcarto",
+    "none (code from https://github.com/sjbeckett/weighted-modularity-LPAwbPLUS)", 
+    "none (code compiled from oslom.org)",
+    "none (code compiled from https://www.mapequation.org)"),
+  References = c("Clauset et al., 2011", "Newman & Girvan, 2011",
+                 "Pons & Latapy, 2005", "Blondel et al., 2008",
+                 "Reichardt & Bornholdt, 2006", "Newman, 2006",
+                 "Raghavan et al., 2006", "",
+                 "Guimerà & Amaral, 2005", "Beckett, 2016",
+                 "Lancichinetti et al., 2010", "Rosvall et al., 2009")))
+
+# Finish table
+# Implement bipartite:: => dorman methods in network()
+# Implement DIRTLPAwb+
+# Clean the following sections
+# Redo main figure
+
 ```
 
 ### 2.3.1. Projected networks
@@ -414,23 +455,24 @@ according the proportion of species they share together.
 
 ### Order Statistics Local Optimization Method (OSLOM)
 
-Running OSLOM. tp files containing the modularity results are directly stored
-within the virtual dataset, but the following chunk can be run independently.
+OSLOM uses an iterative process to detect statistically significant communities with respect to a global null model (i.e., random graph without community structure). The main characteristic of OSLOM is that it is based on a score used to quantify the statistical significance of a cluster in the network [(Lancichinetti et al., 2010)](https://doi.org/10.1371/journal.pone.0018961). The score is defined as the probability of finding the cluster in a random null model.
 
-Output of OSLOM are stored in a chosen directory and can be import into R with
-the command `readRDS()`.
+The random null model used, called configuration model, in OSLOM preserves the distribution of the number of neighbors of a node (i.e., the degree distribution).
 
-Code compiled, original from [OSLOM webpage](http://www.oslom.org).
-[Lancichinetti et al. (2011)](https://doi.org/10.1371/journal.pone.0018961
-)
+OSLOM algorithm is non parametric in the sense that it identifies the statistically significant partition, without defining the number of  communities a priori. However, the tolerance value that determines whether a cluster is significant or not might play an important role for the determination of the clusters found by OSLOM.
 
-The next chunk is not run when loading the vignette, the result being directly stored with the package. 
+The original code from [OSLOM webpage](http://www.oslom.org) has been compiled and is available in `bioRgeo`. OSLOM can be run via `network()` function or using the internal function `oslom()`.
+
+The next chunk is not run when loading the vignette, the result being directly stored with the package (second element of `virtual` object). 
 
 ```{r run_OSLOM, eval = FALSE}
 oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
                    n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
 ```
+
+OSLOM algorithm sometimes classifies sites into several bioregions. If you want to have only one bioregion associated to each site, a reclassification of the doublons has to be done.
+This reclassification can use the species contributions of the problematic sites (see later).
 
 ```{r OSLOM_output}
 # OSLOM output available in the package
@@ -439,8 +481,8 @@ oslom_mod <- virtual[[2]]
 cat(paste0("Number of bioregions detected = ",
            length(unique(oslom_mod$bioregion))))
 
-# Change algo_bipartite() name into conceptual figure
-# Add a few lines to describe OSLOM functionning
+# The following sites have been associated to several bioregions
+table(oslom_mod$site)[table(oslom_mod$site) > 1]
 
 ```
 
@@ -1126,6 +1168,17 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 
 # 7. References
 ## 7.1. Articles
+
+[Beckett, S. J. (2016). Improved community detection in weighted bipartite networks. Royal Society Open Science, 3(1), 140536.](https://doi.org/10.1098/rsos.140536)
+
+[Blondel, V. D., Guillaume, J.-L., Lambiotte, R., & Lefebvre, E. (2008). Fast unfolding of communities in large networks. Journal of Statistical Mechanics: Theory and Experiment, 2008(10), P10008.](https://iopscience.iop.org/article/10.1088/1742-5468/2008/10/P10008)
+
+[Clauset, A., Newman, M. E. J., & Moore, C. (2004). Finding community structure in very large networks. Physical Review E, 70(6), 066111.](https://doi.org/10.1103/PhysRevE.70.066111)
+
+[Newman, M. E., & Girvan, M. (2004). Finding and evaluating community structure in networks. Physical Review E, 69(2), 026113.](https://doi.org/10.1103/PhysRevE.69.026113)
+
+[Newman, M. E. J. (2006). Finding community structure in networks using the eigenvectors of matrices. Physical Review E, 74(3), 036104.](https://doi.org/10.1103/PhysRevE.74.036104)
+
 [Guimerà, R., Nunes Amaral, L. Functional cartography of complex metabolic networks. Nature 433, 895–900 (2005).](https://doi.org/10.1038/nature03288)
 
 [Kaufman, L. & Rousseeuw, P.J. (1990) Finding groups in data:an introduction to cluster analysis. Wiley Series in Probabilityand Mathematical Statistics. Wiley, New York.](https://www.wiley.com/en-us/Finding+Groups+in+Data%3A+An+Introduction+to+Cluster+Analysis-p-9780471735786)
@@ -1133,6 +1186,14 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 [Lancichinetti A, Radicchi F, Ramasco JJ, Fortunato S (2011) Finding Statistically Significant Communities in Networks. PLoS ONE 6(4): e18961.](https://doi.org/10.1371/journal.pone.0018961)
 
 [Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607.](https://doi.org/10.1111/ecog.01388)
+
+[Pons, P., & Latapy, M. (2005). Computing communities in large networks using random walks (long version). ArXiv:Physics/0512106.](http://arxiv.org/abs/physics/0512106)
+
+[Raghavan, U. N., Albert, R., & Kumara, S. (2007). Near linear time algorithm to detect community structures in large-scale networks. Physical Review E, 76(3), 036106.](https://doi.org/10.1103/PhysRevE.76.036106)
+
+[Reichardt, J., & Bornholdt, S. (2006). Statistical Mechanics of Community Detection. Physical Review E, 74(1), 016110.](https://doi.org/10.1103/PhysRevE.74.016110)
+
+[Rosvall, M., Axelsson, D., & Bergstrom, C. T. (2009). The map equation. The European Physical Journal Special Topics, 178(1), 13–23.](https://doi.org/10.1140/epjst/e2010-01179-1)
 
 ## 7.2. R packages
 

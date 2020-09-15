@@ -8,7 +8,7 @@ network(dat, algo = "greedy", weight = FALSE, input = "matrix", site = NULL, sp 
 \item{dat}{a contingency matrix with sites as rows and species as columns.If 'algo="oslom"', a data.frame with three columns containing id1, id2 and a similarity metric (output of 'bioRgeo::simil()' function).}
 
 \item{algo}{An algorithm used to perfom the bipartite community detection.
-Available options are \emph{greedy}, \emph{girvan}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop}, \emph{optimal}, \emph{beckett}, \emph{dorman}, \emph{netcarto} and \emph{oslom}.}
+Available options are \emph{greedy}, \emph{betweenness}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop}, \emph{beckett}, \emph{dorman}, \emph{netcarto} and \emph{oslom}.}
 
 \item{weight}{A boolean indicating whether the detection of communities has to
 be weighted or not.}
@@ -39,7 +39,7 @@ Must be a positive integer.}
 }
 \description{
 Run a community detection algorithm on a \code{bipartite} network.
-Algorithms available are from igraph package (\emph{greedy}, \emph{girvan}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop} or \emph{optimal}), from the \code{bipartite} package (\emph{beckett} and \emph{dorman}) and from rnetcarto R package (\code{netcarto}).
+Algorithms available are from igraph package (\emph{greedy}, \emph{betweenness}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen} or \emph{label_prop}, from the \code{bipartite} package (\emph{beckett} and \emph{dorman}) and from rnetcarto R package (\code{netcarto}).
 Algorithm can be weighted in case of a weighted bipartite network.
 }
 \details{}

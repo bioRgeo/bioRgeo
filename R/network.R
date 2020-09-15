@@ -40,16 +40,16 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     }
   }
 
-  if(!(algo %in% c("greedy", "girvan", "walktrap", "louvain", "LPAwb",
+  if(!(algo %in% c("greedy", "betweenness", "walktrap", "louvain", "LPAwb",
                    "infomap", "spinglass", "leading_eigen", "label_prop",
-                   "optimal", "netcarto"))){
+                   "netcarto", "oslom", "infomap"))){
     stop("Provided algorithm to compute modularity is not available. Please
-    choose among the followings: greedy, girvan, walktrap, louvain, LPAwb,
-         infomap, spinglass, leading_eigen, label_prop, optimal or
-         netcarto.")
+    choose among the followings: greedy, betweenness, walktrap, louvain, LPAwb,
+         spinglass, leading_eigen, label_prop, netcarto, oslom or
+         infomap.")
   }
 
-  if(algo %in% c("optimal", "netcarto")){
+  if(algo %in% c("netcarto")){
     warning("The chosen algorithm may take time to run.")
   }
 
@@ -123,7 +123,6 @@ network <- function(dat, algo = "greedy", weight = FALSE,
   }
 
   require(igraph)
-  # source("scripts/Beckett_LPAwb_function.R") => store in R function
 
   ## 2. Infomap ----
   if(algo == "infomap"){
@@ -250,9 +249,8 @@ network <- function(dat, algo = "greedy", weight = FALSE,
                               "site", "sp")
 
     ## 4. igraph algorithms ----
-  } else if(algo %in% c("greedy", "girvan", "walktrap", "louvain",
-                        "spinglass", "leading_eigen", "label_prop",
-                        "optimal")){
+  } else if(algo %in% c("greedy", "betweenness", "walktrap", "louvain",
+                        "spinglass", "leading_eigen", "label_prop")){
     # https://stats.stackexchange.com/questions/209086/community-detection-and-modularity
     # https://www.sixhat.net/finding-communities-in-networks-with-r-and-igraph.html
 
@@ -289,22 +287,20 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     # Modularity algorithm
     if(algo == "greedy"){
       network_mod <- cluster_fast_greedy(network)
-    } else if(algo == "girvan"){
+    } else if(algo == "betweenness"){
       network_mod <- cluster_edge_betweenness(network, modularity = TRUE)
     } else if(algo == "walktrap"){
       network_mod <- cluster_walktrap(graph = network)
     } else if(algo == "louvain"){
       network_mod <- cluster_louvain(graph = network)
-    } else if(algo == "infomap"){
-      network_mod <- cluster_infomap(graph = network)
+    # } else if(algo == "infomap"){
+    #   network_mod <- cluster_infomap(graph = network)
     } else if(algo == "spinglass"){
       network_mod <- cluster_spinglass(graph = network)
     } else if(algo == "leading_eigen"){
       network_mod <- cluster_leading_eigen(graph = network)
     } else if(algo == "label_prop"){
       network_mod <- cluster_label_prop(graph = network)
-    } else if(algo == "optimal"){
-      network_mod <- cluster_optimal(graph = network)
     }
 
     # Create data.frame with modules

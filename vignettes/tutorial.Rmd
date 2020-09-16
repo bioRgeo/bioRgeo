@@ -448,50 +448,9 @@ knitr::kable(data.frame(
 
 ```
 
-### 2.3.1. Projected networks
+The next chunk runs the different network methods on the virtual dataset.  
 
-A projected network considers the similarity between each pair of nodes. In
-our case, nodes can represent different sites that are linked together
-according the proportion of species they share together.
-
-### Order Statistics Local Optimization Method (OSLOM)
-
-The next chunk is not run when loading the vignette, the result being directly stored with the package (second element of `virtual` object). 
-
-```{r run_OSLOM, eval = FALSE}
-oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
-                   n_runs = 5, t_param = 0.1, cp_param = 0.5)
-
-```
-
-OSLOM algorithm sometimes classifies sites into several bioregions. If you want to have only one bioregion associated to each site, a reclassification of the doublons has to be done.
-This reclassification can use the species contributions of the problematic sites (see later).
-
-```{r OSLOM_output}
-# OSLOM output available in the package
-oslom_mod <- virtual[[2]]
-
-cat(paste0("Number of bioregions detected = ",
-           length(unique(oslom_mod$bioregion))))
-
-# The following sites have been associated to several bioregions
-table(oslom_mod$site)[table(oslom_mod$site) > 1]
-
-```
-
-### 2.3.2. Bipartite networks
-
-Networks are called bipartite when they are constituted by two types of nodes.
-Each type of node can only be linked with the other type. For example, if
-species occur in sites, sites and species constitute two types of nodes and
-an occurrence of a species within a site describes a link between these two
-nodes.
-
-### igraph
-Several algorithms to detect community within bipartite networks. Several of
-them are implemented within the `igraph` package.
-
-```{r bipartite}
+```{r network}
 # With fastgreedy
 bip <- network(dat = sp_mat, algo = "greedy", weight = FALSE)
 
@@ -533,28 +492,33 @@ bip_site_walktrap <- bip_walktrap %>%
   rename(site = node) %>%
   dplyr::select(site, module)
 
-```
+# OSLOM
+# next line is not run, the result is directly stored with the package
+# (second element of 'virtual' object)
+# oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
+#                    n_runs = 5, t_param = 0.1, cp_param = 0.5)
 
-### Infomap
+# OSLOM output available in the package
+oslom_mod <- virtual[[2]]
 
-```{r infomap}
+cat(paste0("Number of bioregions detected = ",
+           length(unique(oslom_mod$bioregion))))
 
-po <- run_infomap(
-  dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",
-  ab = NULL, saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
-  N = 10)
+# The following sites have been associated to several bioregions
+table(oslom_mod$site)[table(oslom_mod$site) > 1]
 
-res <- readRDS("D:/Irstea/CarHab/Bioregionalization_extra/dat_infomap.rds")
-table(res[!duplicated(res$site), "module"])
-
-# Merging run_infomap with network
-pop <- network(
+# Infomap
+infomap_mod <- network(
   dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
   input = "data frame", site = "site", sp = "sp",
   saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/tmp",
   N = 10)
 
 ```
+
+*Warning*
+OSLOM algorithm sometimes classifies sites into several bioregions. If you want to have only one bioregion associated to each site, a reclassification of the doublons has to be done.
+This reclassification can use the species contributions of the problematic sites (see later).
 
 \newpage
 
@@ -604,7 +568,7 @@ mbm <- microbenchmark(
 mbm
 ```
 
-```{r microbenchmark_plot}
+```{r microbenchmark_plot, eval = FALSE}
 library(ggplot2)
 autoplot(mbm)
 ```

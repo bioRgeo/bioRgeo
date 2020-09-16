@@ -398,7 +398,11 @@ diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
 
 ## 2.3. Network and community detection
 
-A second 'family' of method exist to classify sites that are more similar to each other regarding their species' composition. The site-species matrix can be described as a **bipartite network** (see Glossary). On networks, modularity algorithm can be applied to detect community structure. Communities are made of sets of nodes that share more links between each other than within the other nodes of the network. Maximising the modularity metric therefore enables to find the groups of sites and species that are related to each other. Bioregions therefore correspond to the different modules of the network.  
+A second 'family' of methods exist to classify sites that are more similar to each other regarding their species' composition. The site-species matrix can be described as a **bipartite network** (see Glossary). On networks, modularity algorithm can be applied to detect community structure. Communities are made of sets of nodes that share more links between each other than within the other nodes of the network. Maximising the modularity metric therefore enables to find the groups of sites and species that are related to each other. Bioregions therefore correspond to the different modules of the network.  
+
+Some methods, like OSLOM, rely upon projected networks, i.e. distance matrices (see Glossary). In that case, the similarity between each pair of nodes is evaluated. Similarity is evalaluated by the proportion of species each pair of sites share together.  
+
+All the following methods are non parametric in the sense that they identify the statistically significant partition, without defining the number of  communities a priori. However, some parameters can be adjusted to refine/coarsen the partitions.
 
 Several methods exist and are available in `bioRgeo`. They are briefly described in the following table.
 In our case, every method applies on bipartite networks but most of the following methods rely on the construction of a square adjacency matrix (see Glossary). We therefore classify these algorithms as 'unipartite' in the following table.
@@ -439,7 +443,6 @@ knitr::kable(data.frame(
                  "Lancichinetti et al., 2010", "Rosvall et al., 2009")))
 
 # Clean the following sections
-# Redo main figure
 # Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
 
@@ -452,14 +455,6 @@ our case, nodes can represent different sites that are linked together
 according the proportion of species they share together.
 
 ### Order Statistics Local Optimization Method (OSLOM)
-
-OSLOM uses an iterative process to detect statistically significant communities with respect to a global null model (i.e., random graph without community structure). The main characteristic of OSLOM is that it is based on a score used to quantify the statistical significance of a cluster in the network [(Lancichinetti et al., 2010)](https://doi.org/10.1371/journal.pone.0018961). The score is defined as the probability of finding the cluster in a random null model.
-
-The random null model used, called configuration model, in OSLOM preserves the distribution of the number of neighbors of a node (i.e., the degree distribution).
-
-OSLOM algorithm is non parametric in the sense that it identifies the statistically significant partition, without defining the number of  communities a priori. However, the tolerance value that determines whether a cluster is significant or not might play an important role for the determination of the clusters found by OSLOM.
-
-The original code from [OSLOM webpage](http://www.oslom.org) has been compiled and is available in `bioRgeo`. OSLOM can be run via `network()` function or using the internal function `oslom()`.
 
 The next chunk is not run when loading the vignette, the result being directly stored with the package (second element of `virtual` object). 
 
@@ -543,15 +538,6 @@ bip_site_walktrap <- bip_walktrap %>%
 ### Infomap
 
 ```{r infomap}
-# Previous version
-bip_infomap <- network(
-  dat = sp_mat, algo = "infomap", weight = FALSE,
-  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra")
-
-bip_site_infomap <- bip_infomap %>%
-  filter(cat == "site") %>%
-  rename(site = node) %>%
-  dplyr::select(site, module)
 
 po <- run_infomap(
   dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",

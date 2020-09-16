@@ -1,8 +1,8 @@
 
 network <- function(dat, algo = "greedy", weight = FALSE,
                     input = "matrix", site = NULL, sp = NULL,
-                    ab = NULL, saving_directory = NULL, N = 10,
-                    n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+                    ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
+                    cp_param = 0.5, hr = 0){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -68,13 +68,6 @@ network <- function(dat, algo = "greedy", weight = FALSE,
 
   if(!is.logical(weight)){
     stop("'weight' must be a boolean.")
-  }
-
-  if(algo == "infomap"){
-    if(!(is.character(saving_directory)) | !dir.exists(saving_directory)){
-      stop("saving_directory must be a path where the Infomap file containing
-         the bioregions identified will be saved.")
-    }
   }
 
   if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){
@@ -209,32 +202,25 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     setwd(current_path)
 
     # Import tree file created
-    tree_infomap <- read.table(paste0(Bio_dir, "/INFOMAP/output/dat.tree"),
-                               skip = 1, sep = " ", nrows = -1)
-    colnames(tree_infomap) <- c("path", "flow", "name", "node_id")
-    tree_infomap$path <- as.character(tree_infomap$path)
+    network_lab <- read.table(paste0(Bio_dir, "/INFOMAP/output/dat.tree"),
+                              skip = 1, sep = " ", nrows = -1)
+    colnames(network_lab) <- c("path", "flow", "node", "node_id")
 
     # Add column with the first degree module
-    tree_infomap$module <- gsub( ":.*$", "", tree_infomap$path)
+    network_lab$path <- as.character(network_lab$path)
+    network_lab$module <- gsub( ":.*$", "", network_lab$path)
 
     # Category of node
-    tree_infomap$cat <- ifelse(tree_infomap$name %in% unique(dat$site),
-                               "site", "sp")
+    if(input == "matrix"){
+      network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
+                                "site", "sp")
+    }else if(input == "data frame"){
+      network_lab$cat <- ifelse(network_lab$node %in% unique(dat$site),
+                                "site", "sp")
+    }
 
-    # Merging modules of the site with the input
-    infomap_site <- tree_infomap[which(tree_infomap$cat == site),
-                                 c("name", "module")]
-    colnames(infomap_site) <- c(site, "module")
-    dat <- dplyr::left_join(dat, infomap_site, by = site)
-
-    # Merging modules of the species with the input
-    infomap_sp <- tree_infomap[which(tree_infomap$cat == sp),
-                               c("name", "module")]
-    colnames(infomap_sp) <- c(sp, "module_sp")
-    dat <- dplyr::left_join(dat, infomap_sp, by = sp)
-
-    # Saving .tp file with bioregions into chosen saving_directory
-    saveRDS(dat, file = paste0(saving_directory, "/dat_infomap.rds"))
+    # Remove some columns
+    network_lab <- network_lab[, c("node", "module", "cat")]
 
     # Remove the input dataset
     file.remove(paste0(Bio_dir, "/INFOMAP/dat.net"))
@@ -243,8 +229,6 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     file.remove(paste0(Bio_dir, "/INFOMAP/output/",
                        dir(paste0(Bio_dir, "INFOMAP/output/"),
                            pattern = "dat.")))
-
-    network_lab <- infomap_site
 
     ## 3. igraph algorithms ----
   } else if(algo %in% c("greedy", "betweenness", "walktrap", "louvain",
@@ -313,7 +297,7 @@ network <- function(dat, algo = "greedy", weight = FALSE,
       network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                                 "site", "sp")
     }else if(input == "data frame"){
-      network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
+      network_lab$cat <- ifelse(network_lab$node %in% unique(dat$site),
                                 "site", "sp")
     }
     ## 4. netcarto ----

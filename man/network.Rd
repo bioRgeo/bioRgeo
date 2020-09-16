@@ -57,7 +57,7 @@ sp_df <- virtual[[1]]
 
 # fastgreedy algorithm from igraph
 bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
-                         algo = "greedy", saving_directory = NULL,
+                         algo = "greedy",
                          weight = FALSE, input = "data frame", site = "site",
                          sp = "sp", ab = NULL)
 }

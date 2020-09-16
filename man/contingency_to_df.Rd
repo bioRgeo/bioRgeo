@@ -1,8 +1,8 @@
-\name{contingency_to_dataframe}
-\alias{contingency_to_dataframe}
-\title{Create a data.frame from a contingency table.}
+\name{contingency_to_df}
+\alias{contingency_to_df}
+\title{Create a data frame from a contingency table.}
 \usage{
-contingency_to_dataframe(dat)
+contingency_to_df(dat)
 }
 \arguments{
 \item{dat}{a contingency matrix with sites as rows and species as columns.}
@@ -29,5 +29,5 @@ species = c("a", "b", "a", "c", "d", "b", "d"),
 count = c(10, 100, 1, 20, 50, 10, 20))
 
 mat <- contingency(dat = ex, site = "sites", sp = "species", ab = "count")
-contingency_to_dataframe(mat, col1 = "site", col2 = "sp", col3 = "ab")
+contingency_to_df(mat, col1 = "site", col2 = "sp", col3 = "ab")
 }

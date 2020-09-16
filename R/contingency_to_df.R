@@ -1,5 +1,5 @@
 
-contingency_to_dataframe <- function(dat, col1 = "site", col2 = "sp",
+contingency_to_df <- function(dat, col1 = "site", col2 = "sp",
                                      col3 = "ab", remove_zeros = TRUE){
   require(DescTools)
 

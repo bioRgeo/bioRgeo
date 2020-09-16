@@ -65,7 +65,7 @@ Bipartite networks are therefore another way to describe contingency matrices as
 knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
 ```
 
-Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_dataframe()` functions as illustrated in the following figure: 
+Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_df()` functions as illustrated in the following figure: 
 
 ```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
 knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
@@ -440,7 +440,7 @@ knitr::kable(data.frame(
 
 # Clean the following sections
 # Redo main figure
-# Add modularity statistics as an ouput for some algorithms
+# Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
 
 ```

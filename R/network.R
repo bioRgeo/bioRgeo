@@ -15,6 +15,10 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     if(!is.matrix(dat)){
       stop("dat should be a matrix with sites as rows and species as columns.")
     }
+    if(is.null(rownames(dat)) | is.null(colnames(dat))){
+      stop("dat does not have rownames or colnames.")
+    }
+
   } else if(input == "data frame"){
     if(!is.data.frame(dat)){
       stop("dat should be a long format data frame with each row being the
@@ -374,7 +378,7 @@ network <- function(dat, algo = "greedy", weight = FALSE,
     network_lab <- network_lab[which(network_lab$value > 0), ]
     network_lab <- data.frame(node = network_lab$Var2,
                               module = network_lab$Var1)
-    network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
+    network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                               "site", "sp")
   }
 

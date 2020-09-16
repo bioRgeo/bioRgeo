@@ -511,8 +511,12 @@ table(oslom_mod$site)[table(oslom_mod$site) > 1]
 infomap_mod <- network(
   dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
   input = "data frame", site = "site", sp = "sp",
-  saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra/tmp",
   N = 10)
+
+infomap_site <- infomap_mod %>%
+  filter(cat == "site") %>%
+  rename(site = node) %>%
+  dplyr::select(site, module)
 
 ```
 
@@ -559,17 +563,16 @@ mbm <- microbenchmark(
   walktrap = network(dat = sp_mat, algo = "walktrap", weight = FALSE),
   oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
                 t_param = 0.1, cp_param = 0.5),
-  infomap = run_infomap(
-    dat = sp_df[which(sp_df$pa > 0), ], site = "site", sp = "sp",
-    ab = NULL, saving_directory = "D:/Irstea/CarHab/Bioregionalization_extra",
-    N = 10),
+  infomap = network(dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap",
+                    weight = FALSE, input = "data frame", site = "site",
+                    sp = "sp", N = 10),
   # number of times for each algorithm
   times = 50)
+
 mbm
 ```
 
 ```{r microbenchmark_plot, eval = FALSE}
-library(ggplot2)
 autoplot(mbm)
 ```
 
@@ -623,7 +626,13 @@ ggplot(bio_maps, aes(x, y)) +
   facet_wrap(~ mod)
 ```
 
-## Coherent areas
+## 3.3. Coherent areas
+
+This part aims at identifying the sites all the time gathered together.
+
+$$
+
+$$
 
 ```{r comparison, eval = TRUE}
 # Gather all the bioregionalizations
@@ -953,14 +962,7 @@ ggplot(pop, aes(nbopt, nb)) +
 This part aims at evaluating the contributions of species to the different
 bioregions created.
 
-```{r contrib}
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
-# table(tmp$sp, tmp$bioregion)
-
-scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                     bioregion_col = "bioregion")
-
-```
+Function `contrib()` with three indices as output.
 
 The following figure illustrates how the rho score from Lenormand et al. 2019
 is calculated.
@@ -979,14 +981,25 @@ $$
 P_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
 $$
 
-where Pi is the participation coefficient of node i, kis is the number of links of node i to region s, ki is the total number of links of node i and Nm is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
+where $P_i$ is the participation coefficient of node $i$, $k_{is}$ is the number of links of node $i$ to region $s$, $k_i$ is the total number of links of node $i$ and $N_m$ is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
 
 $$
 z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
 $$
 
-The within-module degree z-score measures how well-connected
-node i is to other nodes in the module.
+The within-module degree z-score measures how well-connected node $i$ is to
+other nodes in the module.
+
+The next chunk illustrates how `contrib()` function returns these 3 indices.
+
+```{r contrib}
+tmp <- left_join(sp_df[which(sp_df$pa > 0), ], infomap_site, by = "site")
+# table(tmp$sp, tmp$bioregion)
+
+scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
+                     bioregion_col = "module")
+
+```
 
 \newpage
 
@@ -1000,6 +1013,7 @@ these equations:
 $$
 \hat\rho_{ij}^{+} = {\rho_{ij}}_{\rho_{ij}>1.96}
 $$
+
 We normalize the rows:
 
 $$
@@ -1106,7 +1120,6 @@ All these functions can be called with the wrap-up `all_maps()` function.
 all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
                     binary = TRUE,
                     metric = "simpson", network_algo = "both",
-                    saving_directory,
                     bipartite_algo = "greedy", weight = FALSE,
                     clustering = TRUE, ward_method = "ward.D2",
                     optim_method = "firstSEmax", nstart = 25, B = 50,

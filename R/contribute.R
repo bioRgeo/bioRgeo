@@ -39,10 +39,10 @@ contribute <- function(dat, sp_col, site_col, bioregion_col,
             to the bioregion where it occurs the most.")
     # Assign bioregion to species
     sp_bio <- dat %>%
-      group_by(sp, bioregion) %>%
+      group_by(sp, bio_site) %>%
       summarise(c = n()) %>%
       filter(row_number(desc(c)) == 1) %>%
-      rename(bio_sp = bioregion) %>%
+      rename(bio_sp = bio_site) %>%
       select(sp, bio_sp)
     # Merge with site-species data frame
     dat <- left_join(dat, sp_bio, by = "sp")
@@ -153,5 +153,4 @@ contribute <- function(dat, sp_col, site_col, bioregion_col,
 
   # Return data frame for species ---------------------------------------------
   return(dat)
-
 }

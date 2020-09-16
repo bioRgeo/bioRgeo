@@ -3,27 +3,20 @@
 \title{Compute Cz and rho scores for species from a given delineation of
 sites.}
 \usage{
-contribute(dat, sp_col, site_col, bioregion_col)
+contribute(dat, sp_col, site_col, bioregion_col, bioregion_sp_col = NULL, ab = NULL)
 }
 \arguments{
-\item{dat}{a data.frame with each row indicating the presence
-of a species in a given site.}
+\item{dat}{a data.frame with each row indicating the presence of a species in a given site.}
 
-\item{sp_col}{a character string corresponding to the column
-    with species.}
+\item{sp_col}{a character string corresponding to the column with species.}
 
-\item{site_col}{a character string corresponding to the column
-    with sites.}
+\item{site_col}{a character string corresponding to the column with sites.}
 
-\item{bioregion_col}{a character string corresponding to the column
-    with bioregions.}
+\item{bioregion_col}{a character string corresponding to the column with bioregions.}
 
-\item{bioregion_sp_col}{a character string corresponding to the column
-    with bioregions of species. Can be null in case of a projected
-    network.}
+\item{bioregion_sp_col}{a character string corresponding to the column with bioregions of species. Can be null in case of a projected network.}
 
-\item{ab}{a logical indicating whether abundances should be taken into
-account.}
+\item{ab}{a logical indicating whether abundances should be taken into account.}
 
 }
 

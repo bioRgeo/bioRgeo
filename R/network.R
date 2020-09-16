@@ -1,8 +1,8 @@
 
 network <- function(dat, algo = "greedy", weight = FALSE,
-                           input = "matrix", site = NULL, sp = NULL,
-                           ab = NULL, saving_directory = NULL, N = 10,
-                           n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+                    input = "matrix", site = NULL, sp = NULL,
+                    ab = NULL, saving_directory = NULL, N = 10,
+                    n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -42,15 +42,24 @@ network <- function(dat, algo = "greedy", weight = FALSE,
 
   if(!(algo %in% c("greedy", "betweenness", "walktrap", "louvain", "LPAwb",
                    "infomap", "spinglass", "leading_eigen", "label_prop",
-                   "netcarto", "oslom", "infomap"))){
+                   "netcarto", "oslom", "infomap",
+                   "beckett", "quanbimo"))){
     stop("Provided algorithm to compute modularity is not available. Please
     choose among the followings: greedy, betweenness, walktrap, louvain, LPAwb,
-         spinglass, leading_eigen, label_prop, netcarto, oslom or
-         infomap.")
+         spinglass, leading_eigen, label_prop, netcarto, oslom, infomap,
+         beckett or quanbimo")
   }
 
-  if(algo %in% c("netcarto")){
-    warning("The chosen algorithm may take time to run.")
+  if(algo %in% c("beckett", "quanbimo") & input == "data frame"){
+    warning("The chosen algorithm needs a site-species matrix as input.
+            We here perform bioRgeo::contingency() function to convert it but
+            you can do this step a priori to save time.")
+    dat <- contingency(dat, site, sp, ab)
+  }
+
+  if(algo %in% c("netcarto", "quanbimo")){
+    warning("The chosen algorithm is slow. Depending on the size of the
+            network, it may take a long time to run.")
   }
 
   if(!is.logical(weight)){
@@ -233,22 +242,7 @@ network <- function(dat, algo = "greedy", weight = FALSE,
 
     network_lab <- infomap_site
 
-    ## 3. LPAwb ----
-  } else if(algo == "LPAwb"){ # Beckett modularity
-    dat <- as.matrix(dat)
-    # Find labels and weighted modularity using LPAwb+
-    network_mod <- bioRgeo::LPA_wb_plus(dat)
-
-    # Conversion into data.frame with node, category and module
-    network_lab <- data.frame(node = c(rownames(dat), colnames(dat)),
-                              module = c(as.character(network_mod[[1]]),
-                                         as.character(network_mod[[2]])),
-                              modularity = as.character(network_mod[[3]]))
-    # Add category of the node
-    network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
-                              "site", "sp")
-
-    ## 4. igraph algorithms ----
+    ## 3. igraph algorithms ----
   } else if(algo %in% c("greedy", "betweenness", "walktrap", "louvain",
                         "spinglass", "leading_eigen", "label_prop")){
     # https://stats.stackexchange.com/questions/209086/community-detection-and-modularity
@@ -275,7 +269,7 @@ network <- function(dat, algo = "greedy", weight = FALSE,
           dat_sq, mode = "undirected", add.rownames = TRUE, weighted = TRUE)
       }
 
-    }else if(input == "data frame"){
+    } else if(input == "data frame"){
       if(weight == FALSE){
         network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE)
       } else if(weight == TRUE){
@@ -293,8 +287,8 @@ network <- function(dat, algo = "greedy", weight = FALSE,
       network_mod <- cluster_walktrap(graph = network)
     } else if(algo == "louvain"){
       network_mod <- cluster_louvain(graph = network)
-    # } else if(algo == "infomap"){
-    #   network_mod <- cluster_infomap(graph = network)
+      # } else if(algo == "infomap"){
+      #   network_mod <- cluster_infomap(graph = network)
     } else if(algo == "spinglass"){
       network_mod <- cluster_spinglass(graph = network)
     } else if(algo == "leading_eigen"){
@@ -318,7 +312,7 @@ network <- function(dat, algo = "greedy", weight = FALSE,
       network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
                                 "site", "sp")
     }
-    ## 5. netcarto ----
+    ## 4. netcarto ----
   } else if(algo == "netcarto"){
     if(input == "data frame"){
       dat <- contingency(dat, site = site, sp = sp, ab = ab)
@@ -349,20 +343,40 @@ network <- function(dat, algo = "greedy", weight = FALSE,
       network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
                                 "site", "sp")
     }
-    ## 6. OSLOM ----
+    ## 5. OSLOM ----
   } else if(algo == "OSLOM"){
     warning("With OSLOM algorithm, the input must be a projected network.")
 
     network_lab <- oslom(dat, n_runs = n_runs, t_param = t_param,
                          cp_param = cp_param, hr = hr)
+    ## 6. Beckett/Dormann & Strauss ----
+  } else if(algo %in% c("beckett", "quanbimo")){
+    require(bipartite)
+    if(algo == "beckett"){
+      algo = "Beckett"
+    } else if(algo == "quanbimo"){
+      algo = "DormannnStrauss"
+    }
 
+    network_lab <- computeModules(
+      dat, method = algo, deep = FALSE,
+      deleteOriginalFiles = TRUE, steps = 1000000, tolerance = 1e-10,
+      experimental = FALSE, forceLPA = FALSE)
+
+    # First row and two first columns ignored (see ?`moduleWeb-class`)
+    network_lab <- network_lab@modules[-1, -c(1, 2)]
+    # Modules in rows; columns have first the sites and then the species
+    colnames(network_lab) <- c(rownames(dat), colnames(dat))
+    # numbers just indicate in which module a node is
+    network_lab[network_lab > 0] <- 1
+    # conversion to data.frame
+    network_lab <- reshape2::melt(network_lab)
+    network_lab <- network_lab[which(network_lab$value > 0), ]
+    network_lab <- data.frame(node = network_lab$Var2,
+                              module = network_lab$Var1)
+    network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
+                              "site", "sp")
   }
 
   return(network_lab)
-
-  # Also try with bipartite package
-  # computeModules(web, method = "Beckett", deep = FALSE,
-  #                deleteOriginalFiles = TRUE, steps = 1000000, tolerance = 1e-10,
-  #                experimental = FALSE, forceLPA = FALSE)
-
 }

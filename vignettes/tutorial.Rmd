@@ -403,15 +403,15 @@ A second 'family' of method exist to classify sites that are more similar to eac
 Several methods exist and are available in `bioRgeo`. They are briefly described in the following table.
 In our case, every method applies on bipartite networks but most of the following methods rely on the construction of a square adjacency matrix (see Glossary). We therefore classify these algorithms as 'unipartite' in the following table.
 
-```{r network_methods, eval = FALSE}
+```{r network_methods}
 knitr::kable(data.frame(
   Acronym = c("greedy", "betweenness", "walktrap", "louvain", "spinglass",
-              "leading_eigen", "label_prop", "dorman", "netcarto",
-              "beckett", "oslom", "infomap"),
+              "leading_eigen", "label_prop", "beckett", "quanbimo",
+              "netcarto", "oslom", "infomap"),
   Method = c("Fast greedy optimization of modularity",
              "Betweenness", "Walktrap", "Louvain", "Spinglass",
              "Leading eigenvector", "Label propragation",
-             "dorman", "netcarto", "LPAwb+",
+             "Beckett (LPAwb+)", "Quantitative bipartite network", "netcarto",
              "Order Statistics Local Optimization Method", "Infomap (map equation)"),
   Category = c(rep("Unipartite", 11), rep("Bipartite", 1)),
   `Short description` = c(
@@ -422,29 +422,26 @@ knitr::kable(data.frame(
     "Modularity optimization through simulated annealing",
     "Modularity optimization",
     "Each node is initialized with a unique label and at every iteration of the algorithm, each node adopts a label that a maximum number of its neighbors have, with ties broken uniformly randomly. As the labels propagate through the network in this manner, densely connected groups of nodes form a consensus on their labels. At the end of the algorithm, nodes having the same labels are grouped together as communities.",
-    "dorman",
-    "Modularity maximisation with simulated annealing",
     "Two stages: a ‘bottom up’ step that maximizes modularity on a node-by-node basis using label propagation; and a ‘top down’ step that joins modules together when it results in increased network modularity.",
+    "Hierarchical random graph: builds a graph and then randomly swaps branches at any level and evaluates whether the new graph is more likely than the previous one, recording and updating the best graph. The swapping is a Simulated Annealing-Monte Carlo approach.",
+    "Modularity maximisation with simulated annealing",
     "Iterative process to detect statistically significant communities with respect to a global null model.",
     "Optimization of the Map Equation."),
   `Source R package` = c(
-    rep("igraph", 7), "bipartite (not yet implemented)", "rnetcarto",
-    "none (code from https://github.com/sjbeckett/weighted-modularity-LPAwbPLUS)", 
+    rep("igraph", 7), rep("bipartite", 2), "rnetcarto", 
     "none (code compiled from oslom.org)",
     "none (code compiled from https://www.mapequation.org)"),
   References = c("Clauset et al., 2011", "Newman & Girvan, 2011",
                  "Pons & Latapy, 2005", "Blondel et al., 2008",
                  "Reichardt & Bornholdt, 2006", "Newman, 2006",
-                 "Raghavan et al., 2006", "",
-                 "Guimerà & Amaral, 2005", "Beckett, 2016",
+                 "Raghavan et al., 2006","Beckett, 2016",
+                 "Dormann & Strauss, 2014", "Guimerà & Amaral, 2005", 
                  "Lancichinetti et al., 2010", "Rosvall et al., 2009")))
 
-# Finish table
-# Implement bipartite:: => dorman methods in network()
-# Implement DIRTLPAwb+
 # Clean the following sections
 # Redo main figure
 # Add modularity statistics as an ouput for some algorithms
+# Add CA (Correspondence Analysis)
 
 ```
 
@@ -512,7 +509,7 @@ bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
 table(bip$module); table(bip_df$module)
 
 # With Beckett algorithm
-bip2 <- network(dat = sp_mat, algo = "LPAwb", weight = FALSE)
+bip_beckett <- network(dat = sp_mat, algo = "beckett", weight = FALSE)
 
 # With Louvain
 bip_louvain <- network(dat = sp_mat, algo = "louvain", weight = FALSE)
@@ -526,7 +523,7 @@ bip_site <- bip %>%
   rename(site = node) %>%
   dplyr::select(site, module)
 
-bip_site2 <- bip2 %>%
+bip_site_beckett <- bip_beckett %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
   dplyr::select(site, module)
@@ -607,7 +604,7 @@ mbm <- microbenchmark(
   diana = cluster(sp_mat, method = "diana", n_clust = 4),
   # network methods
   fastgreedy = network(dat = sp_mat, algo = "greedy", weight = FALSE),
-  beckett = network(dat = sp_mat, algo = "LPAwb", weight = FALSE),
+  beckett = network(dat = sp_mat, algo = "beckett", weight = FALSE),
   louvain = network(dat = sp_mat, algo = "louvain", weight = FALSE),
   walktrap = network(dat = sp_mat, algo = "walktrap", weight = FALSE),
   oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
@@ -653,8 +650,8 @@ bio_maps <- sp_df %>%
   rename(cluster_diana = cluster) %>%
   left_join(bip_site, by = "site") %>% # add fastgreedy
   rename(cluster_fastgreedy = module) %>%
-  left_join(bip_site2, by = "site") %>% # add lpawb
-  rename(cluster_lpawb = module) %>%
+  left_join(bip_site_beckett, by = "site") %>% # add lpawb
+  rename(cluster_beckett = module) %>%
   # left_join(bip_site_infomap, by = "site") %>% # add infomap
   # rename(cluster_infomap = module) %>%
   left_join(bip_site_louvain, by = "site") %>% # add louvain
@@ -690,9 +687,9 @@ all_bioregions <- sp_df %>%
   left_join(bip_site, by = "site") %>% # add greedy
   distinct(site, .keep_all = TRUE) %>%
   rename(greedy = module) %>%
-  left_join(bip_site2, by = "site") %>% # add LPAwb
+  left_join(bip_site_beckett, by = "site") %>% # add Beckett (LPAwb)
   distinct(site, .keep_all = TRUE) %>%
-  rename(lpawb = module) %>%
+  rename(beckett = module) %>%
   left_join(bip_site_infomap, by = "site") %>% # add infomap
   distinct(site, .keep_all = TRUE) %>%
   rename(infomap = module)
@@ -759,9 +756,9 @@ plot_grid(
     labs(title = "Bipartite greedy bioregions") +
     theme(panel.background = element_rect(fill = "transparent", colour = NA)),
   
-  # Plot of LPAwb bioregions
+  # Plot of Beckett (LPAwb) bioregions
   sp_df %>%
-    left_join(bip_site2, by = "site") %>%
+    left_join(bip_site_beckett, by = "site") %>%
     distinct(site, .keep_all = TRUE) %>%
     ggplot(aes(x, y)) +
     geom_tile(aes(fill = as.factor(module), color = as.factor(module)),
@@ -813,8 +810,9 @@ coordinates(all_bioregions_sp) <- ~x+y
 
 all_bioregions_sp$oslom <- as.numeric(as.character(all_bioregions_sp$oslom))
 all_bioregions_sp$ward <- as.numeric(as.character(all_bioregions_sp$ward))
-all_bioregions_sp$greedy <- as.numeric(as.character(all_bioregions_sp$greedy))
-all_bioregions_sp$lpawb <- as.numeric(as.character(all_bioregions_sp$lpawb))
+all_bioregions_sp$greedy <- as.numeric(as.character(
+  all_bioregions_sp$greedy))
+all_bioregions_sp$beckett <- as.numeric(as.character(all_bioregions_sp$beckett))
 all_bioregions_sp$infomap <- as.numeric(as.character(all_bioregions_sp$infomap))
 
 coo <- coordinates(all_bioregions_sp)
@@ -951,9 +949,9 @@ nbopt <- nbopt %>%
   distinct(site, .keep_all = TRUE)
 colnames(nbopt)[colnames(nbopt) == "module"] <- "fastgreedy"
 
-# Plot of LPAwb bioregions
+# Plot of Beckett (LPAwb) bioregions
 nbopt <- nbopt %>%
-  left_join(bip_site2, by = "site") %>%
+  left_join(bip_site_beckett, by = "site") %>%
   distinct(site, .keep_all = TRUE)
 colnames(nbopt)[colnames(nbopt) == "module"] <- "lpawb"
 
@@ -1175,6 +1173,8 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 [Blondel, V. D., Guillaume, J.-L., Lambiotte, R., & Lefebvre, E. (2008). Fast unfolding of communities in large networks. Journal of Statistical Mechanics: Theory and Experiment, 2008(10), P10008.](https://iopscience.iop.org/article/10.1088/1742-5468/2008/10/P10008)
 
 [Clauset, A., Newman, M. E. J., & Moore, C. (2004). Finding community structure in very large networks. Physical Review E, 70(6), 066111.](https://doi.org/10.1103/PhysRevE.70.066111)
+
+[Dormann, C. F., & Strauss, R. (2014). A method for detecting modules in quantitative bipartite networks. Methods in Ecology and Evolution, 5(1), 90–98.](https://doi.org/10.1111/2041-210X.12139)
 
 [Newman, M. E., & Girvan, M. (2004). Finding and evaluating community structure in networks. Physical Review E, 69(2), 026113.](https://doi.org/10.1103/PhysRevE.69.026113)
 

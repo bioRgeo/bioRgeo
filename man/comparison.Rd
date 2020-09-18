@@ -3,7 +3,7 @@
 \title{Function to identify pixels grouped together through different
 bioregionalizations.}
 \usage{
-all_maps(dat, site, sp, ab, binary = FALSE)
+comparison(dat, bio_col, thres = 10, output = "both")
 }
 \arguments{
 \item{dat}{a data.frame with a column containing the sites and
@@ -13,6 +13,8 @@ columns containing different partitions.}
 the different bioregions.}
 
 \item{thres}{a numeric determining the minimum number of pixels per pair.}
+
+\item{output}{A character string indicating whether the output format is a square matrix with the number of times each pair of sites have been classed together, a data frame with the sites all the time classed together or both objects.}
 
 }
 \description{
@@ -28,5 +30,5 @@ ex <- data.frame(site = paste0("site", seq(1:7)),
 bio1 = c("a", "b", "a", "c", "d", "b", "d"),
 bio2 = c("aa", "aa", "aa", "bb", "cc", "bb", "cc"))
 
-comparison(ex, bio_col = c(2, 3), thres = 1)
+comparison(ex, site = "site", bio_col = c(2, 3), thres = 0, output = "both")
 }

@@ -779,7 +779,7 @@ pair_sf <- st_sf(site = pair_bio[, "site"],
   summarise()
 
 pair_sf2 <- st_sf(site = pair_bio[, "site"],
-                 st_sfc(list_tiles)) %>%
+                  st_sfc(list_tiles)) %>%
   left_join(pair_bio[, c("site", "cluster_fastgreedy")], by = "site") %>%
   group_by(cluster_fastgreedy) %>%
   summarise()
@@ -795,69 +795,60 @@ plot_grid(
 
 # Vmeasure of the two selected bioregionalizations
 vmeasure_calc(x = pair_sf, x_name = cluster_beckett,
-                    y = pair_sf2, y_name = cluster_fastgreedy)
+              y = pair_sf2, y_name = cluster_fastgreedy)
 ```
 
 \newpage
 
 ## 3.5. Moran autocorrelation
 
+We here provide a chunk of code to evaluate the spatial autocorrelation of a given bioregionalization using Moran index (Moran, 1948).
+
 ```{r autocorrelation, eval = TRUE}
 ## Autocorrelation
 # https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html
 library(sp)
-all_bioregions_sp <- all_bioregions
-all_bioregions_sp <- all_bioregions_sp[complete.cases(all_bioregions_sp), ]
-coordinates(all_bioregions_sp) <- ~x+y
 
-all_bioregions_sp$oslom <- as.numeric(as.character(all_bioregions_sp$oslom))
-all_bioregions_sp$ward <- as.numeric(as.character(all_bioregions_sp$ward))
-all_bioregions_sp$greedy <- as.numeric(as.character(
-  all_bioregions_sp$greedy))
-all_bioregions_sp$beckett <- as.numeric(as.character(all_bioregions_sp$beckett))
-all_bioregions_sp$infomap <- as.numeric(as.character(all_bioregions_sp$infomap))
-
-coo <- coordinates(all_bioregions_sp)
-# S.dist  <-  spdep::dnearneigh(coo, 0, 100)
-# lw <- spdep::nb2listw(S.dist, style="W",zero.policy=T) 
-# MI  <-  spdep::moran.mc(all_bioregions_sp$oslom, lw, nsim=599,zero.policy=T)
-# plot(MI, main = "", las = 1) 
-
+bio_maps_moran <- bio_maps2
+# Convert bioregions into numeric
+bio_names <- paste0("cluster_", c("beckett", "dbscan", "diana",
+                                  "fastgreedy", "gmm", "infomap", "km",
+                                  "louvain", "mshift", "oslom", "pam",
+                                  "walktrap", "ward"))
+bio_maps_moran[bio_names] <- sapply(bio_maps_moran[bio_names],
+                                    as.numeric)
+# Coordinates of the sites
+coordinates(bio_maps_moran) <- ~ x + y
+coo <- coordinates(bio_maps_moran)
+# Bandwidth used: number of nearest neighbours for the calculation of
+# the weights
 bws <- c(3, 4, 6, 9, 12, 18, 24)
-moran_oslom <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$oslom,
-                                  plot = FALSE)
-moran_ward <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$ward,
-                                 plot = FALSE)
-moran_greedy <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$greedy,
-                                   plot = FALSE)
-moran_lpawb <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$lpawb,
-                                  plot = FALSE)
-moran_infomap <- lctools::moransI.v(coo, bws, all_bioregions_sp@data$infomap,
-                                    plot = FALSE)
 
-all_moran <-
-  rbind(data.frame(
-    algo = "oslom", k = moran_oslom[, "k"],
-    moran = moran_oslom[, "Moran's I"]),
-    data.frame(algo = "ward", k = moran_ward[, "k"],
-               moran = moran_ward[, "Moran's I"]),
-    data.frame(algo = "ward", k = moran_ward[, "k"],
-               moran = moran_greedy[, "Moran's I"]),
-    data.frame(algo = "greedy", k = moran_greedy[, "k"],
-               moran = moran_lpawb[, "Moran's I"]),
-    data.frame(algo = "infomap", k = moran_infomap[, "k"],
-               moran = moran_infomap[, "Moran's I"])
-  )
+# List of Moran autocorrelation
+moran_df <- c()
+for(i in 1:length(bio_names)){
+  tmp <- as.data.frame(
+    lctools::moransI.v(
+      coo, bws, bio_maps_moran@data[, bio_names[i]], plot = FALSE))
+  
+  tmp$method <- bio_names[i]
+  
+  # Binding results
+  moran_df <- rbind(moran_df, tmp[, c("method", "k", "Moran's I")])
+}
 
-ggplot(all_moran, aes(k, moran)) +
-  geom_line(aes(color = as.factor(algo))) +
-  geom_point(aes(color = as.factor(algo))) +
+ggplot(moran_df, aes(k, `Moran's I`)) +
+  geom_line(aes(color = as.factor(method))) +
+  geom_point(aes(color = as.factor(method))) +
   scale_color_viridis_d("Method") +
-  labs(x = "# of neighbours", y = "Moran's I") +
+  labs(title = "Comparison of bioregionalization",
+       x = "Number of neighbours", y = "Moran's I") +
   theme_classic() +
   theme(panel.border = element_rect(fill= NA, color = "black"))
 
 ```
+
+GMM method gives the highest spatial autocorrelation according to Moran'I index.
 
 \newpage
 
@@ -1038,6 +1029,8 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 [Clauset, A., Newman, M. E. J., & Moore, C. (2004). Finding community structure in very large networks. Physical Review E, 70(6), 066111.](https://doi.org/10.1103/PhysRevE.70.066111)
 
 [Dormann, C. F., & Strauss, R. (2014). A method for detecting modules in quantitative bipartite networks. Methods in Ecology and Evolution, 5(1), 90–98.](https://doi.org/10.1111/2041-210X.12139)
+
+[Moran, P. A. P. (1948). The Interpretation of Statistical Maps. Journal of the Royal Statistical Society. Series B (Methodological), 10(2), 243–251. JSTOR.](https://www.jstor.org/stable/2983777)
 
 [Newman, M. E., & Girvan, M. (2004). Finding and evaluating community structure in networks. Physical Review E, 69(2), 026113.](https://doi.org/10.1103/PhysRevE.69.026113)
 

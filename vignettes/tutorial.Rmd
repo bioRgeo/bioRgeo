@@ -868,6 +868,8 @@ $$
 \rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
 $$
 
+The test value $\rho_{ij}$ is negative if the species $i$ is under‐represented in region $j$, equal to 0 if the species $i$ is present in region $j$ in the   same proportion as in the whole study area, or positive if the species $i$ is over‐represented in region $j$. In  the latter case, we  consider that the species $i$ contribute positively to region $j$ and the level of contribution depends on the $\rho_{ij}$  valu
+
 Formula of `Cz` scores:
 
 $$
@@ -885,12 +887,70 @@ The within-module degree z-score measures how well-connected node $i$ is to othe
 The next chunk illustrates how `contrib()` function returns these 3 indices.
 
 ```{r contrib}
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], infomap_site, by = "site")
-# table(tmp$sp, tmp$bioregion)
+# Bioregions for sites obtained with Infomap
+infomap_site <- infomap_mod %>%
+  filter(cat == "site") %>%
+  rename(site = node,
+         mod_site = module) %>%
+  dplyr::select(site, mod_site)
 
-scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                     bioregion_col = "module")
+# Bioregions for species obtained with Infomap
+infomap_sp <- infomap_mod %>%
+  filter(cat == "sp") %>%
+  rename(sp = node,
+         mod_sp = module) %>%
+  dplyr::select(sp, mod_sp)
 
+# Merging the bioregion identification with long-format data frame
+scores_infomap <- left_join(sp_df[which(sp_df$pa > 0),
+                                  c("site", "sp", "x", "y")], 
+                            infomap_site, by = "site")
+scores_infomap <- left_join(scores_infomap, infomap_sp, by = "sp")
+
+head(scores_infomap)
+
+# Calculation of the species scores
+scores <- contribute(dat = scores_infomap,
+                     sp_col = "sp", site_col = "site",
+                     bioregion_col = "mod_site", bioregion_sp_col = "mod_sp")
+```
+
+There is a positive link between \rho and $z$ scores for the species.
+
+```{r contrib_plot}
+# Scores of sites only
+scores_sites <- scores[!duplicated(scores$sp),
+                       c("site", "mod_site", "C_site", "z_site")]
+
+# Scores of species only
+scores_sp <- scores[!duplicated(scores$sp),
+                    c("sp", "mod_sp", "C_sp", "z_sp", "rho")]
+
+ggplot(scores_sp, aes(rho, z_sp)) +
+  geom_point(aes(color = as.factor(mod_sp)), size = 2) +
+  scale_color_brewer("Infomap\nmodule", palette = "Paired") +
+  labs(title = "Species scores",
+       x = expression(rho), y = "Intra-module degree (z)") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill= NA, color = "black"))
+
+```
+
+Some algorithms (like OSLOM) only classify sites into bioregions and do not assign species to bioregions.  
+
+In this case, the argument `bioregion_sp_col` is set to `NULL` and the function `contribute()` assign species to a bioregion based on the most frequent bioregion across the sites where the species occurs. 
+
+```{r contrib_proj_oslom}
+# Merging the bioregion identification with long-format data frame
+scores_oslom <- left_join(sp_df[which(sp_df$pa > 0),
+                                  c("site", "sp", "x", "y")], 
+                            oslom_mod, by = "site")
+head(scores_oslom)
+
+# Calculation of the species scores
+scores2 <- contribute(dat = scores_oslom,
+                      sp_col = "sp", site_col = "site",
+                      bioregion_col = "bioregion", bioregion_sp_col = NULL)
 ```
 
 \newpage
@@ -978,27 +1038,6 @@ lambda <- interact(input_network = "projected",
 knitr::kable(head(lambda[[1]]))
 # Plot
 lambda[[2]]
-```
-
-## Cz
-Cz computation on bipartite results.
-
-```{r cz}
-bip_cz <- bip[, c("node", "module", "cat")]
-colnames(bip_cz) <- c("node", "mod", "cat")
-
-cz_bip <- cz(dat = sp_df[which(sp_df$pa > 0), ], sp_col = "sp",
-             site_col = "site", bip = bip_cz, ab = NULL)
-
-head(cz_bip[[1]])
-
-# Interaction
-# lambda <- interact(input_network = "bipartite",
-#                    dat = link_cz, plot = TRUE, output_format = "matrix")
-# knitr::kable(head(lambda[[1]]))
-# # Plot
-# lambda[[2]]
-
 ```
 
 \newpage

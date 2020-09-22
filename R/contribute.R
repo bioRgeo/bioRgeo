@@ -2,7 +2,7 @@
 contribute <- function(dat, sp_col, site_col, bioregion_col,
                        bioregion_sp_col = NULL, ab = NULL){
 
-  # Controls and initial steps ------------------------------------------------
+  # Controls ------------------------------------------------------------------
   if(!is.data.frame(dat)){
     stop("Input must be a data.frame with each row indicating the presence
          of a species in a given site. The associated bioregion must be present
@@ -34,6 +34,8 @@ contribute <- function(dat, sp_col, site_col, bioregion_col,
       stop("bioregion_sp_col must be a character string corresponding to the
       column with the bioregions of species.")
     }
+    # Reassigning column
+    dat$bio_sp <- dat[, bioregion_sp_col]
   } else{
     warning("No bioregion provided for species. Each species will be assigned
             to the bioregion where it occurs the most.")
@@ -113,12 +115,6 @@ contribute <- function(dat, sp_col, site_col, bioregion_col,
                    by = c("sp", "bio_sp"))
 
   # rho -----------------------------------------------------------------------
-  # See Lenormand et al. 2019 Ecology and Evolution
-  # Reassigning columns
-  dat$sp <- dat[, sp_col]
-  dat$site <- dat[, site_col]
-  dat$bioregion <- dat[, bioregion_col]
-
   # Number of cells per bioregions
   clust <- table(dat[!duplicated(dat[, "site"]), "bio_site"])
   clust <- data.frame(bio_site = names(clust), ncell = as.numeric(clust))

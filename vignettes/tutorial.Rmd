@@ -38,6 +38,8 @@ The principle of the package is illustrated by the following figure.
 knitr::include_graphics("../figures/Bioregionalization_scheme3.png")
 ```
 
+\newpage
+
 ## 1.1. Glossary
 Four types of formats are used in the package.
 
@@ -94,6 +96,8 @@ options(tinytex.verbose = TRUE)
 
 ```
 
+\newpage
+
 ## 1.2 Virtual dataset
 To illustrate how `bioRgeo` works, we use a virtual dataset. This dataset comes with the installation of the package and can be loaded using the following command:
 
@@ -149,6 +153,8 @@ knitr::include_graphics("../figures/100_suitability.jpeg")
 ```
 
 See [here](http://borisleroy.com/virtualspecies/) for further information on the `virtualspecies` R package.
+
+\newpage
 
 ### 1.2.1. Code to generate the virtual data
 The code to generate the virtual dataset is provided in the chunk below. This chunk is not run when loading the vignette, since the outputs are directly stored with the package.
@@ -268,6 +274,8 @@ knitr::kable(sp_mat_w[1:5, 1:5],
 
 Available methods can be classed among three main groups: distance-based clustering, projected networks and bipartite networks.
 
+\newpage
+
 ## 2.1. Distance matrix
 Most of the methods available in `bioRgeo` package, either clustering or network techniques, rely on the projection of the contingency matrix. Projecting the contingency matrix means creating a distance matrix from the contingency table, i.e. evaluating how pairs of sites are different regarding their species compositions.  
 
@@ -303,6 +311,8 @@ sp_proj_w <- simil(sp_mat_w, metric = "bray")
 knitr::kable(head(sp_proj_w))
 
 ```
+
+\newpage
 
 ## 2.2. Clustering
 
@@ -396,6 +406,8 @@ diana_res <- cluster(sp_mat, method = "diana", n_clust = 4)
 
 ```
 
+\newpage
+
 ## 2.3. Network and community detection
 
 A second 'family' of methods exist to classify sites that are more similar to each other regarding their species' composition. The site-species matrix can be described as a **bipartite network** (see Glossary). On networks, modularity algorithm can be applied to detect community structure. Communities are made of sets of nodes that share more links between each other than within the other nodes of the network. Maximising the modularity metric therefore enables to find the groups of sites and species that are related to each other. Bioregions therefore correspond to the different modules of the network.  
@@ -445,7 +457,6 @@ knitr::kable(data.frame(
 ```
 
 The next chunk runs the different network methods on the virtual dataset.  
-
 ```{r network}
 # With fastgreedy
 bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
@@ -532,9 +543,13 @@ This reclassification can use the species contributions of the problematic sites
 In this section, we compare the different bioregionalizations obtained with the distinct methods.  
 We first compare the time necessary to compute the different groups by performing a `microbenchmark`.  
 
-Then, since each site has XY coordinates, we look at the spatial outputs.  
+Then, since each site has XY coordinates, we look at the spatial outputs of the different bioregionalizations.  
 
-Finally, we introduce a metric that identify the sites classed together in every bioregionalization method.  
+We then identify the sites classed together in every bioregionalization method.  
+
+Finally, we look at how each pair of bioregionalization can be compared with the [`sabre` R package()](https://cran.r-project.org/web/packages/sabre/vignettes/sabre.html) and how the autocorrelation within one bioregionalization can be quantified with Moran's index.
+
+\newpage
 
 ## 3.1. Microbenchmark
 The following `microbenchmark` provides a comparison of the different methods available in `bioRgeo` in terms of computation time.
@@ -578,9 +593,10 @@ mbm
 autoplot(mbm)
 ```
 
+\newpage
+
 ## 3.2. Maps
-If sites have coordinates, we can apply several functions to compare how the
-distinct bioregions are segregated through space.
+If sites have coordinates, we can apply several functions to compare how the distinct bioregions are segregated through space.
 
 ```{r map_virtual_dataset_tidy}
 # Remove doublons in OSLOM classification (random assignment)
@@ -631,6 +647,8 @@ ggplot(bio_maps, aes(x, y)) +
   facet_wrap(~ mod)
 
 ```
+
+\newpage
 
 ## 3.3. Coherent areas
 
@@ -715,10 +733,76 @@ ggplot(site103, aes(x, y)) +
 
 ```
 
-## Moran autocorrelation
+\newpage
+
+## 3.4. Pairs of bioregionalizations
+We can as well compare each pair of bioregion to each other using [`sabre`](https://cran.r-project.org/web/packages/sabre/vignettes/sabre.html) package.
+
+We here provide an example of how the `sabre::vmeasure_calc()` function can give insight about the spatial association between a pair of bioregionalization.
+
+```{r pair_bioregions}
+# Only two bioregionalizations selected
+pair_bio <- bio_maps2[, c("site", "x", "y", "cluster_beckett",
+                          "cluster_fastgreedy")]
+
+table(pair_bio$cluster_beckett, pair_bio$cluster_fastgreedy)
+
+# Create polygons out of coordinate centroids
+pair_bio$E_x <- pair_bio$x - 0.5
+pair_bio$W_x <- pair_bio$x + 0.5
+pair_bio$N_y <- pair_bio$y + 0.5
+pair_bio$S_y <- pair_bio$y - 0.5
+
+list_tiles <- lapply(1:nrow(pair_bio), function(x){
+  # create a matrix of coordinates that also 'close' the polygon
+  res <- matrix(c(pair_bio[x, "W_x"], pair_bio[x, "N_y"],
+                  pair_bio[x, "E_x"], pair_bio[x, "N_y"],
+                  pair_bio[x, "E_x"], pair_bio[x, "S_y"],
+                  pair_bio[x, "W_x"], pair_bio[x, "S_y"],
+                  pair_bio[x, "W_x"], pair_bio[x, "N_y"]),
+                ncol = 2, byrow = TRUE)
+  # create polygon objects
+  st_polygon(list(res))
+})
+
+pair_bio2 <- st_sf(site = pair_bio[, "site"], st_sfc(list_tiles))
+plot(pair_bio2)
+
+# sabre package: Spatial Association Between REgionalizations
+library(sabre)
+library(sf)
+
+pair_sf <- st_sf(site = pair_bio[, "site"],
+                 st_sfc(list_tiles)) %>%
+  left_join(pair_bio[, c("site", "cluster_beckett")], by = "site") %>%
+  group_by(cluster_beckett) %>%
+  summarise()
+
+pair_sf2 <- st_sf(site = pair_bio[, "site"],
+                 st_sfc(list_tiles)) %>%
+  left_join(pair_bio[, c("site", "cluster_fastgreedy")], by = "site") %>%
+  group_by(cluster_fastgreedy) %>%
+  summarise()
+
+plot_grid(
+  ggplot(pair_sf) +
+    geom_sf(aes(fill = as.factor(cluster_beckett))) +
+    scale_fill_brewer("Beckett", palette = "Paired"),
+  ggplot(pair_sf2) +
+    geom_sf(aes(fill = as.factor(cluster_fastgreedy))) +
+    scale_fill_brewer("Fastgreedy", palette = "Paired")
+)
+
+# Vmeasure of the two selected bioregionalizations
+vmeasure_calc(x = pair_sf, x_name = cluster_beckett,
+                    y = pair_sf2, y_name = cluster_fastgreedy)
+```
+
+\newpage
+
+## 3.5. Moran autocorrelation
 
 ```{r autocorrelation, eval = TRUE}
-
 ## Autocorrelation
 # https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html
 library(sp)
@@ -775,156 +859,15 @@ ggplot(all_moran, aes(k, moran)) +
 
 ```
 
-## Pairs of maps
-We can as well compare each pair of bioregion to each other.
-
-```{r pair_sabre, eval = FALSE}
-# sabre package: test between oslom and ward
-# Spatial Association Between REgionalizations
-library(sabre)
-library(sf)
-
-bioregions_sf <- st_as_sf(all_bioregions, coords = c("x", "y")) %>%
-  st_cast(to = "MULTILINESTRING")
-
-po <- vmeasure_calc(x = bioregions_sf, x_name = oslom,
-                    y = bioregions_sf, y_name = ward)
-
-# Groups of pixels through the different methods
-list_group_oslom <- by(all_bioregions$site, all_bioregions$oslom, identity)
-list_group_oslom <- lapply(list_group_oslom, as.character)
-
-list_group_ward <- by(all_bioregions$site, all_bioregions$ward, identity)
-list_group_ward <- lapply(list_group_ward, as.character)
-
-list_group_greedy <- by(all_bioregions$site, all_bioregions$greedy, identity)
-list_group_greedy<- lapply(list_group_greedy, as.character)
-
-list_group_lpawb <- by(all_bioregions$site, all_bioregions$lpawb, identity)
-list_group_lpawb <- lapply(list_group_lpawb, as.character)
-
-list_group_infomap <- by(all_bioregions$site, all_bioregions$infomap, identity)
-list_group_infomap <- lapply(list_group_infomap, as.character)
-
-list_combined <- lapply(list_group_oslom, function(x) x[x %in% list_group_ward[[1]]])
-list_combined <- lapply(list_combined, function(x) x[x %in% list_group_greedy[[1]]])
-list_combined <- lapply(list_combined, function(x) x[x %in% list_group_lpawb[[1]]])
-list_combined <- lapply(list_combined, function(x) x[x %in% list_group_infomap[[1]]])
-
-# For one combination only
-list1_oslom <-
-  all_bioregions[which(all_bioregions$oslom == unique(all_bioregions$oslom)[1]),
-                 "site"]
-list1_ward <- all_bioregions[which(all_bioregions$ward == unique(all_bioregions$ward)[1]),
-                             "site"]
-list1_greedy <- all_bioregions[which(all_bioregions$greedy == unique(all_bioregions$greedy)[1]),
-                               "site"]
-list1_lpawb <- all_bioregions[which(all_bioregions$lpawb == unique(all_bioregions$lpawb)[1]),
-                              "site"]
-list1_infomap <- all_bioregions[which(all_bioregions$infomap == unique(all_bioregions$infomap)[1]),
-                                "site"]
-
-list1_combined <- list1_oslom[list1_oslom %in% list1_ward]
-list1_combined <- list1_combined[list1_combined %in% list1_greedy]
-list1_combined <- list1_combined[list1_combined %in% list1_lpawb]
-list1_combined <- list1_combined[list1_combined %in% list1_infomap]
-
-all_bioregions$combined <- NA
-all_bioregions[which(all_bioregions$site %in% list1_combined), "combined"] <- "1"
-
-```
-
-# Structuration vs bioregionalizations
-
-```{r structuration}
-# 
-nbopt <- sp_df %>%
-  left_join(oslom_vignette, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "bioregion"] <- "oslom"
-
-# Plot of Ward bioregions
-nbopt <- nbopt %>%
-  left_join(ward_res, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "cluster"] <- "ward"
-
-# Plot of DBSCAN bioregions
-nbopt <- nbopt %>%
-  left_join(dbscan_res, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "cluster"] <- "dbscan"
-
-# Plot of GMM bioregions
-nbopt <- nbopt %>%
-  left_join(gmm_res, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "cluster"] <- "gmm"
-
-# Plot of fastgreedy bioregions
-nbopt <- nbopt %>%
-  left_join(bip_site, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "module"] <- "fastgreedy"
-
-# Plot of Beckett (LPAwb) bioregions
-nbopt <- nbopt %>%
-  left_join(bip_site_beckett, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "module"] <- "lpawb"
-
-# Plot of Infomap bioregions
-nbopt <- nbopt %>%
-  left_join(bip_site_infomap, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "module"] <- "infomap"
-
-# Plot of Louvain bioregions
-nbopt <- nbopt %>%
-  left_join(bip_site_louvain, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "module"] <- "louvain"
-
-# Plot of Walktrap bioregions
-nbopt <- nbopt %>%
-  left_join(bip_site_walktrap, by = "site") %>%
-  distinct(site, .keep_all = TRUE)
-colnames(nbopt)[colnames(nbopt) == "module"] <- "walktrap"
-
-# Import results
-po <- data.frame(nbopt = length(unique(sp_df$opt)),
-                 nb_oslom = length(unique(nbopt$oslom)),
-                 nb_ward = length(unique(nbopt$ward)),
-                 nb_dbscan = length(unique(nbopt$dbscan)),
-                 nb_gmm = length(unique(nbopt$gmm)),
-                 nb_fastgreedy = length(unique(nbopt$fastgreedy)),
-                 nb_lpawb = length(unique(nbopt$lpawb)),
-                 nb_infomap = length(unique(nbopt$infomap)),
-                 nb_louvain = length(unique(nbopt$louvain)),
-                 nb_walktrap = length(unique(nbopt$walktrap)))
-
-pop <- tidyr::gather(po, bioregions, nb, contains("nb_"))
-
-# Plot: number of unique topt vs variance of bioregions
-ggplot(pop, aes(nbopt, nb)) +
-  geom_boxplot() +
-  labs(x = "Number of optimums", y = "Number of bioregions") +
-  theme_classic() +
-  theme(panel.border = element_rect(fill = "transparent"))
-
-```
-
 \newpage
 
 # 4. Species' contributions
 
-This part aims at evaluating the contributions of species to the different
-bioregions created.
+This part aims at evaluating the contributions of species to the different bioregions created.
 
 Function `contrib()` with three indices as output.
 
-The following figure illustrates how the rho score from Lenormand et al. 2019
-is calculated.
+The following figure illustrates how the \rho score from [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) is calculated.
 
 ```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
 knitr::include_graphics("../figures/zscore_scheme.png")
@@ -934,20 +877,19 @@ $$
 \rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
 $$
 
-Formula of Cz scores:
+Formula of `Cz` scores:
 
 $$
-P_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
+C_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
 $$
 
-where $P_i$ is the participation coefficient of node $i$, $k_{is}$ is the number of links of node $i$ to region $s$, $k_i$ is the total number of links of node $i$ and $N_m$ is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
+where $C_i$ is the participation coefficient of node $i$, $k_{is}$ is the number of links of node $i$ to region $s$, $k_i$ is the total number of links of node $i$ and $N_m$ is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
 
 $$
 z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
 $$
 
-The within-module degree z-score measures how well-connected node $i$ is to
-other nodes in the module.
+The within-module degree z-score measures how well-connected node $i$ is to other nodes in the module.
 
 The next chunk illustrates how `contrib()` function returns these 3 indices.
 
@@ -964,10 +906,9 @@ scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
 
 # 5. Interaction between bioregions
 
-Following the equation of the rho score from above.
+Following the equation of the \rho score from above.
 
-The interactions between the different bioregions can then be calculated following
-these equations:
+The interactions between the different bioregions can then be calculated following these equations:
 
 $$
 \hat\rho_{ij}^{+} = {\rho_{ij}}_{\rho_{ij}>1.96}
@@ -1102,11 +1043,15 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 
 [Newman, M. E. J. (2006). Finding community structure in networks using the eigenvectors of matrices. Physical Review E, 74(3), 036104.](https://doi.org/10.1103/PhysRevE.74.036104)
 
+[Nowosad, J., & Stepinski, T. F. (2018). Spatial association between regionalizations using the information-theoretical V-measure. International Journal of Geographical Information Science, 32(12), 2386–2401.](https://doi.org/10.1080/13658816.2018.1511794)
+
 [Guimerà, R., Nunes Amaral, L. Functional cartography of complex metabolic networks. Nature 433, 895–900 (2005).](https://doi.org/10.1038/nature03288)
 
 [Kaufman, L. & Rousseeuw, P.J. (1990) Finding groups in data:an introduction to cluster analysis. Wiley Series in Probabilityand Mathematical Statistics. Wiley, New York.](https://www.wiley.com/en-us/Finding+Groups+in+Data%3A+An+Introduction+to+Cluster+Analysis-p-9780471735786)
 
 [Lancichinetti A, Radicchi F, Ramasco JJ, Fortunato S (2011) Finding Statistically Significant Communities in Networks. PLoS ONE 6(4): e18961.](https://doi.org/10.1371/journal.pone.0018961)
+
+[Lenormand, M., Papuga, G., Argagnon, O., Soubeyrand, M., De Barros, G., Alleaume, S., & Luque, S. (2019). Biogeographical network analysis of plant species distribution in the Mediterranean region. Ecology and Evolution, 9(1), 237–250.](https://doi.org/10.1002/ece3.4718)
 
 [Leroy, B., Meynard, C.N., Bellard, C. and Courchamp, F. (2016), virtualspecies, an R package to generate virtual species distributions. Ecography, 39: 599-607.](https://doi.org/10.1111/ecog.01388)
 
@@ -1118,11 +1063,15 @@ all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
 
 [Rosvall, M., Axelsson, D., & Bergstrom, C. T. (2009). The map equation. The European Physical Journal Special Topics, 178(1), 13–23.](https://doi.org/10.1140/epjst/e2010-01179-1)
 
+\newpage
+
 ## 7.2. R packages
 
 http://meanmean.me/meanshift/r/cran/2016/08/28/meanShiftR.html
 
 Hahsler M, Piekenbrock M, Doran D (2019). “dbscan: Fast Density-Based Clustering with R.” Journal of Statistical Software, 91(1), 1–30. doi: 10.18637/jss.v091.i01. 
+
+[sabre: Spatial Association Between REgionalizations](https://cran.r-project.org/web/packages/sabre/vignettes/sabre.html)
 
 [Scrucca L, Fop M, Murphy TB, Raftery AE (2016). “mclust 5: clustering, classification and density estimation using Gaussian finite mixture models.” The R Journal, 8(1), 289–317.](https://doi.org/10.32614/RJ-2016-021)
 

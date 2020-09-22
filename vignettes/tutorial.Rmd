@@ -448,10 +448,10 @@ The next chunk runs the different network methods on the virtual dataset.
 
 ```{r network}
 # With fastgreedy
-bip <- network(dat = sp_mat, algo = "greedy", weight = FALSE)
+bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
 
 # fastgreedy, input data frame
-bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
+bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
                   algo = "greedy",
                   weight = FALSE, input = "data frame", site = "site",
                   sp = "sp", ab = NULL)
@@ -459,13 +459,13 @@ bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
 table(bip$module); table(bip_df$module)
 
 # With Beckett algorithm
-bip_beckett <- network(dat = sp_mat, algo = "beckett", weight = FALSE)
+bip_beckett <- community(dat = sp_mat, algo = "beckett", weight = FALSE)
 
 # With Louvain
-bip_louvain <- network(dat = sp_mat, algo = "louvain", weight = FALSE)
+bip_louvain <- community(dat = sp_mat, algo = "louvain", weight = FALSE)
 
 # With Walktrap
-bip_walktrap <- network(dat = sp_mat, algo = "walktrap", weight = FALSE)
+bip_walktrap <- community(dat = sp_mat, algo = "walktrap", weight = FALSE)
 
 # Only sites
 bip_site <- bip %>%
@@ -504,7 +504,7 @@ cat(paste0("Number of bioregions detected = ",
 table(oslom_mod$site)[table(oslom_mod$site) > 1]
 
 # Infomap
-infomap_mod <- network(
+infomap_mod <- community(
   dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
   input = "data frame", site = "site", sp = "sp",
   N = 10)
@@ -517,7 +517,7 @@ infomap_site <- infomap_mod %>%
 # Clean the following sections
 # Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
-# Precise in the .man of network() than some algorithms give a module for both sites and species (infomap, igraph algorithms)
+# Precise in the .man of community() than some algorithms give a module for both sites and species (infomap, igraph algorithms)
 # check cluster_ward
 
 
@@ -560,13 +560,13 @@ mbm <- microbenchmark(
   centroid = cluster(sp_mat, method = "centroid", n_clust = 4),
   diana = cluster(sp_mat, method = "diana", n_clust = 4),
   # network methods
-  fastgreedy = network(dat = sp_mat, algo = "greedy", weight = FALSE),
-  beckett = network(dat = sp_mat, algo = "beckett", weight = FALSE),
-  louvain = network(dat = sp_mat, algo = "louvain", weight = FALSE),
-  walktrap = network(dat = sp_mat, algo = "walktrap", weight = FALSE),
+  fastgreedy = community(dat = sp_mat, algo = "greedy", weight = FALSE),
+  beckett = community(dat = sp_mat, algo = "beckett", weight = FALSE),
+  louvain = community(dat = sp_mat, algo = "louvain", weight = FALSE),
+  walktrap = community(dat = sp_mat, algo = "walktrap", weight = FALSE),
   oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
                 t_param = 0.1, cp_param = 0.5),
-  infomap = network(dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap",
+  infomap = community(dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap",
                     weight = FALSE, input = "data frame", site = "site",
                     sp = "sp", N = 10),
   # number of times for each algorithm

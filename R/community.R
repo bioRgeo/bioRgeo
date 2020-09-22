@@ -1,5 +1,5 @@
 
-network <- function(dat, algo = "greedy", weight = FALSE,
+community <- function(dat, algo = "greedy", weight = FALSE,
                     input = "matrix", site = NULL, sp = NULL,
                     ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
                     cp_param = 0.5, hr = 0){

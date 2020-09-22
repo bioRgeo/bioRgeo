@@ -1,8 +1,8 @@
-\name{network}
-\alias{network}
+\name{community}
+\alias{community}
 \title{Community detection on bipartite networks}
 \usage{
-network(dat, algo = "greedy", weight = FALSE, input = "matrix", site = NULL, sp = NULL, ab = NULL)
+community(dat, algo = "greedy", weight = FALSE, input = "matrix", site = NULL, sp = NULL, ab = NULL)
 }
 \arguments{
 \item{dat}{a contingency matrix with sites as rows and species as columns.If 'algo="oslom"', a data.frame with three columns containing id1, id2 and a similarity metric (output of 'bioRgeo::simil()' function).}
@@ -56,7 +56,7 @@ data("virtual_sp")
 sp_df <- virtual[[1]]
 
 # fastgreedy algorithm from igraph
-bip_df <- network(dat = sp_df[which(sp_df$pa > 0), ],
+bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
                          algo = "greedy",
                          weight = FALSE, input = "data frame", site = "site",
                          sp = "sp", ab = NULL)

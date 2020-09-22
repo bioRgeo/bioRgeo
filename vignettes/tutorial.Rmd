@@ -452,9 +452,9 @@ bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
 
 # fastgreedy, input data frame
 bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
-                  algo = "greedy",
-                  weight = FALSE, input = "data frame", site = "site",
-                  sp = "sp", ab = NULL)
+                    algo = "greedy",
+                    weight = FALSE, input = "data frame", site = "site",
+                    sp = "sp", ab = NULL)
 
 table(bip$module); table(bip_df$module)
 
@@ -520,7 +520,6 @@ infomap_site <- infomap_mod %>%
 # Precise in the .man of community() than some algorithms give a module for both sites and species (infomap, igraph algorithms)
 # check cluster_ward
 
-
 ```
 
 *Warning*
@@ -567,8 +566,8 @@ mbm <- microbenchmark(
   oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
                 t_param = 0.1, cp_param = 0.5),
   infomap = community(dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap",
-                    weight = FALSE, input = "data frame", site = "site",
-                    sp = "sp", N = 10),
+                      weight = FALSE, input = "data frame", site = "site",
+                      sp = "sp", N = 10),
   # number of times for each algorithm
   times = 50)
 
@@ -637,13 +636,17 @@ ggplot(bio_maps, aes(x, y)) +
 
 This part aims at identifying the sites all the time gathered together.
 
-$$
+`comparison` function returns for each site, the percentage of same classification with all the other sites for all the bioregionalizations.
+The equation for the site $f$ is the following:
 
 $$
+Concordance_f = 100\times\frac{\sum^M_{i=1}\sum^{n-1}_{j=1}j_i = f_i}{M}
+$$
+
+with $M$ the number of bioregionalization methods used and $n$ the number of sites.
 
 ```{r comparison, eval = TRUE}
-table(bio_maps$mod)
-
+# Spreading the format of bio_maps: one column per bioregionalization
 bio_maps2 <- tidyr::spread(bio_maps, mod, val)
 
 # Test of comparison function
@@ -653,34 +656,62 @@ all100 <- comparison(bio_maps2, site = "site",
 lapply(all100, dim)
 head(all100[[2]])
 
-# Plot
-all100 %>%
-  left_join(bio_maps[, c("site", "x", "y")], by = c("id1" = "site")) %>%
-  distinct(id1, .keep_all = TRUE) %>%
+# Plot of fully concordant areas
+all100[[2]] %>%
+  left_join(bio_maps[, c("site", "x", "y")], by = c("id" = "site")) %>%
+  distinct(id, .keep_all = TRUE) %>%
   ggplot(aes(x, y)) +
   geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
             alpha = 0.8, width = 1, height = 1) +
   scale_color_viridis_d("Bioregions", option = "E") +
   scale_fill_viridis_d("Bioregions", option = "E") +
-  # scale_color_brewer("Bioregions", palette = "Paired") +
-  # scale_fill_brewer("Bioregions", palette = "Paired") +
   coord_equal() +
   labs(title = "Identical bioregions") +
-  theme(panel.background = element_rect(fill = "transparent", colour = NA))
+  theme(panel.background = element_rect(fill = "transparent",
+                                        colour = NA))
+```
 
-##
-# Plot with tiles
-all100 %>%
-  left_join(bio_maps[, c("site", "x", "y")], by = c("id1" = "site")) %>%
-  distinct(id1, .keep_all = TRUE) %>%
-  st_as_sf(coords = c("x", "y")) %>%
-  group_by(pair_bio) %>%
-  st_cast("MULTIPOINT") %>%
-  summarise() %>%
-  ggplot() +
-  geom_sf(aes(color = as.factor(pair_bio)), show.legend = FALSE)
-geom_tile(aes(fill = as.factor(pair_bio), color = as.factor(pair_bio)),
-          alpha = 0.8, width = 1, height = 1)
+We can also plot the concordance across the bioregionalizations for one site only.
+
+```{r comparison_onesite, eval = TRUE}
+# Plot percentage of concordance for one site only
+site103 <- reshape2::melt(all100[[1]])
+colnames(site103) <- c("id1", "id2", "perc")
+# Remove NAs
+site103 <- site103[complete.cases(site103), ]
+# Only site 103
+site103 <- site103[which(site103$id1 == "site103" |
+                           site103$id2 == "site103"), ]
+
+site103 <- rbind(
+  data.frame(
+    site = site103[which(site103$id1 == "site103"), "id2"],
+    perc = site103[which(site103$id1 == "site103"), "perc"]),
+  data.frame(
+    site = site103[which(site103$id2 == "site103"), "id1"],
+    perc = site103[which(site103$id2 == "site103"), "perc"]))
+
+# Adding coordinates
+site103 <- left_join(site103,
+                     sp_df[!duplicated(sp_df$site), c("site", "x", "y")],
+                     by = "site")
+
+coord103 <- distinct(sp_df[which(sp_df$site == "site103"),
+                           c("site", "x", "y")])
+
+# Plot
+ggplot(site103, aes(x, y)) +
+  geom_tile(aes(fill = perc, color = perc),
+            alpha = 0.8, width = 1, height = 1) +
+  geom_tile(data = coord103, color = "black", fill = "black") +
+  scale_color_distiller("Concordance (%)", palette = "OrRd",
+                        direction = 1) +
+  scale_fill_distiller("Concordance (%)", palette = "OrRd",
+                       direction = 1) +
+  coord_equal() +
+  labs(title = "Site 103") +
+  theme(panel.background = element_rect(fill = "transparent",
+                                        colour = NA))
 
 ```
 

@@ -47,12 +47,12 @@ comparison <- function(dat, site, bio_col, thres = 10, output = "both"){
   diag(list_mat_pair) <- NA
   list_mat_pair[lower.tri(list_mat_pair)] <- NA
 
+  # percentage instead of sum
+  list_mat_pair <- 100*list_mat_pair/length(bio_col)
+
   if(output == "percentage"){
     return(list_mat_pair)
   } else if(output %in% c("common", "both")){
-
-    # percentage instead of sum
-    list_mat_pair <- 100*list_mat_pair/length(bio_col)
 
     # Conversion to data frame
     list_df_pair <- reshape2::melt(list_mat_pair)
@@ -78,6 +78,15 @@ comparison <- function(dat, site, bio_col, thres = 10, output = "both"){
     thresh <- names(table(all100$uni)[table(all100$uni) > thres])
 
     all100 <- all100[which(all100$uni %in% thresh), ]
+
+    # Only one column with sites
+    tmp <- all100[, c("id1", "uni")]
+    colnames(tmp) <- c("id", "uni")
+    all100 <- all100[, c("id2", "uni")]
+    colnames(all100) <- c("id", "uni")
+    # Binding and removing duplicates
+    all100 <- rbind(all100, tmp)
+    all100 <- all100[!duplicated(all100$id), ]
 
     if(output == "common"){
       return(all100)

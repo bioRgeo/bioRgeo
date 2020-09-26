@@ -12,10 +12,10 @@ output:
     toc_depth: 2
     number_sections: true
 vignette: >
-%\VignetteIndexEntry{Tutorial for bioRgeo R package}
+ %\VignetteIndexEntry{Tutorial for bioRgeo R package}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8} 
- editor_options: 
+editor_options: 
  chunk_output_type: console
 ---
 
@@ -340,7 +340,7 @@ Quick description of Silhouette. They come with optimization procedures to ident
 
 The [vignette](https://cran.r-project.org/web/packages/fastcluster/vignettes/fastcluster.pdf) of \code{fastcluster} package provides further details about some of the available methods.  
 
-```{r cluster}
+```{r cluster_methods}
 
 knitr::kable(data.frame(
   Acronym = c("kmeans", "pam", "meanshift", "dbscan", "gmm",
@@ -377,7 +377,11 @@ knitr::kable(data.frame(
     "Starting with all observations forming one single large cluster, groups are repeatedlydivided until each cluster contains only a single observation. At each stage, thecluster with the largest diameter in terms of the maximum observed dissimilarity isselected (Kaufman & Rousseeuw, 1990)"),
   `Source R package` = c("stats", "cluster", "meanShiftR", "dbscan", "mclust",
                          rep("fastcluster", 8), "cluster")))
+```
 
+The next chunk computes the different clustering methods on the virtual data.
+
+```{r cluster}
 # CA_res <- CA_cluster(sp_mat)
 km_res <- cluster(sp_mat, method = "kmeans", n_clust = 4)
 
@@ -456,7 +460,9 @@ knitr::kable(data.frame(
 
 ```
 
+\newpage
 The next chunk runs the different network methods on the virtual dataset.  
+
 ```{r network}
 # With fastgreedy
 bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
@@ -584,13 +590,25 @@ mbm <- microbenchmark(
                       weight = FALSE, input = "data frame", site = "site",
                       sp = "sp", N = 10),
   # number of times for each algorithm
-  times = 50)
+  times = 10)#50)
 
-mbm
 ```
 
 ```{r microbenchmark_plot, eval = FALSE}
-autoplot(mbm)
+mbm <- readRDS("../figures/20200923_microbenchmark_times10.rds")
+
+# Order microbenchmark by time
+mbm_plot <- as.data.frame(mbm)
+
+#Plot
+ggplot(mbm_plot, aes(reorder(expr, time, na.rm = TRUE), time)) +
+  geom_boxplot(aes(fill = as.factor(expr))) +
+  scale_y_continuous(trans = "log") +
+  scale_fill_viridis_d("Method") +
+  labs(x = "Methods", y = "Time (log-transformed ms)") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = "NA"))
+
 ```
 
 \newpage

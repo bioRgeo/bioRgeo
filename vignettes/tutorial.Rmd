@@ -1,5 +1,5 @@
 ---
-title: "Tutorial"
+title: "Tutorial for bioRgeo R package"
 author: "Pierre Denelle"
 date: "`r Sys.Date()`"
 output: 

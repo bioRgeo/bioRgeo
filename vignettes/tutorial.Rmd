@@ -7,14 +7,10 @@ output:
     toc: true
     toc_depth: 2
     number_sections: true
-  word_vignette:
-    toc: true
-    toc_depth: 2
-    number_sections: true
 vignette: >
- %\VignetteIndexEntry{Tutorial for bioRgeo R package}
- %\VignetteEngine{knitr::rmarkdown}
- %\VignetteEncoding{UTF-8} 
+  %\VignetteIndexEntry{Tutorial for bioRgeo R package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8} 
 editor_options: 
  chunk_output_type: console
 ---
@@ -35,7 +31,7 @@ Our example and package is mostly designed for ecologists interested in detectin
 The principle of the package is illustrated by the following figure.
 
 ```{r package_scheme, fig.label = "Workflow of the package."}
-knitr::include_graphics("../figures/Bioregionalization_scheme3.png")
+knitr::include_graphics("../figures/bioRgeo_scheme.png")
 ```
 
 \newpage
@@ -661,6 +657,7 @@ ggplot(bio_maps, aes(x, y)) +
   scale_fill_brewer("Bioregions", palette = "Paired") +
   coord_equal() +
   labs(title = "Bioregionalizations") +
+  theme_classic() +
   theme(panel.background = element_rect(fill = "transparent", colour = NA)) +
   facet_wrap(~ mod)
 
@@ -681,7 +678,7 @@ $$
 
 with $M$ the number of bioregionalization methods used and $n$ the number of sites.
 
-```{r comparison, eval = TRUE}
+```{r comparison}
 # Spreading the format of bio_maps: one column per bioregionalization
 bio_maps2 <- tidyr::spread(bio_maps, mod, val)
 
@@ -703,13 +700,13 @@ all100[[2]] %>%
   scale_fill_viridis_d("Bioregions", option = "E") +
   coord_equal() +
   labs(title = "Identical bioregions") +
-  theme(panel.background = element_rect(fill = "transparent",
-                                        colour = NA))
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA))
 ```
 
 We can also plot the concordance across the bioregionalizations for one site only.
 
-```{r comparison_onesite, eval = TRUE}
+```{r comparison_onesite}
 # Plot percentage of concordance for one site only
 site103 <- reshape2::melt(all100[[1]])
 colnames(site103) <- c("id1", "id2", "perc")
@@ -746,8 +743,8 @@ ggplot(site103, aes(x, y)) +
                        direction = 1) +
   coord_equal() +
   labs(title = "Site 103") +
-  theme(panel.background = element_rect(fill = "transparent",
-                                        colour = NA))
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA))
 
 ```
 
@@ -784,7 +781,7 @@ list_tiles <- lapply(1:nrow(pair_bio), function(x){
 })
 
 pair_bio2 <- st_sf(site = pair_bio[, "site"], st_sfc(list_tiles))
-plot(pair_bio2)
+# plot(pair_bio2)
 
 # sabre package: Spatial Association Between REgionalizations
 library(sabre)
@@ -862,7 +859,7 @@ ggplot(moran_df, aes(k, `Moran's I`)) +
   labs(title = "Comparison of bioregionalization",
        x = "Number of neighbours", y = "Moran's I") +
   theme_classic() +
-  theme(panel.border = element_rect(fill= NA, color = "black"))
+  theme(panel.border = element_rect(fill = NA, color = "black"))
 
 ```
 
@@ -876,7 +873,7 @@ This part aims at evaluating the contributions of species to the different biore
 
 Function `contrib()` with three indices as output.
 
-The following figure illustrates how the \rho score from [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) is calculated.
+The following figure illustrates how the $\rho$ score from [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) is calculated.
 
 ```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
 knitr::include_graphics("../figures/zscore_scheme.png")
@@ -933,7 +930,7 @@ scores <- contribute(dat = scores_infomap,
                      bioregion_col = "mod_site", bioregion_sp_col = "mod_sp")
 ```
 
-There is a positive link between \rho and $z$ scores for the species.
+There is a positive link between $\rho$ and $z$ scores for the species.
 
 ```{r contrib_plot}
 # Scores of sites only
@@ -950,7 +947,7 @@ ggplot(scores_sp, aes(rho, z_sp)) +
   labs(title = "Species scores",
        x = expression(rho), y = "Intra-module degree (z)") +
   theme_classic() +
-  theme(panel.border = element_rect(fill= NA, color = "black"))
+  theme(panel.border = element_rect(fill = NA, color = "black"))
 
 ```
 
@@ -975,7 +972,7 @@ scores2 <- contribute(dat = scores_oslom,
 
 # 5. Interaction between bioregions
 
-Following the equation of the \rho score from above.
+Following the equation of the $\rho$ score from above.
 
 The interactions between the different bioregions can then be calculated following these equations:
 
@@ -996,42 +993,11 @@ $$
 \lambda_{jj'} = \frac{1}{|A_j|}\sum_{i \in A_{j}}\hat\rho_{jj'}^{+}
 $$
 
-```{r z_scores_dummy}
+\newpage
 
-# 10 sites with species richness belonging to [1, 3]
-set.seed(1)
-sites <- sapply(paste0("site", seq(1:10)),
-                function(x) rep(x, sample(c(1:3), 1)))
-# Pool of 5 species distributed across the sites
-species <- lapply(sites,
-                  function(x) sample(paste0("sp", seq(1:5)), 
-                                     length(x), replace = TRUE))
-# 3 bioregions assigned randomly
-bioregions <- sample(paste0("bio", seq(1:3)), length(sites), replace = TRUE)
-bioregions <- data.frame(site = names(sites),
-                         bioregion = bioregions)
-
-# Conversion to data frame
-fuzzy <- data.frame(site = as.character(unlist(sites)),
-                    sp = as.character(unlist(species)))
-fuzzy <- left_join(fuzzy, bioregions, by = "site")
-
-table(fuzzy$sp, fuzzy$bioregion)
-
-# Compute zscores
-zscores <- zscore(fuzzy, sp_col = "sp", site_col = "site",
-                  bioregion_col = "bioregion", output_format = "matrix")
-zscores
-
-# Interactions between bioregions
-interact(input_network = "projected",
-         dat = zscores, plot = TRUE, output_format = "matrix")
-
-```
-
-```{r lambda}
+```{r lambda, eval = FALSE}
 # tmp <- left_join(sp_df, oslom_vignette, by = "site")
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_vignette, by = "site")
+tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_mod, by = "site")
 # table(tmp$sp, tmp$bioregion)
 
 z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",

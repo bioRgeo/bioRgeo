@@ -530,7 +530,6 @@ infomap_site <- infomap_mod %>%
 # Clean the following sections
 # Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
-# Precise in the .man of community() than some algorithms give a module for both sites and species (infomap, igraph algorithms)
 # check cluster_ward
 
 ```
@@ -590,7 +589,7 @@ mbm <- microbenchmark(
 
 ```
 
-```{r microbenchmark_plot, eval = FALSE}
+```{r microbenchmark_plot}
 mbm <- readRDS("../figures/20200923_microbenchmark_times10.rds")
 
 # Order microbenchmark by time
@@ -606,6 +605,8 @@ ggplot(mbm_plot, aes(reorder(expr, time, na.rm = TRUE), time)) +
   theme(panel.border = element_rect(fill = "NA"))
 
 ```
+
+On a bipartite network made of 400 sites and 100 species, the fastest algorithm is the Louvain algorithm. Many algorithms show similar performances. Mean-shift and OSLOM algorithms are the slowest ones.  
 
 \newpage
 
@@ -704,7 +705,9 @@ all100[[2]] %>%
   theme(panel.border = element_rect(fill = NA))
 ```
 
-We can also plot the concordance across the bioregionalizations for one site only.
+\newpage
+
+We can also plot the concordance across the bioregionalizations for one site only. We here look at the site 103.
 
 ```{r comparison_onesite}
 # Plot percentage of concordance for one site only
@@ -837,7 +840,7 @@ coordinates(bio_maps_moran) <- ~ x + y
 coo <- coordinates(bio_maps_moran)
 # Bandwidth used: number of nearest neighbours for the calculation of
 # the weights
-bws <- c(3, 4, 6, 9, 12, 18, 24)
+bws <- c(2, 3, 9, 27)
 
 # List of Moran autocorrelation
 moran_df <- c()
@@ -869,35 +872,54 @@ GMM method gives the highest spatial autocorrelation according to Moran'I index.
 
 # 4. Species' contributions
 
-This part aims at evaluating the contributions of species to the different bioregions created.
+Once a relevant bioregionalization has been identified, we can evaluate how the species are distributed within and across the different bioregions. Since sites belong to different bioregions, species can occur in sites of one or several bioregions. Therefore, one species can contribute a lot to the construction of one particular bioregion or, reverse, dilute its occurrences in many different assemblages.  
 
-Function `contrib()` with three indices as output.
-
-The following figure illustrates how the $\rho$ score from [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) is calculated.
+This part aims at evaluating the contributions of species to the different bioregions created. Contribution can be measured in several ways. A first index, the $\rho$ score proposed by [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) measures per species in many bioregions are distributed the sites in which it occurs. The following figure illustrates how this $\rho$ score is calculated:
 
 ```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
 knitr::include_graphics("../figures/zscore_scheme.png")
 ```
 
+The formula to compute the contribution of a species $i$ in the bioregion $j$ is the following:
+
 $$
 \rho_{ij} = \frac{n_{ij} - \frac{n_in_j}{n}}{\sqrt(\frac{n-n_j}{n-1}(1-\frac{n_j}{n})\frac{n_jn_i}{n})}
 $$
 
-The test value $\rho_{ij}$ is negative if the species $i$ is under‐represented in region $j$, equal to 0 if the species $i$ is present in region $j$ in the   same proportion as in the whole study area, or positive if the species $i$ is over‐represented in region $j$. In  the latter case, we  consider that the species $i$ contribute positively to region $j$ and the level of contribution depends on the $\rho_{ij}$  valu
+with $n$ the total number of sites, $n_i$ the number of sites in which species $i$ occurs, $n_j$ the number of sites belonging to the bioregion $j$ and $n_{ij}$ the number of sites belonging to the bioregion $j$ and in which the species $i$ occurs.
 
-Formula of `Cz` scores:
+The score $\rho_{ij}$ is negative if the species $i$ is under‐represented in region $j$, equal to 0 if the species $i$ is present in region $j$ in the same proportion as in the whole study area, or positive if the species $i$ is over‐represented in region $j$.
+
+\newpage
+
+Based on this contribution score, a bioregion can be associated with each species. The species can belong to the bioregion to which its contribution score is the highest. With some bipartite methods however, both sites and species are classed among bioregions. This is the case for Infomap algorithm for example. In this case, two other indices to evaluate the behaviour of species across bioregions were proposed by [Guimerà & Nunes Amaral (2005)](https://doi.org/10.1038/nature03288). Their two indices are the coefficient of participation $C$ and the intra-module degree $z$. 
+
+The coefficient of participation $C_i$ evaluates for a species $i$ in how many different bioregions than the one it belongs to it occurs. Its formula is the following:
 
 $$
-C_{i} = 1 - \sum_{i = 1}^{N_m}{(\frac{k_{is}}{k_{i}})^2} 
+C_{i} = 1 - \sum_{i = 1}^{N_b}{(\frac{k_{is}}{k_{i}})^2} 
 $$
 
-where $C_i$ is the participation coefficient of node $i$, $k_{is}$ is the number of links of node $i$ to region $s$, $k_i$ is the total number of links of node $i$ and $N_m$ is the total number of regions. We calculated the participation coefficient at each level of the biogeographical structure identified by Map Equation. 
+where $C_i$ is the participation coefficient of species $i$, $k_{is}$ is the number of links of species $i$ to bioregion $s$, $k_i$ is the total number of links of species $i$ and $N_b$ is the total number of bioregions. This index ranges from 0 (a species that occurs only at sites in its own bioregion) to $1 - 1/N_b$ (i.e. an extreme generalist species).  
+
+The second index proposed by [Guimerà & Nunes Amaral (2005)](https://doi.org/10.1038/nature03288) is the intra-module degree $z$. This index is calculated like this:
 
 $$
 z_i = \frac{k_i - \overline{k_{si}}}{\sigma_{k_{si}}}
 $$
 
-The within-module degree z-score measures how well-connected node $i$ is to other nodes in the module.
+with $k_i$ the number of sites in its assigned bioregion where species $i$ occurs,
+$\overline{k_{si}$ the average number of sites species from the bioregion occur in and $\sigma_{k_{si}$ the standard deviation.  
+
+The intra-module degree $z$ therefore measures how well-connected species $i$ is to other sites in its bioregion compared to the other species of this bioregion.
+
+These two scores can allow to draw a $Cz$ space in which all the species fall into. This space can then be divided in several parts with species having different behavious:  
+- periperals: species with low $C$ and $z$ scores. These species only belong to sites of their own bioregion and are pretty rare in it.
+- connectors: species with high $C$ and low $z$ scores. These species occur in many bioregions and are pretty rare.
+- module hubs: species with low $C$ and high $z$ scores. These species occur in sites of their own bioregion only but are abundant within it.
+- network hubs: species with high $C$ and $z$ scores. These species are generalists, broadly distributed across bioregions and abundant in their own.
+
+\newpage
 
 The next chunk illustrates how `contrib()` function returns these 3 indices.
 
@@ -943,7 +965,7 @@ scores_sp <- scores[!duplicated(scores$sp),
 
 ggplot(scores_sp, aes(rho, z_sp)) +
   geom_point(aes(color = as.factor(mod_sp)), size = 2) +
-  scale_color_brewer("Infomap\nmodule", palette = "Paired") +
+  scale_color_brewer("Infomap\nbioregion", palette = "Paired") +
   labs(title = "Species scores",
        x = expression(rho), y = "Intra-module degree (z)") +
   theme_classic() +
@@ -951,9 +973,29 @@ ggplot(scores_sp, aes(rho, z_sp)) +
 
 ```
 
-Some algorithms (like OSLOM) only classify sites into bioregions and do not assign species to bioregions.  
+From the $Cz$ scores, we can draw the $Cz$ space. The different categories are dividing the mean of each axis, making four categories.
 
-In this case, the argument `bioregion_sp_col` is set to `NULL` and the function `contribute()` assign species to a bioregion based on the most frequent bioregion across the sites where the species occurs. 
+```{r Cz_space}
+scores_sp$C_sp <- as.numeric(as.character(scores_sp$C_sp))
+
+ggplot(scores_sp, aes(C_sp, z_sp)) +
+  geom_point(aes(color = as.factor(mod_sp)), size = 2) +
+  scale_color_brewer("Infomap\nbioregion", palette = "Paired") +
+  geom_vline(xintercept = mean(scores_sp$C_sp)) +
+  geom_hline(yintercept = mean(scores_sp$z_sp)) +
+  annotate(geom = "label", x = 0, y = -1.5, label = "Peripherals") +
+  annotate(geom = "label", x = 0.6, y = -1.5, label = "Connectors") +
+  annotate(geom = "label", x = 0, y = 2, label = "Module hubs") +
+  annotate(geom = "label", x = 0.6, y = 2, label = "Network hubs") +
+  labs(title = "Cz space",
+       x = "Participation coefficient (C)", y = "Intra-module degree (z)") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA, color = "black"))
+
+```
+
+*Note*
+Some algorithms (like OSLOM) only classify sites into bioregions and do not assign species to bioregions. In this case, the argument `bioregion_sp_col` is set to `NULL` and the function `contribute()` assign species to a bioregion based on the most frequent bioregion across the sites where the species occurs. 
 
 ```{r contrib_proj_oslom}
 # Merging the bioregion identification with long-format data frame

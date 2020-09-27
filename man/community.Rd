@@ -44,7 +44,8 @@ Algorithm can be weighted in case of a weighted bipartite network.
 }
 
 \value{
-A data.frame with 2 columns: the sites and their associated bioregions.
+A data.frame with 2 columns: the sites and their associated bioregions.\cr
+Some algorithms (the ones from \code{igraph} package and \emph{infomap} return a bioregion for both types of nodes from the bipartite network. This means that both sites and species are classified into bioregions.)
 }
 
 \details{}

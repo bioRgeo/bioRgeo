@@ -8,10 +8,10 @@ output:
     toc_depth: 2
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{Tutorial for bioRgeo R package}
+%\VignetteIndexEntry{Tutorial for bioRgeo R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8} 
-editor_options: 
+  editor_options: 
  chunk_output_type: console
 ---
 
@@ -874,7 +874,7 @@ GMM method gives the highest spatial autocorrelation according to Moran'I index.
 
 Once a relevant bioregionalization has been identified, we can evaluate how the species are distributed within and across the different bioregions. Since sites belong to different bioregions, species can occur in sites of one or several bioregions. Therefore, one species can contribute a lot to the construction of one particular bioregion or, reverse, dilute its occurrences in many different assemblages.  
 
-This part aims at evaluating the contributions of species to the different bioregions created. Contribution can be measured in several ways. A first index, the $\rho$ score proposed by [Lenormand et al. (2019)]((https://doi.org/10.1002/ece3.4718)) measures per species in many bioregions are distributed the sites in which it occurs. The following figure illustrates how this $\rho$ score is calculated:
+This part aims at evaluating the contributions of species to the different bioregions created. Contribution can be measured in several ways. A first index, the $\rho$ score proposed by [Lenormand et al. (2019)](https://doi.org/10.1002/ece3.4718) measures per species in many bioregions are distributed the sites in which it occurs. The following figure illustrates how this $\rho$ score is calculated:
 
 ```{r zscore_scheme, fig.label = "Principle of the zscore calculation."}
 knitr::include_graphics("../figures/zscore_scheme.png")
@@ -1000,8 +1000,8 @@ Some algorithms (like OSLOM) only classify sites into bioregions and do not assi
 ```{r contrib_proj_oslom}
 # Merging the bioregion identification with long-format data frame
 scores_oslom <- left_join(sp_df[which(sp_df$pa > 0),
-                                  c("site", "sp", "x", "y")], 
-                            oslom_mod, by = "site")
+                                c("site", "sp", "x", "y")], 
+                          oslom_mod, by = "site")
 head(scores_oslom)
 
 # Calculation of the species scores
@@ -1014,72 +1014,39 @@ scores2 <- contribute(dat = scores_oslom,
 
 # 5. Interaction between bioregions
 
-Following the equation of the $\rho$ score from above.
-
-The interactions between the different bioregions can then be calculated following these equations:
-
+Some of the different bioregions identified by the previous methods are more connected among each other, regarding the species that belong to them, than others. This connection can be quantified for each pair of bioregions by looking at how many species belonging to each bioregion are present in the sites of the other bioregion.  
+Specifically, we compute a Sørensen index for each pair of bioregions according the following formula:
 $$
-\hat\rho_{ij}^{+} = {\rho_{ij}}_{\rho_{ij}>1.96}
+\beta_{ij, i \neq j} = \frac{2a}{b + c}
 $$
+With $i$ and $j$ two distinct bioregions, $a$ the number of species commonly occurring in their sites, $b$ the number of species occurring in bioregion $i$ and $c$ the number of species occurring in bioregion $j$. This index ranks between 0, when no species are shared between two bioregions, and 1, when the species list are identical. 
 
-We normalize the rows:
+This index of interactions between the different bioregions is calculated with the `interact()` function. Two graphical options are available with this function. `plot = TRUE` displays a heat map with Sørensen scores obtained for each pair of bioregion. `chord = TRUE` displays a chord diagram showing the strength of connection between each pair of bioregion.  
 
-$$
-\hat\rho_{ij}^{+} = \frac{\rho_{ij}^{+}}{\sum_i\rho_{ij}^{+}}
-$$
+We here illustrate this function with the bioregions obtained from Infomap algorithm.
 
-Finally, we determine for each bioregion how each set of species contributes
-to it.
+```{r interact}
+infomap_int <- interact(dat = scores, site = "site", sp = "sp",
+                        bio_site = "bio_site", plot = TRUE, chord = TRUE)
 
-$$
-\lambda_{jj'} = \frac{1}{|A_j|}\sum_{i \in A_{j}}\hat\rho_{jj'}^{+}
-$$
-
-\newpage
-
-```{r lambda, eval = FALSE}
-# tmp <- left_join(sp_df, oslom_vignette, by = "site")
-tmp <- left_join(sp_df[which(sp_df$pa > 0), ], oslom_mod, by = "site")
-# table(tmp$sp, tmp$bioregion)
-
-z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
-                   bioregion_col = "bioregion", output_format = "dataframe")
-
-top10 <- z_scores %>%
-  group_by(bioregion) %>%
-  top_n(n = 10, zscore) %>% # extract top 10
-  mutate(rank = rank(-zscore, # ranking zcore in an ascending order
-                     ties.method = "first")) %>% # if tie zscore, first species
-  dplyr::select(sp, bioregion, zscore, rank) %>%
-  mutate(zscore = round(zscore, 1)) %>% # rounding zscore to 1 digit
-  as.data.frame()
-
-knitr::kable(top10[which(top10$bioregion == "2"), ])
-
-z_scores <- zscore(tmp, sp_col = "sp", site_col = "site",
-                   bioregion_col = "bioregion", output_format = "matrix")
-
-lambda <- interact(input_network = "projected",
-                   dat = z_scores, plot = TRUE, output_format = "matrix")
-knitr::kable(head(lambda[[1]]))
-# Plot
-lambda[[2]]
+# Heatmap
+infomap_int[[2]]
 ```
 
 \newpage
 
 # 6. Run all the steps together
 
-All these functions can be called with the wrap-up `all_maps()` function.
+All these previous steps and the corresponding functions can be called with the wrap-up `all_steps()` function.
+Internally, the following functions are run: `contingency()`, `cluster()`, `network()`, `contribute()` and `interact()`. Therefore, this function returns the identified bioregion for the chosen method in a long-format data.frame.
 
-```{r all_maps, eval = FALSE}
-all_res <- all_maps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
-                    binary = TRUE,
-                    metric = "simpson", network_algo = "both",
-                    bipartite_algo = "greedy", weight = FALSE,
-                    clustering = TRUE, ward_method = "ward.D2",
-                    optim_method = "firstSEmax", nstart = 25, B = 50,
-                    K.max = 20)
+```{r all_steps, eval = FALSE}
+all_res <- all_steps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
+                     binary = TRUE, metric = "simpson", network_algo = "both",
+                     bipartite_algo = "greedy", weight = FALSE,
+                     clustering = TRUE, ward_method = "ward.D2",
+                     optim_method = "firstSEmax", nstart = 25, B = 50,
+                     K.max = 20)
 ```
 
 \newpage

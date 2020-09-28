@@ -1,154 +1,125 @@
 
-interact <- function(input_network, dat, plot = FALSE,
-                     output_format = "matrix"){
+interact <- function(dat, site, sp, bio_site, plot = FALSE, chord = FALSE){
 
-  if(!is.character(input_network)){
-    stop("input_network must be a character string equal to 'projected' or
-         'bipartite'. It determines the format of the input.")
+  # Controls ------------------------------------------------------------------
+  if(!is.data.frame(dat)){
+    stop("dat must be a data.frame with four columns containing the sites,
+         the species occurrences in each site and the bioregion of each site.")
   }
 
-  if(input_network == "projected"){
-    if(!is.matrix(dat)){
-      stop("When input_network is 'projected', input must be a data.frame
-      with each row indicating the contribution of a species in a given
-           bioregion.")
-    }
+  if(!is.character(site)){
+    stop("site must be the column name of dat describing the sites.")
+  }
 
-    if(is.null(rownames(dat))){
-      stop("When input_network is 'projected', input matrix must have species
-           names as rownames.")
-    }
+  if(!is.character(sp)){
+    stop("sp must be the column name of dat describing the species occurrences
+         within sites.")
+  }
 
-    if(is.null(colnames(dat))){
-      stop("When input_network is 'projected', input matrix must have bioregion
-           names as colnames.")
-    }
-  } else if(input_network == "bipartite"){
-    if(!is.data.frame(dat)){
-      stop("When input_network is 'bipartite',
-      dat must be a data.frame with four columns containing the links between
-           the two categories of nodes and their respective modules.")
-    }
-
-    if(ncol(dat) != 4){
-      stop("When input_network is 'bipartite',
-      dat must be a data.frame with four columns containing the links between
-           the two categories of nodes and their respective modules.")
-    }
-
-    if(sort(colnames(dat)) != c("mod_site", "mod_sp", "site", "sp")){
-      stop("When input_network is 'bipartite', columns of dat must be named
-           mod_site, mod_sp, site and sp.")
-    }
-  } else{
-    stop("input_network must be a character string equal to 'projected' or
-         'bipartite'. It determines the format of the input.")
+  if(!is.character(bio_site)){
+    stop("bio_site must be the column name of dat describing the bioregions
+         of each site.")
   }
 
   if(!is.logical(plot)){
-    stop("plot argument should be a boolean determining whether the barplot of
+    stop("plot argument should be a boolean determining whether the heatmap of
          interactions between bioregions should be saved.")
   }
 
-  if(!is.character(output_format)){
-    stop("output_format must be a character string equal to 'matrix' or
-         'data.frame'. It determines the format of the output.")
+  if(!is.logical(chord)){
+    stop("chord argument should be a boolean determining whether the chord diagram of
+         interactions between bioregions should be saved.")
   }
 
-  if(!(output_format %in% c("matrix", "dataframe"))){
-    stop("output_format must be a character string equal to 'matrix' or
-         'data.frame'. It determines the format of the output.")
+  # Sorensen ------------------------------------------------------------------
+  beta_bio <- c()
+
+  # data.frame with each pair of bioregions
+  bio_comb <- data.frame(expand.grid(sort(unique(dat[, bio_site])),
+                                     sort(unique(dat[, bio_site]))))
+  bio_comb <- data.frame(bioregion1 = as.character(bio_comb$Var1),
+                         bioregion2 = as.character(bio_comb$Var2))
+
+  # loop over the pairs of bioregions
+  for(i in 1:nrow(bio_comb)){
+    bio_i <- unique(dat[which(dat[, bio_site] == bio_comb[i, "bioregion1"]),
+                        sp])
+    bio_j <- unique(dat[which(dat[, bio_site] == bio_comb[i, "bioregion2"]),
+                        sp])
+
+    aij <- table(bio_i %in% bio_j)
+    aij <- as.numeric(aij[names(aij) == "TRUE"]) # common sites
+    if(length(aij) == 0){
+      common_ij <- 0
+    } else{
+      common_ij <- aij
+    }
+    # Binding results
+    beta_bio <- rbind(
+      beta_bio,
+      data.frame(
+        bio_i = as.character(bio_comb[i, 1]),
+        bio_j = as.character(bio_comb[i, 2]),
+        beta = 2*common_ij / sum(length(bio_i) + length(bio_j))))
   }
 
-  if(input_network == "projected"){
-    # Lambda
-    rhoijp <- dat
-    # NA if zscore inferior to 95% quantile of Gaussian distribution
-    # rhoijp[rhoijp < 1.96] <- NA
-    # NA if zscore inferior to mean of the contribution per bioregion
-    rhoijp[sweep(rhoijp, 2, colMeans(rhoijp), "<")] <- NA
-    # NA if zscore negative
-    rhoijp[rhoijp < 0] <- NA
+  # Conversion to square matrix to delete duplicated combinations
+  beta_bio_mat <- bioRgeo::contingency(beta_bio, site = "bio_i", sp = "bio_j",
+                                       ab = "beta", binary = FALSE)
+  # removal of upper diagonal
+  beta_bio_mat[upper.tri(beta_bio_mat)] <- NA
+  # conversion to data.frame
+  beta_bio2 <- reshape2::melt(beta_bio_mat)
+  colnames(beta_bio2) <- c("Bioregion_1", "Bioregion_2", "beta")
 
-    # for each species: sum of significant rhos over the bioregions
-    # dim(dat) = number of species (rows) and number of bioregions (columns)
-    rhoijp <- rhoijp/rowSums(rhoijp, na.rm = TRUE)
+  if(plot == TRUE){ # Heatmap
+    require(ggplot2)
+    res_plot <-  ggplot(beta_bio2, aes(Bioregion_1, Bioregion_2)) +
+      geom_tile(aes(fill = beta), color = "white") +
+      geom_text(aes(label = round(beta, 2)), color = "black", size = 6) +
+      scale_fill_gradient("Sorensen",
+                          #low = "#023858", high = "#a6bddb",
+                          low = "grey90", high = "grey20",
+                          na.value = "white") +
+      theme_classic() +
+      theme(panel.border = element_rect(fill = NA),
+            legend.justification = c(1, 0),
+            legend.position = c(0.4, 0.85),
+            legend.direction = "horizontal")
+  }
 
-    lambda <- NULL
-    # Bioregions in columns of input matrix
-    n_bioregion <- ncol(dat)
+  if(chord == TRUE){ # Chord diagram
+    require(circlize)
+    circ_beta <- beta_bio2[complete.cases(beta_bio2), ]
 
-    for(k in 1:n_bioregion){ # loop over the bioregions
-      rhoijpk <- rhoijp[!is.na(rhoijp[, k]), ]
-      # Control for cases where only one species if assigned to one module
-      if(!is.null(dim(rhoijpk))){
-        lambda <- rbind(
-          lambda,
-          100*apply(rhoijpk, 2, sum, na.rm = TRUE)/nrow(rhoijpk))
-      } else{
-        rhoijpk <- t(as.matrix(rhoijpk))
-        lambda <- rbind(
-          lambda,
-          100*apply(rhoijpk, 2, sum, na.rm = TRUE)/nrow(rhoijpk))
-      }
-    }
-
-    # Save results
-    rownames(lambda) <- colnames(dat)
-    colnames(lambda) <- rownames(lambda)
-
-    # Data frame format for plot
-    lambda_plot <- as.data.frame(as.table(lambda))
-    colnames(lambda_plot) <- c("bioregion", "link_bioregion", "lambda")
-
-    if(output_format == "dataframe"){
-      lambda <- lambda_plot
-      colnames(lambda) <- c("focal_bioregion", "bioregion", "lambda")
-    }
-
-    # Output: the matrix of bioregion relationships lambda
-    if(plot == TRUE){
-      # Barplot
-      res_plot <- ggplot(lambda_plot, aes(bioregion, lambda)) +
-        geom_bar(aes(fill = as.factor(link_bioregion)), stat = "identity") +
-        scale_fill_viridis_d("Bioregions") +
-        labs(title = "Interaction between bioregions",
-             x = "Bioregion", y = "Sum of contributions (%)") +
-        theme_classic() +
-        theme(panel.border = element_rect(fill = NA))
-
-      return(list(lambda = lambda, res_plot))
+    # color gradient
+    if(length(unique(dat[, bio_site])) <= 2){
+      grid_col <- c("firebrick3", "dodgerblue")
+      names(grid_col) <- sort(unique(dat[, bio_site]))
+    }else if(length(unique(dat[, bio_site])) <= 9){
+      require(RColorBrewer)
+      grid_col <- brewer.pal(length(unique(dat[, bio_site])),
+                             name = "Paired")
+      names(grid_col) <- sort(unique(dat[, bio_site]))
     } else{
-      return(lambda = lambda)
+      grid_ramp <- colorRampPalette(c("grey", "black"))
+      grid_col <- grid_ramp(length(unique(dat[, bio_site])))
+      names(grid_col) <- sort(unique(dat[, bio_site]))
     }
 
-  } else if(input_network == "bipartite"){
-    # Percentage of species from the different modules per module
-    lambda <- table(dat$mod_site, dat$mod_sp)
-    lambda <- 100*lambda/rowSums(lambda)
+    chordDiagram(circ_beta, #[which(circ_beta$Bioregion_1 != circ_beta$Bioregion_2), ],
+                 transparency = 0.1,
+                 col = grid_col[as.character(circ_beta$Bioregion_1)],
+                 grid.col = grid_col,
+                 annotationTrack = c("name", "grid"), directional = TRUE,
+                 link.border = "black", grid.border = "black")
+    title("Sorensen similarity between bioregions")
+  }
 
-    # Data frame format for plot
-    lambda_plot <- as.data.frame(as.table(lambda))
-    colnames(lambda_plot) <- c("mod_site", "mod_sp", "perc")
-
-    if(output_format == "dataframe"){
-      lambda <- lambda_plot
-    }
-
-    # Output: the matrix of bioregion relationships lambda
-    if(plot == TRUE){
-      # Barplot
-      res_plot <- ggplot(lambda_plot, aes(mod_site, perc)) +
-        geom_bar(aes(fill = as.factor(mod_sp)), stat = "identity") +
-        scale_fill_viridis_d("Bioregions") +
-        labs(title = "Interaction between bioregions",
-             x = "Bioregion", y = "Sum of contributions (%)") +
-        theme_classic() +
-        theme(panel.border = element_rect(fill = NA))
-
-      return(list(lambda = lambda, res_plot))
-    } else{
-      return(lambda = lambda)
-    }
+  # Output
+  if(plot == FALSE){
+    return(beta_bio = beta_bio2)
+  } else if(plot == TRUE){
+    return(list(beta_bio = beta_bio2, res_plot))
   }
 }

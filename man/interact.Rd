@@ -2,30 +2,33 @@
 \alias{interact}
 \title{Computes interactions between modules.}
 \usage{
-interact(dat, plot = FALSE, output_format = "matrix")
+interact(dat, site, sp, bio_site, plot = FALSE, chord = FALSE)
 }
 \arguments{
-\item{input_network}{a character string equal to 'projected' or
-'bipartite'. It determines the format of the input.}
+\item{dat}{a data.frame with four columns containing the sites, the species occurrences in each site and the bioregion of each site.}
 
-\item{dat}{when input_network is 'projected', a data frame containg species in
-rows, bioregions in columns and filled with the zscore of each species/
-bioregion combination. Can be generated with the function zscore.
-When input_network is 'bipartite', dat must be a data.frame with four columns
-containing the links between the two categories of nodes and their respective
-modules.}
+\item{site}{a character string corresponding to the column with sites.}
 
-\item{plot}{a character string corresponding to the column
-    with sites.}
+\item{sp}{a character string corresponding to the column with species occurrences within sites.}
 
-\item{output_format}{a boolean determining whether the barplot of interactions
-between bioregions should be saved.}
+\item{bio_site}{a character string corresponding to the column with the bioregion of each site.}
 
+\item{plot}{a boolean indicating whether to store the heatmap plot.}
+
+\item{chord}{a boolean indicating whether to plot the chord diagram.}
 }
 \description{
 See Lenormand et al., Ecology and Evolution, 2019.
 }
-\details{}
+\details{
+compute a Sorensen index for each pair of bioregions according the following formula:
+\deqn{
+\beta_{ij, i \neq j} = \frac{2a}{b + c}
+}
+
+With \eqn{i} and \eqn{j} two distinct bioregions, \eqn{a} the number of species commonly occurring in their sites, \eqn{b} the number of species occurring in bioregion \eqn{i} and \eqn{c} the number of species occurring in bioregion \eqn{j}. This index ranks between 0, when no species are shared between two bioregions, and 1, when the species list are identical.
+A heatmap and a chord diagram can be plotted.
+}
 \section{Note}{}
 
 \examples{
@@ -34,9 +37,5 @@ species = c("a", "b", "a", "c", "d", "b", "d"),
 count = c(10, 100, 1, 20, 50, 10, 20),
 bioregion = c(rep("region1", 5), rep("region2", 2)))
 
-z_scores <- zscore(ex, sp_col = "species", site_col = "sites",
-                   bioregion_col = "bioregion", output_format = "matrix")
-lambda <- interact(input_network = "projected",
-dat = z_scores, plot = TRUE, output_format = "matrix")
-lambda
+interact(dat = ex, site = "sites", sp = "species", bio_site = "bioregion", plot = TRUE, chord = TRUE)
 }

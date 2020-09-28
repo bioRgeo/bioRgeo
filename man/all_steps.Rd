@@ -1,8 +1,8 @@
-\name{all_maps}
-\alias{all_maps}
+\name{all_steps}
+\alias{all_steps}
 \title{Wrap-up function that runs several methods available in the package.}
 \usage{
-all_maps(dat, site, sp, ab, binary = FALSE)
+all_steps(dat, site, sp, ab, binary = FALSE)
 }
 \arguments{
 \item{dat}{a data.frame with duplicated rows for sites, one row per species,

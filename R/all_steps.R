@@ -1,5 +1,5 @@
 
-all_maps <- function(dat, form = "tidy", site, sp, ab = NULL, binary = TRUE,
+all_steps <- function(dat, form = "tidy", site, sp, ab = NULL, binary = TRUE,
                      similarity = "simpson", network_algo = "both",
                      saving_directory,
                      bipartite_algo = "greedy", weight = FALSE,

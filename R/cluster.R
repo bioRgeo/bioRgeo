@@ -166,6 +166,10 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
                         cluster = as.numeric(h$clustering))
     }
   }
+
+  # Changing column names of res: paste(cluster, method)
+  colnames(res)[colnames(res) == "cluster"] <- paste0("cluster_", method)
+
   return(res)
   # Visualization
   # factoextra::fviz_nbclust(dat, kmeans, method = "gap_stat", k.max = 20)

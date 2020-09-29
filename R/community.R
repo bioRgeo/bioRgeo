@@ -446,7 +446,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     names(bioregion_list) <- as.character(seq_along(bioregion_list))
     network_lab <- data.frame(
       id_oslom = unlist(bioregion_list),
-      bioregion = rep(names(bioregion_list), sapply(bioregion_list, length)))
+      module_oslom = rep(names(bioregion_list), sapply(bioregion_list, length)))
 
     # Column with the names of the sites
     network_lab$site <- unique(
@@ -460,7 +460,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       warning(paste0(length(doublon), " sites have several bioregions assigned."))
     }
 
-    network_lab <- network_lab[, c("site", "bioregion")]
+    network_lab <- network_lab[, c("site", "module_oslom")]
 
     ## 6. Beckett/Dormann & Strauss ----
   } else if(algo %in% c("beckett", "quanbimo")){
@@ -490,6 +490,10 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                               "site", "sp")
   }
+
+  # Changing column names of network_lab: paste(algo, method)
+  colnames(network_lab)[colnames(network_lab) == "module"] <-
+    paste0("module_", algo)
 
   return(network_lab)
 }

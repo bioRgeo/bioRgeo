@@ -480,22 +480,22 @@ bip_walktrap <- community(dat = sp_mat, algo = "walktrap", weight = FALSE)
 bip_site <- bip %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
-  dplyr::select(site, module)
+  dplyr::select(site, module_greedy)
 
 bip_site_beckett <- bip_beckett %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
-  dplyr::select(site, module)
+  dplyr::select(site, module_Beckett)
 
 bip_site_louvain <- bip_louvain %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
-  dplyr::select(site, module)
+  dplyr::select(site, module_louvain)
 
 bip_site_walktrap <- bip_walktrap %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
-  dplyr::select(site, module)
+  dplyr::select(site, module_walktrap)
 
 # OSLOM
 oslom_mod <- community(
@@ -505,7 +505,7 @@ oslom_mod <- community(
   oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
 
 cat(paste0("Number of bioregions detected = ",
-           length(unique(oslom_mod$bioregion))))
+           length(unique(oslom_mod$module_oslom))))
 
 # The following sites have been associated to several bioregions
 table(oslom_mod$site)[table(oslom_mod$site) > 1]
@@ -519,7 +519,7 @@ infomap_mod <- community(
 infomap_site <- infomap_mod %>%
   filter(cat == "site") %>%
   rename(site = node) %>%
-  dplyr::select(site, module)
+  dplyr::select(site, module_infomap)
 
 # Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
@@ -613,37 +613,25 @@ If sites have coordinates, we can apply several functions to compare how the dis
 # Remove doublons in OSLOM classification (random assignment)
 oslom_mod <- oslom_mod[!duplicated(oslom_mod$site), ]
 
-# Tidy dataset
+# Gather all bioregions in one dataset
 bio_maps <- virtual %>%
   distinct(site, .keep_all = TRUE) %>% # remove duplicates per site
   dplyr::select(-suitab, -pa, -opt, -width) %>% # removing useless columns
   left_join(km_res, by = "site") %>% # add kmeans
-  rename(cluster_km = cluster) %>%
   left_join(mshift_res, by = "site") %>% # add meanshift
-  rename(cluster_mshift = cluster) %>%
   left_join(oslom_mod, by = "site") %>% # add oslom
-  rename(cluster_oslom = bioregion) %>%
   left_join(ward_res, by = "site") %>% # add ward
-  rename(cluster_ward = cluster) %>%
   left_join(dbscan_res, by = "site") %>% # add dbscan
-  rename(cluster_dbscan = cluster) %>%
   left_join(gmm_res, by = "site") %>% # add gmm
-  rename(cluster_gmm = cluster) %>%
   left_join(pam_res, by = "site") %>% # add pam
-  rename(cluster_pam = cluster) %>%
   left_join(diana_res, by = "site") %>% # add diana
-  rename(cluster_diana = cluster) %>%
   left_join(bip_site, by = "site") %>% # add fastgreedy
-  rename(cluster_fastgreedy = module) %>%
   left_join(bip_site_beckett, by = "site") %>% # add lpawb
-  rename(cluster_beckett = module) %>%
   left_join(infomap_site, by = "site") %>% # add infomap
-  rename(cluster_infomap = module) %>%
   left_join(bip_site_louvain, by = "site") %>% # add louvain
-  rename(cluster_louvain = module) %>%
   left_join(bip_site_walktrap, by = "site") %>% # add walktrap
-  rename(cluster_walktrap = module) %>%
-  tidyr::gather(mod, val, contains("cluster")) %>% # tidy
+  tidyr::gather(mod, val, c(contains("cluster"),
+                            contains("module"))) %>% # tidy
   as.data.frame()
 
 # Plot with facetting
@@ -693,8 +681,8 @@ all100[[2]] %>%
   ggplot(aes(x, y)) +
   geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
             alpha = 0.8, width = 1, height = 1) +
-  scale_color_viridis_d("Bioregions", option = "E") +
-  scale_fill_viridis_d("Bioregions", option = "E") +
+  scale_color_brewer("Bioregions", palette = "Set1") +
+  scale_fill_brewer("Bioregions", palette = "Set1") +
   coord_equal() +
   labs(title = "Identical bioregions") +
   theme_classic() +

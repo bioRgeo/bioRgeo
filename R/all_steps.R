@@ -221,7 +221,6 @@ all_steps <- function(
         stop("hr must be positive.")
       }
     }
-
   }
 
   ## contingency() ----
@@ -263,46 +262,28 @@ all_steps <- function(
   }
 
   ## comparison() ----
-  # Gather all the bioregionalizations
+  # Remove duplicates per site
   if(input == "data.frame"){
-    bioregions <- dat %>%
-      distinct(site, .keep_all = TRUE) # remove duplicates per site
-  }else if(input_format == "matrix"){
-    bioregions <- sp_df %>%
-      distinct(site, .keep_all = TRUE)
+    bioregions <- dat[!duplicated(dat[, site]), ]
+  } else if(input_format == "matrix"){
+    bioregions <- sp_df[!duplicated(sp_df[, site]), ]
   }
 
-  bioregions <- bioregions %>%
-    left_join(km_res, by = "site") %>% # add kmeans
-    rename(cluster_km = cluster) %>%
-    left_join(mshift_res, by = "site") %>% # add meanshift
-    rename(cluster_mshift = cluster) %>%
-    left_join(oslom_mod, by = "site") %>% # add oslom
-    rename(cluster_oslom = bioregion) %>%
-    left_join(ward_res, by = "site") %>% # add ward
-    rename(cluster_ward = cluster) %>%
-    left_join(dbscan_res, by = "site") %>% # add dbscan
-    rename(cluster_dbscan = cluster) %>%
-    left_join(gmm_res, by = "site") %>% # add gmm
-    rename(cluster_gmm = cluster) %>%
-    left_join(pam_res, by = "site") %>% # add pam
-    rename(cluster_pam = cluster) %>%
-    left_join(diana_res, by = "site") %>% # add diana
-    rename(cluster_diana = cluster) %>%
-    left_join(bip_site, by = "site") %>% # add fastgreedy
-    rename(cluster_fastgreedy = module) %>%
-    left_join(bip_site_beckett, by = "site") %>% # add lpawb
-    rename(cluster_beckett = module) %>%
-    left_join(infomap_site, by = "site") %>% # add infomap
-    rename(cluster_infomap = module) %>%
-    left_join(bip_site_louvain, by = "site") %>% # add louvain
-    rename(cluster_louvain = module) %>%
-    left_join(bip_site_walktrap, by = "site") %>% # add walktrap
-    rename(cluster_walktrap = module) %>%
-    as.data.frame()
+  # Gather all the bioregionalizations
+  if(!is.null(cluster_method)){
+    bioregions <- bioregions %>%
+      left_join(res_cluster, by = "site") %>%
+      as.data.frame()
+  } else if(!is.null(network_method)){
+    bioregions <- bioregions %>%
+      left_join(res_network, by = "site") %>%
+      as.data.frame()
+  }
 
-  all100 <- comparison(bioregions, site = "site",
-                       bio_col = c(6:ncol(bioregions)), output = "both")
+  all100 <- comparison(bioregions, site = site,
+                       bio_col = c(grep("cluster_", colnames(bioregions)),
+                                   grep("module_", colnames(bioregions))),
+                       output = "both")
 
   ## contribute() ----
   tmp <- left_join(dat, list_res["oslom"], by = "site")

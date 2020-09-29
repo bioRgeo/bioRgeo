@@ -353,10 +353,114 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     oslom_dat <- dat[, c(oslom_id1, oslom_id2, oslom_proj)]
     colnames(oslom_dat) <- c("id1", "id2", "oslom_proj")
 
-    network_lab <- oslom(oslom_dat, n_runs = n_runs, t_param = t_param,
-                         cp_param = cp_param, hr = hr,
-                         oslom_id1 = "id1", oslom_id2 = "id2",
-                         oslom_proj = "oslom_proj")
+    # bioRgeo directory
+    Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
+    Bio_dir <- Bio_dir[grep("bioRgeo", Bio_dir)]
+
+    # Add control: only one package should match
+    if(length(Bio_dir) > 1){
+      stop("Two conflicting versions of bioRgeo seem to coexist.")
+    }
+
+    # Reformating input data.frame
+    oslom_dat <- dat[, c(oslom_id1, oslom_id2, oslom_proj)]
+    # Renaming columns (id1, id2 must be present, no more than 3 columns)
+    colnames(oslom_dat) <- c("id1", "id2", "oslom_proj")
+
+    # All the columns of oslom_dat have to be numeric
+    if(!is.numeric(oslom_dat$id1)){
+      oslom_dat$id1 <- as.numeric(as.factor(oslom_dat$id1))
+    }
+    if(!is.numeric(oslom_dat$id2)){
+      oslom_dat$id2 <- as.numeric(as.factor(oslom_dat$id2))
+    }
+
+    # Save input dataset as a .txt file into OSLOM folder
+    write.table(oslom_dat,
+                paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
+
+    # Change working directory so the file is saved in the proper place
+    current_path <- getwd()
+    setwd(Bio_dir)
+
+    # Set up the command with required parameters
+    if(.Platform$OS.type == "windows"){
+      cmd <-
+        paste0(Bio_dir, "/OSLOM/oslom_undir_win.exe -f OSLOM/dataset.txt -w",
+               " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " -hr ", hr)
+    } else if(.Platform$OS.type == "unix"){
+      stop("To do")
+    } else{
+      stop("Windows or Unix distributions only.")
+    }
+
+    # Execute the command from R
+    system(command = cmd)
+
+    # Control: if the command line did not work, previous working directory reset
+    if(!("tp" %in% list.files(paste0(Bio_dir,
+                                     "/OSLOM/dataset.txt_oslo_files")))){
+      setwd(current_path)
+      stop("Command line was wrongly implemented. OSLOM did not run.")
+    }
+
+    # Import tp file created
+    tp_res <- readLines(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/tp"))
+
+    # Reset previous working directory
+    setwd(current_path)
+
+    # Remove .oslo_files created and the dataset
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt"))
+    file.remove(paste0(Bio_dir, "/time_seed.dat"))
+
+    # Remove all filed in .oslo_files folder
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/",
+                       dir(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/"),
+                           pattern = "net")))
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/",
+                       dir(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/"),
+                           pattern = "partitions_level")))
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/",
+                       dir(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/"),
+                           pattern = "statistics_level")))
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/",
+                       dir(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/"),
+                           pattern = "short_tp")))
+    file.remove(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/",
+                       dir(paste0(Bio_dir, "/OSLOM/dataset.txt_oslo_files/"),
+                           pattern = "tp")))
+
+    # OSLOM output
+    # Convert tp_res into list
+    bioregion_list <- list()
+    length(bioregion_list) <- length(tp_res)/2
+    for(k in 1:length(tp_res)){
+      if((k/2-trunc(k/2)) == 0){ # loop over module pixels
+        bioregion_list[[(k/2)]] <-
+          as.numeric(as.matrix(strsplit(tp_res[k], split = " ")[[1]]))
+      }
+    }
+
+    # Convert bioregion_list into data.frame
+    names(bioregion_list) <- as.character(seq_along(bioregion_list))
+    network_lab <- data.frame(
+      id_oslom = unlist(bioregion_list),
+      bioregion = rep(names(bioregion_list), sapply(bioregion_list, length)))
+
+    # Column with the names of the sites
+    network_lab$site <- unique(
+      c(levels(as.factor(sp_proj$id1)),
+        levels(as.factor(sp_proj$id2))))[network_lab$id_oslom]
+
+    # If some doublons are present => warning
+    if(length(bioregion_list) > 1 &
+       length(unique(table(network_lab$id))) > 1){
+      doublon <- table(network_lab$id)[table(network_lab$id) > 1]
+      warning(paste0(length(doublon), " sites have several bioregions assigned."))
+    }
+
+    network_lab <- network_lab[, c("site", "bioregion")]
 
     ## 6. Beckett/Dormann & Strauss ----
   } else if(algo %in% c("beckett", "quanbimo")){

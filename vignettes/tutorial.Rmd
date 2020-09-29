@@ -572,8 +572,11 @@ mbm <- microbenchmark(
   beckett = community(dat = sp_mat, algo = "beckett", weight = FALSE),
   louvain = community(dat = sp_mat, algo = "louvain", weight = FALSE),
   walktrap = community(dat = sp_mat, algo = "walktrap", weight = FALSE),
-  oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
-                t_param = 0.1, cp_param = 0.5),
+  oslom = community(
+    dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
+    input = "data frame", site = "site", sp = "sp", N = 10, n_runs = 1,
+    t_param = 0.1, cp_param = 0.5, hr = 0,
+    oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson"),
   infomap = community(dat = virtual[which(virtual$pa > 0), ], algo = "infomap",
                       weight = FALSE, input = "data frame", site = "site",
                       sp = "sp", N = 10),
@@ -726,7 +729,7 @@ site103 <- left_join(site103,
                      by = "site")
 
 coord103 <- distinct(virtual[which(virtual$site == "site103"),
-                           c("site", "x", "y")])
+                             c("site", "x", "y")])
 
 # Plot
 ggplot(site103, aes(x, y)) +
@@ -933,7 +936,7 @@ infomap_sp <- infomap_mod %>%
 
 # Merging the bioregion identification with long-format data frame
 scores_infomap <- left_join(virtual[which(virtual$pa > 0),
-                                  c("site", "sp", "x", "y")], 
+                                    c("site", "sp", "x", "y")], 
                             infomap_site, by = "site")
 scores_infomap <- left_join(scores_infomap, infomap_sp, by = "sp")
 
@@ -993,7 +996,7 @@ Some algorithms (like OSLOM) only classify sites into bioregions and do not assi
 ```{r contrib_proj_oslom}
 # Merging the bioregion identification with long-format data frame
 scores_oslom <- left_join(virtual[which(virtual$pa > 0),
-                                c("site", "sp", "x", "y")], 
+                                  c("site", "sp", "x", "y")], 
                           oslom_mod, by = "site")
 head(scores_oslom)
 

@@ -1,5 +1,6 @@
 
-oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
+                  oslom_id1 = NULL, oslom_id2 = NULL, oslom_proj = NULL){
   ## 1. Controls ----
   # Controls: dat must be a data.frame with three columns containing id1, id2
   # and similarity metric
@@ -8,19 +9,9 @@ oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
   and a similarity metric. It is the output of 'bioRgeo::simil()' function")
   }
 
-  if(ncol(dat) != 3){
-    stop("dat must be a data.frame with three columns containing id1, id2
-  and similarity metric")
-  }
-
-  if(!(is.numeric(dat[, 3]))){
-    stop("dat must be a data.frame with three columns containing id1, id2
-  and similarity metric")
-  }
-
-  if(0 %in% dat[, 3]){
-    stop("OSLOM needs strictly positive weights to run. Remove the useless
-         lines from the input data.frame.")
+  if(ncol(dat) < 3){
+    stop("dat must be a data.frame with at least three columns containing
+    id1, id2 and a similarity metric between each pair of sites.")
   }
 
   if(!(abs(n_runs - round(n_runs)) < .Machine$double.eps^0.5)){
@@ -51,6 +42,29 @@ oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
     stop("hr must be positive.")
   }
 
+  if(!is.character(oslom_id1)){
+    stop("'oslom_id1' must be the column name of the first pair of sites.")
+  }
+
+  if(!is.character(oslom_id2)){
+    stop("'oslom_id2' must be the column name of the second pair of sites.")
+  }
+
+  if(!is.character(oslom_proj)){
+    stop("'oslom_proj' must be the column name of the similarity metric
+           between each pair of sites.")
+  }
+
+  if(!(is.numeric(dat[, oslom_proj]))){
+    stop("Similarity metric between each pair of sites must be a numeric
+         column.")
+  }
+
+  if(0 %in% dat[, oslom_proj]){
+    stop("OSLOM needs strictly positive weights to run. Remove the null
+         similarities from the input data.frame.")
+  }
+
   ## 2. Running OSLOM ----
   # bioRgeo directory
   Bio_dir <- list.dirs(.libPaths(), recursive = FALSE)
@@ -61,16 +75,22 @@ oslom <- function(dat, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
     stop("Two conflicting versions of bioRgeo seem to coexist.")
   }
 
-  # All the columns of dat have to be numeric
-  if(!is.numeric(dat[, 1])){
-    dat[, 1] <- as.numeric(as.factor(dat[, 1]))
+  # Reformating input data.frame
+  oslom_dat <- dat[, c(oslom_id1, oslom_id2, oslom_proj)]
+  # Renaming columns (id1, id2 must be present, no more than 3 columns)
+  colnames(oslom_dat) <- c("id1", "id2", "oslom_proj")
+
+  # All the columns of oslom_dat have to be numeric
+  if(!is.numeric(oslom_dat$id1)){
+    oslom_dat$id1 <- as.numeric(as.factor(oslom_dat$id1))
   }
-  if(!is.numeric(dat[, 2])){
-    dat[, 2] <- as.numeric(as.factor(dat[, 2]))
+  if(!is.numeric(oslom_dat$id2)){
+    oslom_dat$id2 <- as.numeric(as.factor(oslom_dat$id2))
   }
 
   # Save input dataset as a .txt file into OSLOM folder
-  write.table(dat, paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
+  write.table(oslom_dat,
+              paste0(Bio_dir, "/OSLOM/dataset.txt"), row.names = FALSE)
 
   # Change working directory so the file is saved in the proper place
   current_path <- getwd()

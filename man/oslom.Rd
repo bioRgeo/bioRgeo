@@ -20,6 +20,12 @@ between 0 and 1.}
 \item{hr}{Numeric parameter setting the number of hierarchical levels.
 Must be a positive integer.}
 
+\item{oslom_id1}{With oslom algorithm only. A character string corresponding to the column name of the first pair of sites.}
+
+\item{oslom_id2}{With oslom algorithm only. A character string corresponding to the column name of the second pair of sites..}
+
+\item{oslom_proj}{With oslom algorithm only. A character string corresponding to the column name of the similarity metric between each pair of sites.}
+
 }
 \description{
 This function applies on a data.frame containing 3 columns. The first two columns
@@ -40,8 +46,8 @@ species = c("a", "b", "a", "c", "d", "b", "d"),
 count = c(10, 100, 1, 20, 50, 10, 20))
 
 ex_mat <- contingency(dat = ex, sp = "species", site = "sites", ab = "count",
-binary = TRUE)
+weight = FALSE)
 ex_proj <- simil(ex_mat, metric = "simpson", input = "matrix")
 
-oslom(ex_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5)
+oslom(ex_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5, hr = 0, oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
 }

@@ -2,7 +2,8 @@
 community <- function(dat, algo = "greedy", weight = FALSE,
                     input = "matrix", site = NULL, sp = NULL,
                     ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
-                    cp_param = 0.5, hr = 0){
+                    cp_param = 0.5, hr = 0, oslom_id1 = NULL,
+                    oslom_id2 = NULL, oslom_proj = NULL){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -75,7 +76,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
          before picking the best solution.")
   }
 
-  # Controls for OSLOM parameters
+  # 1.1. Controls for OSLOM ----
   if(algo == "oslom"){
     # Controls: dat must be a data.frame with three columns containing id1, id2
     # and similarity metric
@@ -84,9 +85,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
   and a similarity metric. It is the output of 'bioRgeo::simil()' function")
     }
 
-    if(ncol(dat) != 3){
-      stop("dat must be a data.frame with three columns containing id1, id2
-  and similarity metric")
+    if(ncol(dat) < 3){
+      stop("dat must be a data.frame with at least three columns containing
+      id1, id2 and similarity metric")
     }
 
     if(!(is.numeric(dat[, 3]))){
@@ -95,8 +96,8 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     }
 
     if(0 %in% dat[, 3]){
-      stop("OSLOM needs strictly positive weights to run. Remove the useless
-         lines from the input data.frame.")
+      stop("OSLOM needs strictly positive weights to run. Remove the null
+         weights from the input data.frame.")
     }
 
     if(!(abs(n_runs - round(n_runs)) < .Machine$double.eps^0.5)){
@@ -125,6 +126,19 @@ community <- function(dat, algo = "greedy", weight = FALSE,
 
     if(hr < 0){
       stop("hr must be positive.")
+    }
+
+    if(!is.character(oslom_id1)){
+      stop("'oslom_id1' must be the column name of the first pair of sites.")
+    }
+
+    if(!is.character(oslom_id2)){
+      stop("'oslom_id2' must be the column name of the second pair of sites.")
+    }
+
+    if(!is.character(oslom_proj)){
+      stop("'oslom_proj' must be the column name of the similarity metric
+           between each pair of sites.")
     }
   }
 
@@ -332,11 +346,18 @@ community <- function(dat, algo = "greedy", weight = FALSE,
                                 "site", "sp")
     }
     ## 5. OSLOM ----
-  } else if(algo == "OSLOM"){
+  } else if(algo == "oslom"){
     warning("With OSLOM algorithm, the input must be a projected network.")
 
-    network_lab <- oslom(dat, n_runs = n_runs, t_param = t_param,
-                         cp_param = cp_param, hr = hr)
+    # Renaming columns (id1, id2 must be present, no more than 3 columns)
+    oslom_dat <- dat[, c(oslom_id1, oslom_id2, oslom_proj)]
+    colnames(oslom_dat) <- c("id1", "id2", "oslom_proj")
+
+    network_lab <- oslom(oslom_dat, n_runs = n_runs, t_param = t_param,
+                         cp_param = cp_param, hr = hr,
+                         oslom_id1 = "id1", oslom_id2 = "id1",
+                         oslom_proj = "oslom_proj")
+
     ## 6. Beckett/Dormann & Strauss ----
   } else if(algo %in% c("beckett", "quanbimo")){
     require(bipartite)

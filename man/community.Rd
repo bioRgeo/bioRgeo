@@ -36,6 +36,12 @@ between 0 and 1.}
 \item{hr}{Numeric parameter setting the number of hierarchical levels.
 Must be a positive integer.}
 
+\item{oslom_id1}{With oslom algorithm only. A character string corresponding to the column name of the first pair of sites.}
+
+\item{oslom_id2}{With oslom algorithm only. A character string corresponding to the column name of the second pair of sites..}
+
+\item{oslom_proj}{With oslom algorithm only. A character string corresponding to the column name of the similarity metric between each pair of sites.}
+
 }
 \description{
 Run a community detection algorithm on a bipartite network.\cr

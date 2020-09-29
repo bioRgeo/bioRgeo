@@ -6,9 +6,13 @@ all_steps <- function(
   cluster_method = NULL,
   optim_method = "firstSEmax", n_clust = NULL, nstart = 25, B = 50, K.max = 20,
   network_method = NULL,
-  weight = FALSE, N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
 
   ## Controls ----
+  # Packages
+  require(dplyr)
+  require(tidyr)
+
   if(!is.character(input_format)){
     stop("input_format designs the format of the input data. It is either a
     long format data.frame with the occurrences of species per site
@@ -146,12 +150,87 @@ all_steps <- function(
          'spinglass', 'leading_eigen', 'label_prop', 'netcarto', 'oslom',
          'infomap', 'beckett' or 'quanbimo.'")
     }
+    if(network_method %in% c("beckett", "quanbimo") &
+       input_format == "data.frame"){
+      warning("The chosen algorithm needs a site-species matrix as input.
+            We here perform bioRgeo::contingency() function to convert it but
+            you can do this step a priori to save time.")
+      dat <-  contingency(dat, site = site, sp = sp, ab = ab, weight = weight)
+    }
+
+    if(network_method %in% c("netcarto", "quanbimo")){
+      warning("The chosen algorithm is slow. Depending on the size of the
+            network, it may take a long time to run.")
+    }
+
+    if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){
+      stop("N must be an integer setting the number of outer-most loops to run
+         before picking the best solution.")
+    }
+
+    # Controls for OSLOM parameters
+    if(network_method == "oslom"){
+      # Controls: dat must be a data.frame with three columns containing id1,
+      # id2 and similarity metric
+      if(!(is.data.frame(dat))){
+        stop("dat must be a data.frame with three columns containing id1, id2
+        and a similarity metric.
+        It is the output of 'bioRgeo::simil()' function")
+      }
+
+      if(ncol(dat) != 3){
+        stop("dat must be a data.frame with three columns containing id1, id2
+  and similarity metric")
+      }
+
+      if(!(is.numeric(dat[, 3]))){
+        stop("dat must be a data.frame with three columns containing id1, id2
+  and similarity metric")
+      }
+
+      if(0 %in% dat[, 3]){
+        stop("OSLOM needs strictly positive weights to run. Remove the useless
+         lines from the input data.frame.")
+      }
+
+      if(!(abs(n_runs - round(n_runs)) < .Machine$double.eps^0.5)){
+        stop("n_runs must be an integer setting the number of runs.")
+      }
+
+      if(!(is.numeric(t_param))){
+        stop("t_param must be numeric.")
+      }
+
+      if(t_param > 1 | t_param < 0){
+        stop("t_param must be comprised between 0 and 1.")
+      }
+
+      if(!(is.numeric(cp_param))){
+        stop("cp_param must be numeric.")
+      }
+
+      if(cp_param > 1 | cp_param < 0){
+        stop("cp_param must be comprised between 0 and 1.")
+      }
+
+      if(!(abs(hr - round(hr)) < .Machine$double.eps^0.5)){
+        stop("hr must be an integer setting the number of hierarchical levels.")
+      }
+
+      if(hr < 0){
+        stop("hr must be positive.")
+      }
+    }
+
   }
 
   ## contingency() ----
   # Create contingency table if needed
   if(input_format == "data.frame"){
     sp_mat <- contingency(dat, site = site, sp = sp, ab = ab, weight = weight)
+  } else if(input_format == "matrix"){
+    sp_df <- contingency_to_df(dat, col1 = "site", col2 = "sp", col3 = "ab",
+                               remove_zeros = TRUE)
   }
 
   ## simil() ----
@@ -185,16 +264,45 @@ all_steps <- function(
 
   ## comparison() ----
   # Gather all the bioregionalizations
-  all_bioregions <- dat %>%
-    select(site, x, y, env) %>%
-    distinct(site, .keep_all = TRUE) %>%
-    left_join(list_res["oslom"], by = "site") %>% # add OSLOM
-    rename(oslom = bioregion) %>%
-    left_join(list_res["ward"], by = "site") %>% # add Ward
-    rename(ward = cluster)
+  if(input == "data.frame"){
+    bioregions <- dat %>%
+      distinct(site, .keep_all = TRUE) # remove duplicates per site
+  }else if(input_format == "matrix"){
+    bioregions <- sp_df %>%
+      distinct(site, .keep_all = TRUE)
+  }
 
-  # Test of comparison function
-  all100 <- comparison(all_bioregions, bio_col = c(5:6))
+  bioregions <- bioregions %>%
+    left_join(km_res, by = "site") %>% # add kmeans
+    rename(cluster_km = cluster) %>%
+    left_join(mshift_res, by = "site") %>% # add meanshift
+    rename(cluster_mshift = cluster) %>%
+    left_join(oslom_mod, by = "site") %>% # add oslom
+    rename(cluster_oslom = bioregion) %>%
+    left_join(ward_res, by = "site") %>% # add ward
+    rename(cluster_ward = cluster) %>%
+    left_join(dbscan_res, by = "site") %>% # add dbscan
+    rename(cluster_dbscan = cluster) %>%
+    left_join(gmm_res, by = "site") %>% # add gmm
+    rename(cluster_gmm = cluster) %>%
+    left_join(pam_res, by = "site") %>% # add pam
+    rename(cluster_pam = cluster) %>%
+    left_join(diana_res, by = "site") %>% # add diana
+    rename(cluster_diana = cluster) %>%
+    left_join(bip_site, by = "site") %>% # add fastgreedy
+    rename(cluster_fastgreedy = module) %>%
+    left_join(bip_site_beckett, by = "site") %>% # add lpawb
+    rename(cluster_beckett = module) %>%
+    left_join(infomap_site, by = "site") %>% # add infomap
+    rename(cluster_infomap = module) %>%
+    left_join(bip_site_louvain, by = "site") %>% # add louvain
+    rename(cluster_louvain = module) %>%
+    left_join(bip_site_walktrap, by = "site") %>% # add walktrap
+    rename(cluster_walktrap = module) %>%
+    as.data.frame()
+
+  all100 <- comparison(bioregions, site = "site",
+                       bio_col = c(6:ncol(bioregions)), output = "both")
 
   ## contribute() ----
   tmp <- left_join(dat, list_res["oslom"], by = "site")
@@ -206,6 +314,13 @@ all_steps <- function(
                      dat = scores, plot = TRUE, output_format = "matrix")
 
   ## Return outputs ----
-  return(list(dat, dat_proj))
-
+  if(!is.null(cluster_method)){
+    if(!is.null(network_method)){
+      return(list(dat, dat_proj, res_cluster, res_network, all100))
+    } else{
+      return(list(dat, dat_proj, res_cluster, all100))
+    }
+  } else{
+    return(list(dat, dat_proj, res_network, all100))
+  }
 }

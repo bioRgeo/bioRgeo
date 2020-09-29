@@ -10,7 +10,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(virtual_sp)
+#' @usage data(virtual)
 #'
 #' @format An object of class \code{"cross"}; see \code{\link[qtl]{read.cross}}.
 #'
@@ -22,5 +22,5 @@
 #' @source \href{https://phenome.jax.org/projects/Moore1b}{QTL Archive}
 #'
 #' @examples
-#' data(virtual_sp)
-"virtual_sp"
+#' data(virtual)
+"virtual"

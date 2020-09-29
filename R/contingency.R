@@ -6,7 +6,7 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
   }
 
   if(!is.character(site)){
-    stop("site must be the column name of dat describing the sites")
+    stop("site must be the column name of dat describing the sites.")
   }
 
   if(!is.character(sp)){
@@ -15,7 +15,7 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
 
   if(!is.null(ab) & !is.character(ab)){
     stop("ab must be the column name of dat describing the abundances
-         of species")
+         of species.")
   }
 
   if(is.null(ab) & binary == FALSE){

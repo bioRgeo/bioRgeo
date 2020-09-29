@@ -2,6 +2,7 @@
 simil <- function(dat, metric = "simpson", input = "matrix",
                   output = "data frame",
                   site = NULL, sp = NULL, ab = NULL, binary = TRUE){
+  ## Controls ----
   require(Rcpp)
   require(SMUT)
 
@@ -23,11 +24,39 @@ simil <- function(dat, metric = "simpson", input = "matrix",
   } else if(input == "data frame"){
     if(!is.data.frame(dat)){
       stop("dat should be a long format data frame with each row being the
-    presence of a species in a given site.")
+    presence (or abundance) of a species in a given site.")
+    }
+
+    if(!is.character(site)){
+      stop("site must be the column name of dat describing the sites.")
+    }
+
+    if(!is.character(sp)){
+      stop("sp must be the column name of dat describing the species.")
+    }
+
+    if(!is.null(ab) & !is.character(ab)){
+      stop("ab must be the column name of dat describing the abundances
+         of species.")
+    }
+
+    if(is.null(ab) & binary == FALSE){
+      warning("Without column abundances, contingency table will only get binary
+        values.")
+    }
+
+    if(!is.logical(binary)){
+      stop("binary must be a boolean.")
+    }
+
+    if(!is.null(ab) & metric != "bray"){
+      warning("Only Bray-Curtis similarity metric can handle abundances of
+              species within sites. Other metrics deal with presence/absence
+              data only.")
     }
 
     # Conversion as a contingency table with contingency function
-    dat <- contingency(dat, site, sp, ab = NULL, binary = TRUE)
+    dat <- contingency(dat, site, sp, ab = ab, binary = binary)
   }
 
   if(!(metric %in% c("simpson", "jaccard", "sorensen", "whittaker", "bray",
@@ -37,6 +66,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
          simpson, jaccard, sorensen, whittaker, bray or euclidean")
   }
 
+  ## Function ----
   # Convert as matrix to remove names
   dat <- as.matrix(dat)
 

@@ -10,7 +10,7 @@ simil(dat, metric = "simpson")
 \arguments{
 \item{dat}{a contingency matrix with sites as rows and species as columns.}
 
-\item{metric}{a character string indicating which similarity metric to chose among \emph{simpson}, \emph{jaccard}, \emph{sorensen}, \emph{whittaker} and \emph{euclidean}.}
+\item{metric}{a character string indicating which similarity metric to chose among \emph{simpson}, \emph{jaccard}, \emph{sorensen}, \emph{whittaker}, \emph{euclidean} and \emph{bray}.}
 
 \item{input}{a character string equals to 'matrix' or 'data frame' indicating whether the input of the function is long-format data frame or a wide format matrix.}
 
@@ -36,6 +36,11 @@ With \code{a} the number of species shared by a pair of sites, \code{b} species 
 \eqn{Whittaker = 1 - (a + b + c)/((2a + b + c)/2)}
 
 Euclidean computes the Euclidean distance between each pair of site.
+
+If abundances data are available, Bray-Curtis dissimilarity can also be computed. It computes following this equation:
+\eqn{Bray-Curtis = 1 - 2C_{ij}/(S_i + S_j)}
+with \eqn{2C_{ij}} the sum of the lesser values for common species shared by a pair of sites. \eqn{S_{i}} and \eqn{S_{j}} are the total number of specimens counted at both sites \eqn{i} and \eqn{j}.
+
 }
 \value{
 If \code{output = 'data frame'}, a data.frame with 3 columns. The first two columns, \code{id1} and \code{id2}, correspond to each pair of sites. The third column indicates the similarity value for the chosen metric between each pair of site.

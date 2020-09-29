@@ -1,6 +1,6 @@
 
-all_steps <- function(dat, input_format = "tidy", site, sp, ab = NULL,
-                      binary = TRUE,
+all_steps <- function(dat, input_format = "tidy", binary = TRUE,
+                      site, sp, ab = NULL,
                       metric = "simpson",
                       cluster_method = NULL, network_method = NULL,
                       weight = FALSE,
@@ -52,7 +52,8 @@ all_steps <- function(dat, input_format = "tidy", site, sp, ab = NULL,
                      "euclidean"))){
     stop("Similarity metric chosen is not available.
      Please chose among the followings:
-         simpson, jaccard, sorensen, whittaker, bray or euclidean")
+         'simpson', 'jaccard', 'sorensen', 'whittaker', 'bray' or
+         'euclidean.'")
   }
 
   if(is.null(cluster_method) & is.null(network_method)){
@@ -128,55 +129,26 @@ all_steps <- function(dat, input_format = "tidy", site, sp, ab = NULL,
          contincenty matrix.")
   }
 
-  ## Workflow ----
+  ## contingency() ----
   # Create contingency table if needed
-  if(form == "tidy"){
-    dat <- contingency(dat, site = site, sp = sp, ab = ab, binary = binary)
+  if(input_format == "tidy"){
+    sp_mat <- contingency(dat, site = site, sp = sp, ab = ab, binary = binary)
   }
 
+  ## simil() ----
   # Project network with simil()
-  dat_proj <- simil(dat, metric = metric)
-  dat_proj <- dat_proj[, c("id1", "id2", similarity)]
+  dat_proj <- simil(sp_mat, metric = metric, input = "matrix",
+                    output = "data frame",
+                    site = NULL, sp = NULL, ab = NULL, binary = TRUE)
 
-  #
-  list_res <- list()
+  dat_proj <- dat_proj[, c("id1", "id2", metric)]
 
-  if(network_algo %in% c("projected", "both")){
-    # Run OSLOM
-    run_oslom(sp_proj, n_runs = 5, t_param = 0.1, cp_param = 0.5,
-              saving_directory = saving_directory)
-    res <- readRDS(paste0(saving_directory, "/tp.rds"))
-    oslom_res <- oslom_output(res, dat)
+  ## cluster() ----
 
-    list_res["oslom"] <- oslom_res
-  }
 
-  if(network_algo %in% c("bipartite", "both")){
-    # Bipartite methods
-    bip <- algo_bipartite(dat, algo = bipartite_algo, weight = weight)
+  ## community() ----
 
-    list_res["bipartite"] <- bip
-  }
-
-  if(clustering == TRUE){
-    # Clustering methods
-    ward_res <- ward_cluster(
-      dat, method = ward_method, optim_method = optim_method,
-      nstart = nstart, B = B, K.max = K.max)
-
-    list_res["ward"] <- ward_res
-  }
-
-  # Contribution of species
-  tmp <- left_join(dat, list_res["oslom"], by = "site")
-  scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                       bioregion_col = "bioregion")
-
-  # Links between modules
-  lambda <- interact(input_network = "projected",
-                     dat = scores, plot = TRUE, output_format = "matrix")
-
-  # Pixels all the time together
+  ## comparison() ----
   # Gather all the bioregionalizations
   all_bioregions <- dat %>%
     select(site, x, y, env) %>%
@@ -189,5 +161,16 @@ all_steps <- function(dat, input_format = "tidy", site, sp, ab = NULL,
   # Test of comparison function
   all100 <- comparison(all_bioregions, bio_col = c(5:6))
 
-  return(list_res, scores, lambda, all100)
+  ## contribute() ----
+  tmp <- left_join(dat, list_res["oslom"], by = "site")
+  scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
+                       bioregion_col = "bioregion")
+
+  ## interact() ----
+  lambda <- interact(input_network = "projected",
+                     dat = scores, plot = TRUE, output_format = "matrix")
+
+  ## Return outputs ----
+  return(list(dat, dat_proj))
+
 }

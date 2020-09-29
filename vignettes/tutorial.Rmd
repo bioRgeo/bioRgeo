@@ -1041,13 +1041,18 @@ All these previous steps and the corresponding functions can be called with the 
 Internally, the following functions are run: `contingency()`, `cluster()`, `network()`, `contribute()` and `interact()`. Therefore, this function returns the identified bioregion for the chosen method in a long-format data.frame.
 
 ```{r all_steps, eval = FALSE}
-all_res <- all_steps(dat = sp_df, form = "tidy", site, sp, ab = NULL,
-                     binary = TRUE, metric = "simpson", network_algo = "both",
+all_res <- all_steps(dat = sp_df[which(sp_df$pa > 0), ],
+                     input_format = "tidy",
+                     site = "site", sp = "sp", ab = NULL,
+                     binary = TRUE, metric = "simpson",
+                     network_algo = "both",
                      bipartite_algo = "greedy", weight = FALSE,
                      clustering = TRUE, ward_method = "ward.D2",
                      optim_method = "firstSEmax", nstart = 25, B = 50,
                      K.max = 20)
 ```
+
+Describe outputs.
 
 \newpage
 

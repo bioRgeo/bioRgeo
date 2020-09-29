@@ -5,7 +5,7 @@
 Project a contingency matrix into a similarity data.frame, the similarity being based upon the sites each pair of species has in common.
 }
 \usage{
-simil(dat, metric = "simpson")
+simil(dat, metric = "simpson", input = "matrix", output = "data frame", site = NULL, sp = NULL, ab = NULL, weight = FALSE)
 }
 \arguments{
 \item{dat}{a contingency matrix with sites as rows and species as columns.}
@@ -22,7 +22,7 @@ simil(dat, metric = "simpson")
 
 \item{ab}{If \code{input = 'data frame'} and species have abundances, the column name of the abundances of species per site.}
 
-\item{binary}{a boolean indicating whether abundances should be taken into account.}
+\item{weight}{a boolean indicating whether abundances should be taken into account.}
 }
 \details{
 With \code{a} the number of species shared by a pair of sites, \code{b} species only present in the first site and \code{c} species only present in the second site.
@@ -58,6 +58,6 @@ species = c("a", "b", "a", "c", "d", "b", "d"),
 count = c(10, 100, 1, 20, 50, 10, 20))
 
 ex_mat <- contingency(dat = ex, sp = "species", site = "sites", ab = "count",
-binary = TRUE)
+weight = FALSE)
 simil(ex_mat, metric = "simpson", input = "matrix")
 }

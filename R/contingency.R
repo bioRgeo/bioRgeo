@@ -1,5 +1,5 @@
 
-contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
+contingency <- function(dat, site, sp, ab = NULL, weight = FALSE){
 
   if(!is.data.frame(dat)){
     stop("dat must be a data.frame with columns sp and site.")
@@ -18,13 +18,13 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
          of species.")
   }
 
-  if(is.null(ab) & binary == FALSE){
+  if(is.null(ab) & weight == TRUE){
     warning("Without column abundances, contingency table will only get binary
         values.")
   }
 
-  if(!is.logical(binary)){
-    stop("binary must be a boolean.")
+  if(!is.logical(weight)){
+    stop("weight must be a boolean.")
   }
 
   # Rename columns
@@ -53,8 +53,8 @@ contingency <- function(dat, site, sp, ab = NULL, binary = TRUE){
   mat <- mat[rowSums(mat) > 0, ]
   mat <- mat[, colSums(mat) > 0]
 
-  # Conversion as binary matrix if binary == TRUE
-  if(binary == TRUE){
+  # Conversion as binary matrix if weight == FALSE
+  if(weight == FALSE){
     mat[mat > 0] <- 1
   }
 

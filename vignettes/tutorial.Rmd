@@ -257,12 +257,12 @@ This transformation can consider the abundances of species.
 
 ```{r contingency_matrix}
 sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
-                      "site", "sp", ab = NULL, binary = TRUE)
+                      "site", "sp", ab = NULL, weight = FALSE)
 knitr::kable(sp_mat[1:5, 1:5],
              caption = "5 first rows and columns of contingency table.")
 
 # With weights (abundances of species within sites)
-sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", binary = FALSE)
+sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", weight = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5],
              caption = "5 first rows and columns of weighted contingency
              table.")
@@ -1044,7 +1044,7 @@ Internally, the following functions are run: `contingency()`, `cluster()`, `netw
 all_res <- all_steps(dat = sp_df[which(sp_df$pa > 0), ],
                      input_format = "tidy",
                      site = "site", sp = "sp", ab = NULL,
-                     binary = TRUE, metric = "simpson",
+                     weight = FALSE, metric = "simpson",
                      network_algo = "both",
                      bipartite_algo = "greedy", weight = FALSE,
                      clustering = TRUE, ward_method = "ward.D2",

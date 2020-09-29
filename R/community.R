@@ -44,14 +44,14 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     }
   }
 
-  if(!(algo %in% c("greedy", "betweenness", "walktrap", "louvain", "LPAwb",
+  if(!(algo %in% c("greedy", "betweenness", "walktrap", "louvain",
                    "infomap", "spinglass", "leading_eigen", "label_prop",
                    "netcarto", "oslom", "infomap",
                    "beckett", "quanbimo"))){
     stop("Provided algorithm to compute modularity is not available. Please
-    choose among the followings: greedy, betweenness, walktrap, louvain, LPAwb,
-         spinglass, leading_eigen, label_prop, netcarto, oslom, infomap,
-         beckett or quanbimo")
+    choose among the followings: 'greedy', 'betweenness', 'walktrap', 'louvain',
+         'spinglass', 'leading_eigen', 'label_prop', 'netcarto', 'oslom',
+         'infomap', 'beckett' or 'quanbimo'")
   }
 
   if(algo %in% c("beckett", "quanbimo") & input == "data frame"){

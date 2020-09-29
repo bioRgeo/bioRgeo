@@ -2,7 +2,7 @@
 \alias{contingency}
 \title{Create a contingency table from a data.frame}
 \usage{
-contingency(dat, site, sp, ab, binary = FALSE)
+contingency(dat, site, sp, ab, weight = FALSE)
 }
 \arguments{
 \item{dat}{a data.frame with duplicated rows for sites, one row per species,
@@ -14,7 +14,7 @@ a third column indicating the abundance of the species in this site}
 
 \item{ab}{the character string corresponding to the abundance column name}
 
-\item{binary}{a logical indicating if abundances should be converted as 0/1}
+\item{weight}{a logical indicating if abundances are used}
 
 }
 \description{

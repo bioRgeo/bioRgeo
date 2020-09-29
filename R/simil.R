@@ -1,7 +1,7 @@
 
 simil <- function(dat, metric = "simpson", input = "matrix",
                   output = "data frame",
-                  site = NULL, sp = NULL, ab = NULL, binary = TRUE){
+                  site = NULL, sp = NULL, ab = NULL, weight = FALSE){
   ## Controls ----
   require(Rcpp)
   require(SMUT)
@@ -40,13 +40,13 @@ simil <- function(dat, metric = "simpson", input = "matrix",
          of species.")
     }
 
-    if(is.null(ab) & binary == FALSE){
-      warning("Without column abundances, contingency table will only get binary
-        values.")
+    if(is.null(ab) & weight == TRUE){
+      warning("Without column abundances, contingency table will only get
+      binary values.")
     }
 
-    if(!is.logical(binary)){
-      stop("binary must be a boolean.")
+    if(!is.logical(weight)){
+      stop("weight must be a boolean.")
     }
 
     if(!is.null(ab) & metric != "bray"){
@@ -56,7 +56,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     }
 
     # Conversion as a contingency table with contingency function
-    dat <- contingency(dat, site, sp, ab = ab, binary = binary)
+    dat <- contingency(dat, site, sp, ab = ab, weight = weight)
   }
 
   if(!(metric %in% c("simpson", "jaccard", "sorensen", "whittaker", "bray",

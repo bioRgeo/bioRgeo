@@ -355,7 +355,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
 
     network_lab <- oslom(oslom_dat, n_runs = n_runs, t_param = t_param,
                          cp_param = cp_param, hr = hr,
-                         oslom_id1 = "id1", oslom_id2 = "id1",
+                         oslom_id1 = "id1", oslom_id2 = "id2",
                          oslom_proj = "oslom_proj")
 
     ## 6. Beckett/Dormann & Strauss ----

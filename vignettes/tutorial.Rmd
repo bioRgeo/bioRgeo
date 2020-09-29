@@ -98,12 +98,11 @@ options(tinytex.verbose = TRUE)
 To illustrate how `bioRgeo` works, we use a virtual dataset. This dataset comes with the installation of the package and can be loaded using the following command:
 
 ```{r loading_virtual_data}
-data("virtual_sp")
+data("virtual")
+head(virtual)
 ```
 
-This command loads an object called `virtual` containing a list of three elements. 
-
-The first element corresponds to the virtual dataset and comes as a `data.frame` with 40000 rows and 9 columns. The second element corresponds to the partition found by the OSLOM algorithm (see below).  
+This command loads an object called `virtual` containing a virtual dataset. This dataset comes as a `data.frame` with 40000 rows and 9 columns. Important columns are 'sp' containing the species occurrences, 'x' and 'y' the two-dimension coordinates of the sites, 'site' which contains the sites where the species occur, 'pa' for presence/absence. The other columns refer to the construction of the virtual data. More details are given below.   
 
 The virtual dataset has been constructed by simulating the response curves of 100 species to a virtual raster.  
 The virtual raster contains 10000 cells and was simulated using `gstat` R package. See [here](http://santiago.begueria.es/2010/10/generating-spatially-correlated-random-fields-with-r/) for details.  
@@ -111,11 +110,8 @@ The virtual raster contains 10000 cells and was simulated using `gstat` R packag
 After loading the virtual data, and since each site has XY coordinates, we can plot the raster of the virtual environment layer.
 
 ```{r plot_virtual_raster, fig.width = 4, fig.height = 4}
-# Only species data.frame
-sp_df <- virtual[[1]]
-
 # Plot of environmental values
-sp_df %>%
+virtual %>%
   distinct(site, .keep_all = TRUE) %>%
   ggplot(aes(x, y)) +
   geom_tile(aes(fill = env, color = env),
@@ -220,7 +216,7 @@ sp_i <- generateSpFromFun(raster.stack = env_raster,
 plotResponse(sp_i)
 
 # Loop to generate the occurrences of 100 species
-sp_df <- c()
+virtual <- c()
 for (i in 1:100){
   param_i <- formatFunctions(
     env = c(fun = "dnorm", mean = mean_gdt[i], sd = sd_gdt[i]))
@@ -238,12 +234,12 @@ for (i in 1:100){
   colnames(occ_i)[colnames(occ_i) == "layer"] <- "suitab"
   
   # Binding results
-  sp_df <- rbind(sp_df, occ_i)
+  virtual <- rbind(virtual, occ_i)
   print(i)
 }
 
 # Add site and environment columns
-sp_df <- left_join(sp_df, env_dat, by = c("x", "y"))
+virtual <- left_join(virtual, env_dat, by = c("x", "y"))
 ```
 
 \newpage
@@ -256,13 +252,13 @@ Before applying any of the available method, and according to the preference of 
 This transformation can consider the abundances of species.
 
 ```{r contingency_matrix}
-sp_mat <- contingency(sp_df[which(sp_df$pa != 0), ],
+sp_mat <- contingency(virtual[which(virtual$pa != 0), ],
                       "site", "sp", ab = NULL, weight = FALSE)
 knitr::kable(sp_mat[1:5, 1:5],
              caption = "5 first rows and columns of contingency table.")
 
 # With weights (abundances of species within sites)
-sp_mat_w <- contingency(sp_df, "site", "sp", ab = "suitab", weight = FALSE)
+sp_mat_w <- contingency(virtual, "site", "sp", ab = "suitab", weight = FALSE)
 knitr::kable(sp_mat_w[1:5, 1:5],
              caption = "5 first rows and columns of weighted contingency
              table.")
@@ -286,14 +282,14 @@ sp_proj <- simil(sp_mat, metric = "simpson")
 knitr::kable(head(sp_proj))
 
 # With data frame input
-sp_proj_df <- simil(sp_df[which(sp_df$pa != 0), ],
+sp_proj_df <- simil(virtual[which(virtual$pa != 0), ],
                     metric = "simpson", input = "data frame",
                     site = "site", sp = "sp")
 identical(sp_proj, sp_proj_df)
 rm(sp_proj_df)
 
 # With matrix output
-sp_proj_mat <- simil(sp_df[which(sp_df$pa != 0), ],
+sp_proj_mat <- simil(virtual[which(virtual$pa != 0), ],
                      metric = "simpson", input = "data frame",
                      site = "site", sp = "sp", output = "matrix")
 dim(sp_proj_mat); sp_proj_mat[1:5, 1:5]
@@ -464,7 +460,7 @@ The next chunk runs the different network methods on the virtual dataset.
 bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
 
 # fastgreedy, input data frame
-bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
+bip_df <- community(dat = virtual[which(virtual$pa > 0), ],
                     algo = "greedy",
                     weight = FALSE, input = "data frame", site = "site",
                     sp = "sp", ab = NULL)
@@ -502,13 +498,11 @@ bip_site_walktrap <- bip_walktrap %>%
   dplyr::select(site, module)
 
 # OSLOM
-# next line is not run, the result is directly stored with the package
-# (second element of 'virtual' object)
-# oslom_mod <- oslom(sp_proj[which(sp_proj$simpson > 0), ],
-#                    n_runs = 5, t_param = 0.1, cp_param = 0.5)
-
-# OSLOM output available in the package
-oslom_mod <- virtual[[2]]
+oslom_mod <- community(
+  dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
+  input = "data frame", site = "site", sp = "sp", N = 10,
+  n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
+  oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
 
 cat(paste0("Number of bioregions detected = ",
            length(unique(oslom_mod$bioregion))))
@@ -518,7 +512,7 @@ table(oslom_mod$site)[table(oslom_mod$site) > 1]
 
 # Infomap
 infomap_mod <- community(
-  dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap", weight = FALSE,
+  dat = virtual[which(virtual$pa > 0), ], algo = "infomap", weight = FALSE,
   input = "data frame", site = "site", sp = "sp",
   N = 10)
 
@@ -527,7 +521,6 @@ infomap_site <- infomap_mod %>%
   rename(site = node) %>%
   dplyr::select(site, module)
 
-# Clean the following sections
 # Add modularity/likelihood statistics as an ouput for some algorithms
 # Add CA (Correspondence Analysis)
 # check cluster_ward
@@ -581,7 +574,7 @@ mbm <- microbenchmark(
   walktrap = community(dat = sp_mat, algo = "walktrap", weight = FALSE),
   oslom = oslom(sp_proj[which(sp_proj$simpson > 0), ], n_runs = 5,
                 t_param = 0.1, cp_param = 0.5),
-  infomap = community(dat = sp_df[which(sp_df$pa > 0), ], algo = "infomap",
+  infomap = community(dat = virtual[which(virtual$pa > 0), ], algo = "infomap",
                       weight = FALSE, input = "data frame", site = "site",
                       sp = "sp", N = 10),
   # number of times for each algorithm
@@ -618,7 +611,7 @@ If sites have coordinates, we can apply several functions to compare how the dis
 oslom_mod <- oslom_mod[!duplicated(oslom_mod$site), ]
 
 # Tidy dataset
-bio_maps <- sp_df %>%
+bio_maps <- virtual %>%
   distinct(site, .keep_all = TRUE) %>% # remove duplicates per site
   dplyr::select(-suitab, -pa, -opt, -width) %>% # removing useless columns
   left_join(km_res, by = "site") %>% # add kmeans
@@ -729,10 +722,10 @@ site103 <- rbind(
 
 # Adding coordinates
 site103 <- left_join(site103,
-                     sp_df[!duplicated(sp_df$site), c("site", "x", "y")],
+                     virtual[!duplicated(virtual$site), c("site", "x", "y")],
                      by = "site")
 
-coord103 <- distinct(sp_df[which(sp_df$site == "site103"),
+coord103 <- distinct(virtual[which(virtual$site == "site103"),
                            c("site", "x", "y")])
 
 # Plot
@@ -939,7 +932,7 @@ infomap_sp <- infomap_mod %>%
   dplyr::select(sp, mod_sp)
 
 # Merging the bioregion identification with long-format data frame
-scores_infomap <- left_join(sp_df[which(sp_df$pa > 0),
+scores_infomap <- left_join(virtual[which(virtual$pa > 0),
                                   c("site", "sp", "x", "y")], 
                             infomap_site, by = "site")
 scores_infomap <- left_join(scores_infomap, infomap_sp, by = "sp")
@@ -999,7 +992,7 @@ Some algorithms (like OSLOM) only classify sites into bioregions and do not assi
 
 ```{r contrib_proj_oslom}
 # Merging the bioregion identification with long-format data frame
-scores_oslom <- left_join(sp_df[which(sp_df$pa > 0),
+scores_oslom <- left_join(virtual[which(virtual$pa > 0),
                                 c("site", "sp", "x", "y")], 
                           oslom_mod, by = "site")
 head(scores_oslom)
@@ -1041,7 +1034,7 @@ All these previous steps and the corresponding functions can be called with the 
 Internally, the following functions are run: `contingency()`, `cluster()`, `network()`, `contribute()` and `interact()`. Therefore, this function returns the identified bioregion for the chosen method in a long-format data.frame.
 
 ```{r all_steps, eval = FALSE}
-all_res <- all_steps(dat = sp_df[which(sp_df$pa > 0), ],
+all_res <- all_steps(dat = virtual[which(virtual$pa > 0), ],
                      input_format = "tidy",
                      site = "site", sp = "sp", ab = NULL,
                      weight = FALSE, metric = "simpson",

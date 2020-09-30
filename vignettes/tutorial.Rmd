@@ -7,66 +7,66 @@ output:
     toc: true
     toc_depth: 2
     number_sections: true
+editor_options: 
+ chunk_output_type: console
 vignette: >
-%\VignetteIndexEntry{Tutorial for bioRgeo R package}
+%\VignetteIndexEntry{Tutorial for 'bioRgeo' R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8} 
-  editor_options: 
- chunk_output_type: console
----
-
-<style>
-body {
-text-align: justify}
-</style>
-
-# 1. Overview
-
-In the following vignette, we show how `bioRgeo` package works. We use a simulated dataset of virtual species distributed across sites to illustrate how we can detect communities, i.e. groups of sites that are closely related regarding their species composition.
-
-To detect these large-scale communities, `bioRgeo` uses a variety of methods, ranging from bipartite network modularity to classical clustering. Each method enables identifying groups of sites that are more similar between each other than compared with the rest of the sites available.
-
-Our example and package is mostly designed for ecologists interested in detecting large-scale patterns in the distribution of species across environments but it can also be used in other fields interested in the detection of large-scale patterns.
-
-The principle of the package is illustrated by the following figure.
-
-```{r package_scheme, fig.label = "Workflow of the package."}
-knitr::include_graphics("../figures/bioRgeo_scheme.png")
-```
-
-\newpage
-
-## 1.1. Glossary
-Four types of formats are used in the package.
-
-*contingency matrix*  
-a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. The matrix can either contain presences/absences or abundances of species within sites.  
-This object is the first possible input of the `bioRgeo` functions.
-
-*long format table*  
-a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site.  
-This format is the second possible input of the `bioRgeo` functions.
-
-*adjacency matrix*  
-a square matrix that contains *nm* rowns and columns, with *n* the number of sites and *m* the number of species. Both sites and species are in rows and columns. The matrix can be divided into four parts, the top-left corner being the contingency matrix. The bottom-right corner is the transposed contingency matrix. Since site-species matrix correspond to a bipartite network, there are no links between the same type of nodes. This means that there are no links between pairs of sites or between pairs of species. Top-right and bottom-left parts of this matrix are thus filled with 0.  
-For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
-
-*distance matrix* 
-a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
-This type of matrix is usually stored as a `dist` object in R.
-
-*bipartite network*
-a network, or graph, is an object composed of nodes, or vertices, and links, or edges. Each node is connected with other nodes via some links. In a bipartite network, there are two types of nodes. Each type of node can only be linked with the other type.
-Bipartite networks are therefore another way to describe contingency matrices as shown in the next figure. Sites and species constitute the two types of nodes of the network. Occurrences of species within sites are the links of the network.
-
-```{r sitespmat_bip, fig.label = "Equivalence of contingency table and bipartite network."}
-knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
-```
-
-Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_df()` functions as illustrated in the following figure: 
-
-```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
-knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
+  ---
+  
+  <style>
+  body {
+  text-align: justify}
+  </style>
+  
+  # 1. Overview
+  
+  In the following vignette, we show how `bioRgeo` package works. We use a simulated dataset of virtual species distributed across sites to illustrate how we can detect communities, i.e. groups of sites that are closely related regarding their species composition.
+  
+  To detect these large-scale communities, `bioRgeo` uses a variety of methods, ranging from bipartite network modularity to classical clustering. Each method enables identifying groups of sites that are more similar between each other than compared with the rest of the sites available.
+  
+  Our example and package is mostly designed for ecologists interested in detecting large-scale patterns in the distribution of species across environments but it can also be used in other fields interested in the detection of large-scale patterns.
+  
+  The principle of the package is illustrated by the following figure.
+  
+  ```{r package_scheme, fig.label = "Workflow of the package."}
+  knitr::include_graphics("../figures/bioRgeo_scheme.png")
+  ```
+  
+  \newpage
+  
+  ## 1.1. Glossary
+  Four types of formats are used in the package.
+  
+  *contingency matrix*  
+  a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. The matrix can either contain presences/absences or abundances of species within sites.  
+  This object is the first possible input of the `bioRgeo` functions.
+  
+  *long format table*  
+  a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site.  
+  This format is the second possible input of the `bioRgeo` functions.
+  
+  *adjacency matrix*  
+  a square matrix that contains *nm* rowns and columns, with *n* the number of sites and *m* the number of species. Both sites and species are in rows and columns. The matrix can be divided into four parts, the top-left corner being the contingency matrix. The bottom-right corner is the transposed contingency matrix. Since site-species matrix correspond to a bipartite network, there are no links between the same type of nodes. This means that there are no links between pairs of sites or between pairs of species. Top-right and bottom-left parts of this matrix are thus filled with 0.  
+  For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+  
+  *distance matrix* 
+  a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
+  This type of matrix is usually stored as a `dist` object in R.
+  
+  *bipartite network*
+  a network, or graph, is an object composed of nodes, or vertices, and links, or edges. Each node is connected with other nodes via some links. In a bipartite network, there are two types of nodes. Each type of node can only be linked with the other type.
+  Bipartite networks are therefore another way to describe contingency matrices as shown in the next figure. Sites and species constitute the two types of nodes of the network. Occurrences of species within sites are the links of the network.
+  
+  ```{r sitespmat_bip, fig.label = "Equivalence of contingency table and bipartite network."}
+  knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
+  ```
+  
+  Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_df()` functions as illustrated in the following figure: 
+  
+  ```{r input_figure, fig.label = "Two possible inputs.", fig.width = 4, fig.height = 4}
+  knitr::include_graphics("../figures/20200225_bioRgeo_inputs.png")
 ```
 
 Several functions of the package necessitate to define the structure of the input.
@@ -629,13 +629,14 @@ bio_maps <- virtual %>%
   left_join(bip_site_beckett, by = "site") %>% # add lpawb
   left_join(infomap_site, by = "site") %>% # add infomap
   left_join(bip_site_louvain, by = "site") %>% # add louvain
-  left_join(bip_site_walktrap, by = "site") %>% # add walktrap
-  tidyr::gather(mod, val, c(contains("cluster"),
-                            contains("module"))) %>% # tidy
-  as.data.frame()
+  left_join(bip_site_walktrap, by = "site") # add walktrap
+
+# Gather dataset by bioregionalization method
+bio_maps_tidy <- tidyr::gather(bio_maps, bioregion, val,
+                               c(contains("cluster"), contains("module")))
 
 # Plot with facetting
-ggplot(bio_maps, aes(x, y)) +
+ggplot(bio_maps_tidy, aes(x, y)) +
   geom_tile(aes(fill = as.factor(val), color = as.factor(val)),
             alpha = 0.8, width = 1, height = 1) +
   scale_color_brewer("Bioregions", palette = "Paired") +
@@ -644,8 +645,7 @@ ggplot(bio_maps, aes(x, y)) +
   labs(title = "Bioregionalizations") +
   theme_classic() +
   theme(panel.background = element_rect(fill = "transparent", colour = NA)) +
-  facet_wrap(~ mod)
-
+  facet_wrap(~ bioregion)
 ```
 
 \newpage
@@ -664,30 +664,67 @@ $$
 with $M$ the number of bioregionalization methods used and $n$ the number of sites.
 
 ```{r comparison}
-# Spreading the format of bio_maps: one column per bioregionalization
-bio_maps2 <- tidyr::spread(bio_maps, mod, val)
-
 # Test of comparison function
-all100 <- comparison(bio_maps2, site = "site",
-                     bio_col = c(6:ncol(bio_maps2)), output = "both")
-
-lapply(all100, dim)
-head(all100[[2]])
+comp <- comparison(bio_maps, site = "site", bio_col = c(6:ncol(bio_maps)),
+                   output = "both", thres = 8)
+lapply(comp, dim)
+head(comp[[2]])
 
 # Plot of fully concordant areas
-all100[[2]] %>%
+comp[[2]] %>%
   left_join(bio_maps[, c("site", "x", "y")], by = c("id" = "site")) %>%
   distinct(id, .keep_all = TRUE) %>%
   ggplot(aes(x, y)) +
-  geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
+  geom_tile(data = virtual[!duplicated(virtual$site), ],
+            inherit.aes = FALSE, aes(x, y),
+            fill = "grey", color = "grey",
             alpha = 0.8, width = 1, height = 1) +
+  geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
+            width = 1, height = 1) +
   scale_color_brewer("Bioregions", palette = "Set1") +
   scale_fill_brewer("Bioregions", palette = "Set1") +
   coord_equal() +
-  labs(title = "Identical bioregions") +
+  labs(title = "Identical bioregions with a threshold of 8 sites") +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA))
 ```
+
+With a threshold of at least 8 sites, we therefore obtained 8 bioregions for which all the sites were grouped together through the 13 bioregionalizations used.
+If we consider a fewer number of bioregionalizations, 3 for example, we are more likely to classify a bigger amount of sites into the unified bioregions.
+
+```{r comparison2}
+# Gather all bioregions in one dataset
+bio_maps2 <- virtual %>%
+  distinct(site, .keep_all = TRUE) %>% # remove duplicates per site
+  dplyr::select(-suitab, -pa, -opt, -width) %>% # removing useless columns
+  left_join(diana_res, by = "site") %>% # add diana
+  left_join(bip_site, by = "site") %>% # add fastgreedy
+  left_join(bip_site_walktrap, by = "site") # add walktrap
+
+# Test of comparison function
+comp2 <- comparison(bio_maps2, site = "site", bio_col = c(6:ncol(bio_maps2)),
+                    output = "both", thres = 8)
+
+# Plot of fully concordant areas
+comp2[[2]] %>%
+  left_join(bio_maps2[, c("site", "x", "y")], by = c("id" = "site")) %>%
+  distinct(id, .keep_all = TRUE) %>%
+  ggplot(aes(x, y)) +
+  geom_tile(data = virtual[!duplicated(virtual$site), ],
+            inherit.aes = FALSE, aes(x, y),
+            fill = "grey", color = "grey",
+            alpha = 0.8, width = 1, height = 1) +
+  geom_tile(aes(fill = as.factor(uni), color = as.factor(uni)),
+            width = 1, height = 1) +
+  scale_color_brewer("Bioregions", palette = "Set1") +
+  scale_fill_brewer("Bioregions", palette = "Set1") +
+  coord_equal() +
+  labs(title = "Identical bioregions with a threshold of 8 sites") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA))
+```
+
+With 3 bioregionalizations only, we can see that almost every pixel can be classed into a common bioregion.
 
 \newpage
 
@@ -912,14 +949,14 @@ The next chunk illustrates how `contrib()` function returns these 3 indices.
 infomap_site <- infomap_mod %>%
   filter(cat == "site") %>%
   rename(site = node,
-         mod_site = module) %>%
+         mod_site = module_infomap) %>%
   dplyr::select(site, mod_site)
 
 # Bioregions for species obtained with Infomap
 infomap_sp <- infomap_mod %>%
   filter(cat == "sp") %>%
   rename(sp = node,
-         mod_sp = module) %>%
+         mod_sp = module_infomap) %>%
   dplyr::select(sp, mod_sp)
 
 # Merging the bioregion identification with long-format data frame

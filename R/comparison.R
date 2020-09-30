@@ -64,20 +64,13 @@ comparison <- function(dat, site, bio_col, thres = 10, output = "both"){
     # Extract pixels together 100% of the time
     all100 <- list_df_pair[which(list_df_pair$perc == 100), ]
 
-    # Add bioregion (whatever algorithm since all pixels are grouped together)
+    # Add bioregion from all the bioregionalizations
     all100 <- left_join(all100,
-                        dat[, c(site, colnames(dat)[bio_col[1]])],
-                        by = c("id1" = site))
+                        dat[, c(site, colnames(dat)[bio_col])],
+                        by = c("id1" = site)) %>%
+      tidyr::unite(bio1, colnames(dat)[bio_col], sep = "_", remove = TRUE)
+
     colnames(all100) <- c("id1", "id2", "perc", "uni")
-
-    # Rename levels of common bioregion
-    all100$uni <- as.factor(all100$uni)
-    levels(all100$uni) <- as.character(seq(1:length(levels(all100$uni))))
-
-    # Remove pairs of pixels under a given threshold of pixels
-    thresh <- names(table(all100$uni)[table(all100$uni) > thres])
-
-    all100 <- all100[which(all100$uni %in% thresh), ]
 
     # Only one column with sites
     tmp <- all100[, c("id1", "uni")]
@@ -87,6 +80,14 @@ comparison <- function(dat, site, bio_col, thres = 10, output = "both"){
     # Binding and removing duplicates
     all100 <- rbind(all100, tmp)
     all100 <- all100[!duplicated(all100$id), ]
+
+    # Remove pairs of pixels under a given threshold of pixels
+    thresh <- names(table(all100$uni)[table(all100$uni) > thres])
+    all100 <- all100[which(all100$uni %in% thresh), ]
+
+    # Rename levels of common bioregion
+    all100$uni <- as.factor(as.character(all100$uni))
+    levels(all100$uni) <- as.character(seq(1:length(levels(all100$uni))))
 
     if(output == "common"){
       return(all100)

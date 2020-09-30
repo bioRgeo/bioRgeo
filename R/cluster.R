@@ -167,6 +167,9 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     }
   }
 
+  # Convert cluster column into character
+  res$cluster <- as.character(res$cluster)
+
   # Changing column names of res: paste(cluster, method)
   colnames(res)[colnames(res) == "cluster"] <- paste0("cluster_", method)
 

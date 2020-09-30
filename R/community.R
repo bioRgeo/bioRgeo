@@ -1,9 +1,9 @@
 
 community <- function(dat, algo = "greedy", weight = FALSE,
-                    input = "matrix", site = NULL, sp = NULL,
-                    ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
-                    cp_param = 0.5, hr = 0, oslom_id1 = NULL,
-                    oslom_id2 = NULL, oslom_proj = NULL){
+                      input = "matrix", site = NULL, sp = NULL,
+                      ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
+                      cp_param = 0.5, hr = 0, oslom_id1 = NULL,
+                      oslom_id2 = NULL, oslom_proj = NULL){
 
   ## 1. Controls ----
   if(!(input %in% c("matrix", "data frame"))){
@@ -446,7 +446,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     names(bioregion_list) <- as.character(seq_along(bioregion_list))
     network_lab <- data.frame(
       id_oslom = unlist(bioregion_list),
-      module_oslom = rep(names(bioregion_list), sapply(bioregion_list, length)))
+      module = rep(names(bioregion_list), sapply(bioregion_list, length)))
 
     # Column with the names of the sites
     network_lab$site <- unique(
@@ -460,7 +460,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       warning(paste0(length(doublon), " sites have several bioregions assigned."))
     }
 
-    network_lab <- network_lab[, c("site", "module_oslom")]
+    network_lab <- network_lab[, c("site", "module")]
 
     ## 6. Beckett/Dormann & Strauss ----
   } else if(algo %in% c("beckett", "quanbimo")){
@@ -490,6 +490,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                               "site", "sp")
   }
+
+  # Convert module column into character
+  network_lab$module <- as.character(network_lab$module)
 
   # Changing column names of network_lab: paste(algo, method)
   colnames(network_lab)[colnames(network_lab) == "module"] <-

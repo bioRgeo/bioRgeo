@@ -283,14 +283,14 @@ knitr::kable(head(sp_proj))
 
 # With data frame input
 sp_proj_df <- simil(virtual[which(virtual$pa != 0), ],
-                    metric = "simpson", input = "data frame",
+                    metric = "simpson", input = "data.frame",
                     site = "site", sp = "sp")
 identical(sp_proj, sp_proj_df)
 rm(sp_proj_df)
 
 # With matrix output
 sp_proj_mat <- simil(virtual[which(virtual$pa != 0), ],
-                     metric = "simpson", input = "data frame",
+                     metric = "simpson", input = "data.frame",
                      site = "site", sp = "sp", output = "matrix")
 dim(sp_proj_mat); sp_proj_mat[1:5, 1:5]
 
@@ -462,7 +462,7 @@ bip <- community(dat = sp_mat, algo = "greedy", weight = FALSE)
 # fastgreedy, input data frame
 bip_df <- community(dat = virtual[which(virtual$pa > 0), ],
                     algo = "greedy",
-                    weight = FALSE, input = "data frame", site = "site",
+                    weight = FALSE, input = "data.frame", site = "site",
                     sp = "sp", ab = NULL)
 
 table(bip$module); table(bip_df$module)
@@ -500,7 +500,7 @@ bip_site_walktrap <- bip_walktrap %>%
 # OSLOM
 oslom_mod <- community(
   dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
-  input = "data frame", site = "site", sp = "sp", N = 10,
+  input = "data.frame", site = "site", sp = "sp", N = 10,
   n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
   oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
 
@@ -513,7 +513,7 @@ table(oslom_mod$site)[table(oslom_mod$site) > 1]
 # Infomap
 infomap_mod <- community(
   dat = virtual[which(virtual$pa > 0), ], algo = "infomap", weight = FALSE,
-  input = "data frame", site = "site", sp = "sp",
+  input = "data.frame", site = "site", sp = "sp",
   N = 10)
 
 infomap_site <- infomap_mod %>%
@@ -574,11 +574,11 @@ mbm <- microbenchmark(
   walktrap = community(dat = sp_mat, algo = "walktrap", weight = FALSE),
   oslom = community(
     dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
-    input = "data frame", site = "site", sp = "sp", N = 10, n_runs = 1,
+    input = "data.frame", site = "site", sp = "sp", N = 10, n_runs = 1,
     t_param = 0.1, cp_param = 0.5, hr = 0,
     oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson"),
   infomap = community(dat = virtual[which(virtual$pa > 0), ], algo = "infomap",
-                      weight = FALSE, input = "data frame", site = "site",
+                      weight = FALSE, input = "data.frame", site = "site",
                       sp = "sp", N = 10),
   # number of times for each algorithm
   times = 10)#50)
@@ -1074,6 +1074,16 @@ All these previous steps and the corresponding functions can be called with the 
 Internally, the following functions are run: `contingency()`, `cluster()`, `network()`, `contribute()` and `interact()`. Therefore, this function returns the identified bioregion for the chosen method in a long-format data.frame.
 
 ```{r all_steps, eval = FALSE}
+# Manually checking the function
+dat <- virtual[which(virtual$pa > 0), ]; input_format = "data.frame"
+weight = FALSE; site <- "site"; sp <- "sp"; ab <- NULL
+metric = "simpson"; cluster_method <- "kmeans",
+optim_method = "firstSEmax"; n_clust <- NULL; nstart = 25; B = 50; K.max = 20;
+network_method <- "louvain";
+N = 10; n_runs = 1; t_param = 0.1; cp_param = 0.5; hr = 0;
+contribute_algo = NULL; interact_algo = NULL
+
+##
 all_res <- all_steps(dat = virtual[which(virtual$pa > 0), ],
                      input_format = "tidy",
                      site = "site", sp = "sp", ab = NULL,

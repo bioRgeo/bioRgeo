@@ -65,6 +65,6 @@ sp_df <- virtual[[1]]
 # fastgreedy algorithm from igraph
 bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
                          algo = "greedy",
-                         weight = FALSE, input = "data frame", site = "site",
+                         weight = FALSE, input = "data.frame", site = "site",
                          sp = "sp", ab = NULL)
 }

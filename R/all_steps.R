@@ -6,7 +6,8 @@ all_steps <- function(
   cluster_method = NULL,
   optim_method = "firstSEmax", n_clust = NULL, nstart = 25, B = 50, K.max = 20,
   network_method = NULL,
-  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
+  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
+  contribute_algo = NULL, interact_algo = NULL){
 
   ## Controls ----
   # Packages
@@ -104,7 +105,7 @@ all_steps <- function(
       }
     }
 
-    if(is.null(n_clust) & method %in%
+    if(is.null(n_clust) & cluster_method %in%
        c("kmeans", "ward.D", "ward.D2", "single", "complete",
          "average", "mcquitty", "median", "centroid", "diana", "pam")){
       warning("The chosen method is a supervised algorithm that needs a number of
@@ -235,7 +236,7 @@ all_steps <- function(
   ## simil() ----
   # Project network with simil()
   dat_proj <- simil(sp_mat, metric = metric, input = "matrix",
-                    output = "data frame",
+                    output = "data.frame",
                     site = NULL, sp = NULL, ab = NULL, weight = FALSE)
 
   dat_proj <- dat_proj[, c("id1", "id2", metric)]
@@ -256,39 +257,94 @@ all_steps <- function(
   ## community() ----
   if(!is.null(network_method)){
     res_network <- community(dat = sp_mat, algo = network_method,
-                             input = input_format,
+                             input = "matrix",
                              N = N, n_runs = n_runs, t_param = t_param,
                              cp_param = cp_param, hr = hr, weight = weight)
   }
 
   ## comparison() ----
-  # Remove duplicates per site
-  if(input == "data.frame"){
-    bioregions <- dat[!duplicated(dat[, site]), ]
-  } else if(input_format == "matrix"){
-    bioregions <- sp_df[!duplicated(sp_df[, site]), ]
+  # Only sites for some network methods
+  if(!is.null(network_method) & !(network_method %in% c("oslom"))){
+    res_network_site <- res_network[which(res_network$cat == "site"), ]
+    colnames(res_network_site)[colnames(res_network_site) == "node"] <- "site"
+    net_col <- grep("module_", colnames(res_network_site))
+    res_network_site <-
+      res_network_site[, c("site", colnames(res_network_site)[net_col])]
+  } else if(!is.null(network_method) & network_method == c("oslom")){
+    res_network_site <- res_network
   }
 
-  # Gather all the bioregionalizations
+  # Group all the bioregionalizations in one data.frame
   if(!is.null(cluster_method)){
-    bioregions <- bioregions %>%
-      left_join(res_cluster, by = "site") %>%
-      as.data.frame()
-  } else if(!is.null(network_method)){
-    bioregions <- bioregions %>%
-      left_join(res_network, by = "site") %>%
-      as.data.frame()
+    if(!is.null(network_method)){
+      bioregions <- left_join(res_cluster, res_network_site, by = "site") %>%
+        as.data.frame()
+    }
+    else if(is.null(network_method)){
+      bioregions <- res_cluster
+    }
+  } else if(is.null(cluster_method)){
+    bioregions <- res_network_site
   }
+  # Delete res_cluster and res_network to save space
+  # rm(res_cluster); rm(res_network); rm(res_network_site)
 
   all100 <- comparison(bioregions, site = site,
                        bio_col = c(grep("cluster_", colnames(bioregions)),
                                    grep("module_", colnames(bioregions))),
-                       output = "both")
+                       output = "both", thres = 10)
 
   ## contribute() ----
-  tmp <- left_join(dat, list_res["oslom"], by = "site")
-  scores <- contribute(dat = tmp, sp_col = "sp", site_col = "site",
-                       bioregion_col = "bioregion")
+  # contribute() is run one time per selected method of bioregionalization
+  contrib_list <- list()
+  for(i in 1:length(c(cluster_method, network_method))){
+    # Bioregions for sites only
+    # bioregions
+
+    # Bioregions for species only => some algorithms don't assign bioregions
+    # to species
+    if(!is.null(network_method) & !(network_method %in% c("oslom"))){
+      sp_bio_network <- res_network %>%
+        filter(cat == "sp") %>%
+        rename(sp = node,
+               bio_sp = module_infomap) %>%
+        dplyr::select(sp, bio_sp) %>%
+        group_by(sp, bio_site) %>%
+        summarise(c = n()) %>%
+        filter(row_number(desc(c)) == 1) %>%
+        rename(bio_sp = bio_site) %>%
+        select(sp, bio_sp)
+      # Merge with site-species data frame
+      dat <- left_join(dat, sp_bio, by = "sp")
+    }
+    if(!is.null(cluster_method)){
+      sp_bio_clust <- dat %>%
+        group_by(sp, bio_site) %>%
+        summarise(c = n()) %>%
+        filter(row_number(desc(c)) == 1) %>%
+        rename(bio_sp = bio_site) %>%
+        select(sp, bio_sp)
+      # Merge with site-species data frame
+      dat <- left_join(dat, sp_bio, by = "sp")
+    }
+
+    bioregion_sp <- infomap_mod %>%
+      filter(cat == "sp") %>%
+      rename(sp = node,
+             mod_sp = module_infomap) %>%
+      dplyr::select(sp, mod_sp)
+
+    # Merging the bioregion identification with long-format data.frame
+    scores_infomap <- left_join(virtual[which(virtual$pa > 0),
+                                        c("site", "sp", "x", "y")],
+                                infomap_site, by = "site")
+    scores_infomap <- left_join(scores_infomap, infomap_sp, by = "sp")
+
+    scores <- contribute(
+      dat = scores_infomap, sp_col = "sp", site_col = "site",
+      bioregion_col = "bioregion", bioregion_sp_col = NULL, ab = NULL)
+
+  }
 
   ## interact() ----
   lambda <- interact(input_network = "projected",

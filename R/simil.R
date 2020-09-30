@@ -1,29 +1,29 @@
 
 simil <- function(dat, metric = "simpson", input = "matrix",
-                  output = "data frame",
+                  output = "data.frame",
                   site = NULL, sp = NULL, ab = NULL, weight = FALSE){
   ## Controls ----
   require(Rcpp)
   require(SMUT)
 
-  if(!(input %in% c("matrix", "data frame"))){
+  if(!(input %in% c("matrix", "data.frame"))){
     stop("dat must be either a contingency matrix with sites as rows and
-    species as columns or a long format data frame with each row being the
+    species as columns or a long format data.frame with each row being the
     presence of a species in a given site.")
   }
 
-  if(!(output %in% c("matrix", "data frame", "dist"))){
+  if(!(output %in% c("matrix", "data.frame", "dist"))){
     stop("output is a character string indicating the format of the output.
-         Either 'matrix', 'data frame' or 'dist'.")
+         Either 'matrix', 'data.frame' or 'dist'.")
   }
 
   if(input == "matrix"){
     if(!is.matrix(dat)){
       stop("dat should be a matrix with sites as rows and species as columns.")
     }
-  } else if(input == "data frame"){
+  } else if(input == "data.frame"){
     if(!is.data.frame(dat)){
-      stop("dat should be a long format data frame with each row being the
+      stop("dat should be a long format data.frame with each row being the
     presence (or abundance) of a species in a given site.")
     }
 
@@ -91,7 +91,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
       # Similarity instead of dissimilarity
       bray <- 1 - bray
 
-      if(output == "data frame"){
+      if(output == "data.frame"){
         # Convert distance matrix into data.frame
         abc <- reshape2::melt(bray, varnames = c("id1", "id2"))
         # Remove NAs
@@ -102,7 +102,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
         # abc <- abc[which(abc$bray > 0), ]
 
         # If contingency matrix has rownames, reassign them to abc data.frame
-        if(output == "data frame" & !is.null(rownames(dat))){
+        if(output == "data.frame" & !is.null(rownames(dat))){
           abc$id1 <- rownames(dat)[abc$id1]
           abc$id2 <- rownames(dat)[abc$id2]
         }
@@ -122,7 +122,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
       abc <- as.dist(abc)
     }
 
-    if(output == "data frame"){
+    if(output == "data.frame"){
       # Removal of upper part and diagonal
       abc[upper.tri(abc)] <- NA
       diag(abc) <- NA
@@ -134,7 +134,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
       colnames(abc) <- c("id1", "id2", "euclid")
 
       # If contingency matrix has rownames, reassign them to abc data.frame
-      if(output == "data frame" & !is.null(rownames(dat))){
+      if(output == "data.frame" & !is.null(rownames(dat))){
         abc$id1 <- rownames(dat)[abc$id1]
         abc$id2 <- rownames(dat)[abc$id2]
       }
@@ -155,7 +155,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     abc <- rbind(abc, abc_0)
     rm(abc_0)
 
-    if(output == "data frame"){
+    if(output == "data.frame"){
       # Remove upper part of the matrix (not if outputs = 'matrix' or 'dist' to
       # have symmetrical matrices)
       abc <- abc[abc[, 1] < abc[, 2], ]

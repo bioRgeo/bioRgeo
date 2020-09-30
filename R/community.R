@@ -6,9 +6,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
                       oslom_id2 = NULL, oslom_proj = NULL){
 
   ## 1. Controls ----
-  if(!(input %in% c("matrix", "data frame"))){
+  if(!(input %in% c("matrix", "data.frame"))){
     stop("dat must be either a contingency matrix with sites as rows and
-    species as columns or a long format data frame with each row being the
+    species as columns or a long format data.frame with each row being the
     presence of a species in a given site.")
   }
 
@@ -20,9 +20,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       stop("dat does not have rownames or colnames.")
     }
 
-  } else if(input == "data frame"){
+  } else if(input == "data.frame"){
     if(!is.data.frame(dat)){
-      stop("dat should be a long format data frame with each row being the
+      stop("dat should be a long format data.frame with each row being the
     presence of a species in a given site.")
 
       if(!is.character(site)){
@@ -40,7 +40,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     }
 
     if(weight == TRUE & is.null(ab)){
-      stop("With weight = TRUE and input = 'data frame', input data frame
+      stop("With weight = TRUE and input = 'data.frame', input data.frame
       should have a column containg the abundances of species at sites.")
     }
   }
@@ -55,7 +55,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
          'infomap', 'beckett' or 'quanbimo'")
   }
 
-  if(algo %in% c("beckett", "quanbimo") & input == "data frame"){
+  if(algo %in% c("beckett", "quanbimo") & input == "data.frame"){
     warning("The chosen algorithm needs a site-species matrix as input.
             We here perform bioRgeo::contingency() function to convert it but
             you can do this step a priori to save time.")
@@ -228,7 +228,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     if(input == "matrix"){
       network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                                 "site", "sp")
-    }else if(input == "data frame"){
+    }else if(input == "data.frame"){
       network_lab$cat <- ifelse(network_lab$node %in% unique(dat$site),
                                 "site", "sp")
     }
@@ -271,7 +271,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
           dat_sq, mode = "undirected", add.rownames = TRUE, weighted = TRUE)
       }
 
-    } else if(input == "data frame"){
+    } else if(input == "data.frame"){
       if(weight == FALSE){
         network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE)
       } else if(weight == TRUE){
@@ -310,13 +310,13 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     if(input == "matrix"){
       network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                                 "site", "sp")
-    }else if(input == "data frame"){
+    }else if(input == "data.frame"){
       network_lab$cat <- ifelse(network_lab$node %in% unique(dat$site),
                                 "site", "sp")
     }
     ## 4. netcarto ----
   } else if(algo == "netcarto"){
-    if(input == "data frame"){
+    if(input == "data.frame"){
       dat <- contingency(dat, site = site, sp = sp, ab = ab)
     }
     # Convert matrix into square matrix (first pixels and then species)
@@ -341,7 +341,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     if(input == "matrix"){
       network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
                                 "site", "sp")
-    }else if(input == "data frame"){
+    }else if(input == "data.frame"){
       network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
                                 "site", "sp")
     }

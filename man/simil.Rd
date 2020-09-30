@@ -49,7 +49,7 @@ If \code{output = 'matrix'}, a matrix with n_sites rows and n_sites columns. Val
 
 If \code{output = 'dist'}, a dist object based on the symmetrical matrix.
 }
-\details{}
+
 \section{Note}{}
 
 \examples{

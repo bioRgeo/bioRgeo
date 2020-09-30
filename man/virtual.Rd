@@ -28,7 +28,7 @@ data("virtual")
 }
 
 }
-\details{}
+
 \section{Note}{
 The construction of this dataset is detailed in the vignette of \code{bioRgeo}.
 \code{virtualspecies} R package has been used to construct it.

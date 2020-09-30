@@ -65,7 +65,7 @@ interact <- function(dat, site, sp, bio_site, plot = FALSE, chord = FALSE){
 
   # Conversion to square matrix to delete duplicated combinations
   beta_bio_mat <- bioRgeo::contingency(beta_bio, site = "bio_i", sp = "bio_j",
-                                       ab = "beta", binary = FALSE)
+                                       ab = "beta", weight = TRUE)
   # removal of upper diagonal
   beta_bio_mat[upper.tri(beta_bio_mat)] <- NA
   # conversion to data.frame

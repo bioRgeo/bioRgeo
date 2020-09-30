@@ -120,7 +120,7 @@ virtual %>%
   scale_fill_distiller("Value", palette = "RdYlBu") + #OrRd
   coord_equal() +
   labs(title = "Environmental raster") +
-  theme(panel.background = element_rect(fill = "transparent", colour = NA))
+  theme(panel.border = element_rect(fill = NA))
 
 ```
 
@@ -644,7 +644,7 @@ ggplot(bio_maps_tidy, aes(x, y)) +
   coord_equal() +
   labs(title = "Bioregionalizations") +
   theme_classic() +
-  theme(panel.background = element_rect(fill = "transparent", colour = NA)) +
+  theme(panel.border = element_rect(fill = NA)) +
   facet_wrap(~ bioregion)
 ```
 
@@ -781,10 +781,9 @@ We here provide an example of how the `sabre::vmeasure_calc()` function can give
 
 ```{r pair_bioregions}
 # Only two bioregionalizations selected
-pair_bio <- bio_maps2[, c("site", "x", "y", "cluster_beckett",
-                          "cluster_fastgreedy")]
+pair_bio <- bio_maps[, c("site", "x", "y", "module_Beckett", "module_greedy")]
 
-table(pair_bio$cluster_beckett, pair_bio$cluster_fastgreedy)
+table(pair_bio$module_Beckett, pair_bio$module_greedy)
 
 # Create polygons out of coordinate centroids
 pair_bio$E_x <- pair_bio$x - 0.5
@@ -813,28 +812,32 @@ library(sf)
 
 pair_sf <- st_sf(site = pair_bio[, "site"],
                  st_sfc(list_tiles)) %>%
-  left_join(pair_bio[, c("site", "cluster_beckett")], by = "site") %>%
-  group_by(cluster_beckett) %>%
+  left_join(pair_bio[, c("site", "module_Beckett")], by = "site") %>%
+  group_by(module_Beckett) %>%
   summarise()
 
 pair_sf2 <- st_sf(site = pair_bio[, "site"],
                   st_sfc(list_tiles)) %>%
-  left_join(pair_bio[, c("site", "cluster_fastgreedy")], by = "site") %>%
-  group_by(cluster_fastgreedy) %>%
+  left_join(pair_bio[, c("site", "module_greedy")], by = "site") %>%
+  group_by(module_greedy) %>%
   summarise()
 
 plot_grid(
   ggplot(pair_sf) +
-    geom_sf(aes(fill = as.factor(cluster_beckett))) +
-    scale_fill_brewer("Beckett", palette = "Paired"),
+    geom_sf(aes(fill = as.factor(module_Beckett))) +
+    scale_fill_brewer("Beckett", palette = "Paired") +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA)),
   ggplot(pair_sf2) +
-    geom_sf(aes(fill = as.factor(cluster_fastgreedy))) +
-    scale_fill_brewer("Fastgreedy", palette = "Paired")
-)
+    geom_sf(aes(fill = as.factor(module_greedy))) +
+    scale_fill_brewer("Fastgreedy", palette = "Paired") +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA)),
+  align = "hv")
 
 # Vmeasure of the two selected bioregionalizations
-vmeasure_calc(x = pair_sf, x_name = cluster_beckett,
-              y = pair_sf2, y_name = cluster_fastgreedy)
+vmeasure_calc(x = pair_sf, x_name = module_Beckett,
+              y = pair_sf2, y_name = module_greedy)
 ```
 
 \newpage
@@ -848,12 +851,9 @@ We here provide a chunk of code to evaluate the spatial autocorrelation of a giv
 # https://mgimond.github.io/Spatial/spatial-autocorrelation-in-r.html
 library(sp)
 
-bio_maps_moran <- bio_maps2
+bio_maps_moran <- bio_maps
 # Convert bioregions into numeric
-bio_names <- paste0("cluster_", c("beckett", "dbscan", "diana",
-                                  "fastgreedy", "gmm", "infomap", "km",
-                                  "louvain", "mshift", "oslom", "pam",
-                                  "walktrap", "ward"))
+bio_names <- colnames(bio_maps_moran)[6:ncol(bio_maps_moran)]
 bio_maps_moran[bio_names] <- sapply(bio_maps_moran[bio_names],
                                     as.numeric)
 # Coordinates of the sites
@@ -942,9 +942,21 @@ These two scores can allow to draw a $Cz$ space in which all the species fall in
 
 \newpage
 
-The next chunk illustrates how `contrib()` function returns these 3 indices.
+The next chunk illustrates how `contrib()` function returns these 3 indices for the Infomap bioregionalization.
 
 ```{r contrib}
+# Infomap bioregionalization
+ggplot(bio_maps_tidy[which(bio_maps_tidy$bioregion == "module_infomap"), ],
+       aes(x, y)) +
+  geom_tile(aes(fill = as.factor(val), color = as.factor(val)),
+            alpha = 0.8, width = 1, height = 1) +
+  scale_color_brewer("Bioregions", palette = "Paired") +
+  scale_fill_brewer("Bioregions", palette = "Paired") +
+  coord_equal() +
+  labs(title = "Infomap bioregionalization") +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA))
+
 # Bioregions for sites obtained with Infomap
 infomap_site <- infomap_mod %>%
   filter(cat == "site") %>%
@@ -1028,7 +1040,7 @@ head(scores_oslom)
 # Calculation of the species scores
 scores2 <- contribute(dat = scores_oslom,
                       sp_col = "sp", site_col = "site",
-                      bioregion_col = "bioregion", bioregion_sp_col = NULL)
+                      bioregion_col = "module_oslom", bioregion_sp_col = NULL)
 ```
 
 \newpage

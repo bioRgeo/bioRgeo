@@ -31,36 +31,36 @@ vignette: >
   The principle of the package is illustrated by the following figure.
   
   ```{r package_scheme, fig.label = "Workflow of the package."}
-knitr::include_graphics("../figures/bioRgeo_scheme.png")
-```
-
-\newpage
-
-## 1.1. Glossary
-Four types of formats are used in the package.
-
-*contingency matrix*  
-a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. The matrix can either contain presences/absences or abundances of species within sites.  
-This object is the first possible input of the `bioRgeo` functions.
-
-*long format table*  
-a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site.  
-This format is the second possible input of the `bioRgeo` functions.
-
-*adjacency matrix*  
-a square matrix that contains *nm* rowns and columns, with *n* the number of sites and *m* the number of species. Both sites and species are in rows and columns. The matrix can be divided into four parts, the top-left corner being the contingency matrix. The bottom-right corner is the transposed contingency matrix. Since site-species matrix correspond to a bipartite network, there are no links between the same type of nodes. This means that there are no links between pairs of sites or between pairs of species. Top-right and bottom-left parts of this matrix are thus filled with 0.  
-For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
-
-*distance matrix* 
-a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
-This type of matrix is usually stored as a `dist` object in R.
-
-*bipartite network*
-a network, or graph, is an object composed of nodes, or vertices, and links, or edges. Each node is connected with other nodes via some links. In a bipartite network, there are two types of nodes. Each type of node can only be linked with the other type.
-Bipartite networks are therefore another way to describe contingency matrices as shown in the next figure. Sites and species constitute the two types of nodes of the network. Occurrences of species within sites are the links of the network.
-
-```{r sitespmat_bip, fig.label = "Equivalence of contingency table and bipartite network."}
-knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
+  knitr::include_graphics("../figures/bioRgeo_scheme.png")
+  ```
+  
+  \newpage
+  
+  ## 1.1. Glossary
+  Four types of formats are used in the package.
+  
+  *contingency matrix*  
+  a matrix containing the distribution of species across sites. The species are in columns and the sites in rows. The matrix can either contain presences/absences or abundances of species within sites.  
+  This object is the first possible input of the `bioRgeo` functions.
+  
+  *long format table*  
+  a data.frame in which each row indicates the occurrence of a species in a given site. The sites are therefore replicated as many times as the number of species they contain. A third column containing the abundances of species can be added. Without this column, every species present in this table is supposed to be present in the associated site.  
+  This format is the second possible input of the `bioRgeo` functions.
+  
+  *adjacency matrix*  
+  a square matrix that contains *nm* rowns and columns, with *n* the number of sites and *m* the number of species. Both sites and species are in rows and columns. The matrix can be divided into four parts, the top-left corner being the contingency matrix. The bottom-right corner is the transposed contingency matrix. Since site-species matrix correspond to a bipartite network, there are no links between the same type of nodes. This means that there are no links between pairs of sites or between pairs of species. Top-right and bottom-left parts of this matrix are thus filled with 0.  
+  For more details, see [here](https://en.wikipedia.org/wiki/Adjacency_matrix).
+  
+  *distance matrix* 
+  a square matrix containing the distances between each pairs of a set. In `bioRgeo`, we evaluate how pairs of sites are distant to each other regarding their species composition. Different distances can be computed.  
+  This type of matrix is usually stored as a `dist` object in R.
+  
+  *bipartite network*
+  a network, or graph, is an object composed of nodes, or vertices, and links, or edges. Each node is connected with other nodes via some links. In a bipartite network, there are two types of nodes. Each type of node can only be linked with the other type.
+  Bipartite networks are therefore another way to describe contingency matrices as shown in the next figure. Sites and species constitute the two types of nodes of the network. Occurrences of species within sites are the links of the network.
+  
+  ```{r sitespmat_bip, fig.label = "Equivalence of contingency table and bipartite network."}
+  knitr::include_graphics("../figures/20200915_sitespmatrix_bipartitenetwork.png")
 ```
 
 Since `bioRgeo` relies on two possible inputs, we let the option to users to switch from one format to the other using either `contingency()` or `contingency_to_df()` functions as illustrated in the following figure: 
@@ -462,7 +462,7 @@ net_bio_site <- net_bio %>%
 
 # OSLOM
 oslom_mod <- community(
-  dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
+  dat = sp_proj[which(sp_proj$simpson > 0), ], algo = "oslom", weight = FALSE,
   input = "data.frame", site = "site", sp = "sp", N = 10,
   n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
   oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
@@ -644,7 +644,7 @@ bio_maps2 <- virtual %>%
             by = "site") %>% # add diana
   left_join(net_bio_site[, c("site", "module_greedy", "module_walktrap")],
             by = "site") # add fastgreedy and walktrap
-  
+
 # Test of comparison function
 comp2 <- comparison(bio_maps2, site = "site", bio_col = c(6:ncol(bio_maps2)),
                     output = "both", thres = 8)
@@ -1018,22 +1018,27 @@ Internally, the following functions are run: `contingency()`, `cluster()`, `netw
 # Manually checking the function
 dat <- virtual[which(virtual$pa > 0), ]; input_format = "data.frame"
 weight = FALSE; site <- "site"; sp <- "sp"; ab <- NULL
-metric = "simpson"; cluster_method <- "kmeans",
-optim_method = "firstSEmax"; n_clust <- NULL; nstart = 25; B = 50; K.max = 20;
-network_method <- "louvain";
+metric = "simpson"; cluster_method <- c("kmeans", "diana")
+n_clust = 4;
+optim_method = "firstSEmax"; nstart = 25; B = 50; K.max = 20;
+network_method <- c("louvain", "greedy");
 N = 10; n_runs = 1; t_param = 0.1; cp_param = 0.5; hr = 0;
 contribute_algo = NULL; interact_algo = NULL
 
+rm(dat); rm(input_format); rm(weight); rm(site); rm(sp); rm(ab); rm(metric)
+rm(cluster_method); rm(n_clust); rm(optim_method); rm(nstart); rm(B); rm(K.max)
+rm(network_method); rm(N); rm(n_runs); rm(t_param); rm(cp_param); rm(hr)
+rm(contribute_algo); rm(interact_algo)
+
 ##
-all_res <- all_steps(dat = virtual[which(virtual$pa > 0), ],
-                     input_format = "tidy",
-                     site = "site", sp = "sp", ab = NULL,
-                     weight = FALSE, metric = "simpson",
-                     network_algo = "both",
-                     bipartite_algo = "greedy", weight = FALSE,
-                     clustering = TRUE, ward_method = "ward.D2",
-                     optim_method = "firstSEmax", nstart = 25, B = 50,
-                     K.max = 20)
+all_res <- all_steps(
+  dat = virtual[which(virtual$pa > 0), ],
+  input_format = "data.frame", weight = FALSE, site = "site", sp = "sp",
+  ab = NULL, metric = "simpson",
+  cluster_method = c("kmeans", "diana"),
+  optim_method = "firstSEmax", n_clust = 4, nstart = 25, B = 50, K.max = 20,
+  network_method = c("louvain", "greedy"),
+  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0)
 ```
 
 Describe outputs.

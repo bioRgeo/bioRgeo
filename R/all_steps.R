@@ -6,8 +6,7 @@ all_steps <- function(
   cluster_method = NULL,
   optim_method = "firstSEmax", n_clust = NULL, nstart = 25, B = 50, K.max = 20,
   network_method = NULL,
-  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0,
-  contribute_algo = NULL, interact_algo = NULL){
+  N = 10, n_runs = 10, t_param = 0.1, cp_param = 0.5, hr = 0){
 
   ## Controls ----
   # Packages
@@ -164,7 +163,8 @@ all_steps <- function(
          'infomap', 'beckett' or 'quanbimo'")
     }
 
-    if(any(network_method %in% c("beckett", "quanbimo")) & input == "data.frame"){
+    if(any(network_method %in% c("beckett", "quanbimo")) &
+       input_format == "data.frame"){
       warning("beckett and quanbimo algorithms need a site-species matrix as
     an input. We here perform bioRgeo::contingency() function to convert it but
         you can do this step a priori to save time.")
@@ -172,7 +172,7 @@ all_steps <- function(
                                    weight = weight)
     }
 
-    if(any(algo %in% c("netcarto", "quanbimo"))){
+    if(any(network_method %in% c("netcarto", "quanbimo"))){
       warning("netcarto and quanbimo algorithm is slow. Depending on the size
       of the network, it may take a long time to run.")
     }
@@ -290,7 +290,7 @@ all_steps <- function(
                                N = N, n_runs = n_runs, t_param = t_param,
                                cp_param = cp_param, hr = hr, weight = weight)
 
-      res_oslom <- community(dat = dat_proj[which(dat_proj[, metric] > 0), ]
+      res_oslom <- community(dat = dat_proj[which(dat_proj[, metric] > 0), ],
                              algo = "oslom",
                              input = "matrix",
                              N = N, n_runs = n_runs, t_param = t_param,
@@ -312,8 +312,8 @@ all_steps <- function(
     res_network_site <-
       res_network_site[, c("site", colnames(res_network_site)[net_col])]
   }
-  if(!is.null(network_method) & "oslom" %in% network_method &
-     !is.null(res_oslom)){
+  # Add oslom if present
+  if(!is.null(network_method) & "oslom" %in% network_method){
     res_network_site <- left_join(res_network_site, res_oslom, by = "site")
   }
 
@@ -340,67 +340,107 @@ all_steps <- function(
   ## contribute() ----
   # contribute() is run one time per selected method of bioregionalization
   contrib_list <- list()
-  for(i in 1:length(c(cluster_method, network_method))){
-    # Bioregions for sites only
-    # bioregions
+  interact_list <- list()
 
-    # Bioregions for species only => some algorithms don't assign bioregions
+  all_method <- c(cluster_method, network_method)
+  for(i in 1:length(all_method)){
+    # Bioregions for sites only: bioregions
+
+    # Bioregions for species only => some algorithms assign bioregions
     # to species
-    if(!is.null(network_method) & !(network_method %in% c("oslom"))){
+    if(all_method[i] %in% c("greedy", "betweenness", "walktrap", "louvain",
+                            "infomap", "spinglass", "leading_eigen",
+                            "label_prop", "netcarto", "infomap", "beckett",
+                            "quanbimo")){
+      # Merging bioregions of sites with dat
+      bioregions_i <- bioregions[, c(1, grep(all_method[i],
+                                             colnames(bioregions)))]
+      colnames(bioregions_i) <- c("site", "bio_site")
+      # Merge with site-species data frame
+      if(input_format == "data.frame"){
+        dat_i <- left_join(dat, bioregions_i, by = "site")
+      } else{
+        dat_i <- left_join(sp_df, bioregions_i, by = "site")
+      }
+
       sp_bio_network <- res_network %>%
         filter(cat == "sp") %>%
-        rename(sp = node,
-               bio_sp = module_infomap) %>%
-        dplyr::select(sp, bio_sp) %>%
-        group_by(sp, bio_site) %>%
-        summarise(c = n()) %>%
-        filter(row_number(desc(c)) == 1) %>%
-        rename(bio_sp = bio_site) %>%
-        select(sp, bio_sp)
-      # Merge with site-species data frame
-      dat <- left_join(dat, sp_bio, by = "sp")
+        rename(sp = node)
+
+      colnames(sp_bio_network)[grep(all_method[i], colnames(sp_bio_network))] <-
+        "bio_sp"
+      sp_bio_network <- sp_bio_network[, c("sp", "bio_sp")]
+
+      dat_i <- left_join(dat_i, sp_bio_network, by = "sp")
+
+      # assigning species to the bioregion where they occur most for other
+      # algorithms
+    } else{
+      if(input_format == "data.frame"){
+        # Merging bioregions of sites with dat
+        bioregions_i <- bioregions[, c(1, grep(all_method[i],
+                                               colnames(bioregions)))]
+        colnames(bioregions_i) <- c("site", "bio_site")
+        dat_i <- left_join(dat, bioregions_i, by = "site")
+
+        # Assigning bioregions to species
+        sp_bio_network <- dat_i %>%
+          group_by(sp, bio_site) %>%
+          summarise(c = n()) %>%
+          filter(row_number(desc(c)) == 1) %>%
+          rename(bio_sp = bio_site) %>%
+          select(sp, bio_sp)
+
+        dat_i <- left_join(dat_i, sp_bio_network, by = "sp")
+      } else if(input_format == "matrix"){
+        # Merging bioregions of sites with dat
+        bioregions_i <- bioregions[, c(1, grep(all_method[i],
+                                               colnames(bioregions)))]
+        colnames(bioregions_i) <- c("site", "bio_site")
+        dat_i <- left_join(sp_df, bioregions_i, by = "site")
+
+        # Assigning bioregions to species
+        sp_bio_network <- dat_i %>%
+          group_by(sp, bio_site) %>%
+          summarise(c = n()) %>%
+          filter(row_number(desc(c)) == 1) %>%
+          rename(bio_sp = bio_site) %>%
+          select(sp, bio_sp)
+
+        dat_i <- left_join(dat_i, sp_bio_network, by = "sp")
+      }
     }
-    if(!is.null(cluster_method)){
-      sp_bio_clust <- dat %>%
-        group_by(sp, bio_site) %>%
-        summarise(c = n()) %>%
-        filter(row_number(desc(c)) == 1) %>%
-        rename(bio_sp = bio_site) %>%
-        select(sp, bio_sp)
-      # Merge with site-species data frame
-      dat <- left_join(dat, sp_bio, by = "sp")
-    }
-
-    bioregion_sp <- infomap_mod %>%
-      filter(cat == "sp") %>%
-      rename(sp = node,
-             mod_sp = module_infomap) %>%
-      dplyr::select(sp, mod_sp)
-
-    # Merging the bioregion identification with long-format data.frame
-    scores_infomap <- left_join(virtual[which(virtual$pa > 0),
-                                        c("site", "sp", "x", "y")],
-                                infomap_site, by = "site")
-    scores_infomap <- left_join(scores_infomap, infomap_sp, by = "sp")
-
+    # contribute() function
     scores <- contribute(
-      dat = scores_infomap, sp_col = "sp", site_col = "site",
-      bioregion_col = "bioregion", bioregion_sp_col = NULL, ab = NULL)
+      dat = dat_i, sp_col = "sp", site_col = "site",
+      bioregion_col = "bio_site", bioregion_sp_col = "bio_sp", ab = NULL)
 
+    # Only columns of interest
+    scores <- scores[, c("site", "sp", "bio_site", "bio_sp",
+                         "C_site", "C_sp", "z_site", "z_sp", "rho")]
+    scores$method <- all_method[i]
+
+    # list element
+    contrib_list[[i]] <- scores
+
+    ## interact() ----
+    dat_int <- interact(dat = scores, site = "site", sp = "sp",
+                        bio_site = "bio_site", plot = TRUE, chord = FALSE)
+    # list element
+    interact_list[[i]] <- dat_int
   }
-
-  ## interact() ----
-  lambda <- interact(input_network = "projected",
-                     dat = scores, plot = TRUE, output_format = "matrix")
 
   ## Return outputs ----
   if(!is.null(cluster_method)){
     if(!is.null(network_method)){
-      return(list(dat, dat_proj, res_cluster, res_network, comp))
+      return(list(dat, dat_proj, res_cluster, res_network, comp,
+                  contrib_list, interact_list))
     } else{
-      return(list(dat, dat_proj, res_cluster, comp))
+      return(list(dat, dat_proj, res_cluster, comp, contrib_list,
+                  interact_list))
     }
   } else{
-    return(list(dat, dat_proj, res_network, comp))
+    return(list(dat, dat_proj, res_network, comp, contrib_list,
+                interact_list))
   }
 }

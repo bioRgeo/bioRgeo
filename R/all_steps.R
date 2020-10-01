@@ -305,14 +305,16 @@ all_steps <- function(
 
   ## comparison() ----
   # Only sites for some network methods
-  if(!is.null(network_method) & !(network_method %in% c("oslom"))){
+  if(!is.null(network_method)){
     res_network_site <- res_network[which(res_network$cat == "site"), ]
     colnames(res_network_site)[colnames(res_network_site) == "node"] <- "site"
     net_col <- grep("module_", colnames(res_network_site))
     res_network_site <-
       res_network_site[, c("site", colnames(res_network_site)[net_col])]
-  } else if(!is.null(network_method) & network_method == c("oslom")){
-    res_network_site <- res_network
+  }
+  if(!is.null(network_method) & "oslom" %in% network_method &
+     !is.null(res_oslom)){
+    res_network_site <- left_join(res_network_site, res_oslom, by = "site")
   }
 
   # Group all the bioregionalizations in one data.frame
@@ -330,10 +332,10 @@ all_steps <- function(
   # Delete res_cluster and res_network to save space
   # rm(res_cluster); rm(res_network); rm(res_network_site)
 
-  all100 <- comparison(bioregions, site = site,
-                       bio_col = c(grep("cluster_", colnames(bioregions)),
-                                   grep("module_", colnames(bioregions))),
-                       output = "both", thres = 10)
+  comp <- comparison(bioregions, site = site,
+                     bio_col = c(grep("cluster_", colnames(bioregions)),
+                                 grep("module_", colnames(bioregions))),
+                     output = "both", thres = 10)
 
   ## contribute() ----
   # contribute() is run one time per selected method of bioregionalization
@@ -394,11 +396,11 @@ all_steps <- function(
   ## Return outputs ----
   if(!is.null(cluster_method)){
     if(!is.null(network_method)){
-      return(list(dat, dat_proj, res_cluster, res_network, all100))
+      return(list(dat, dat_proj, res_cluster, res_network, comp))
     } else{
-      return(list(dat, dat_proj, res_cluster, all100))
+      return(list(dat, dat_proj, res_cluster, comp))
     }
   } else{
-    return(list(dat, dat_proj, res_network, all100))
+    return(list(dat, dat_proj, res_network, comp))
   }
 }

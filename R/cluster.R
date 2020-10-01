@@ -69,7 +69,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
       stop("K.max should not be superior to the number of sites.")
     }
   }
-  ## 2. Input conversion ----
+
   if(length(method) > 1 &
      any(c("meanshift", "dbscan", "diana") %in% method) &
      !(all(method %in% c("meanshift", "dbscan", "diana")))){
@@ -78,6 +78,7 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          these methods.")
   }
 
+  ## 2. Input conversion ----
   if(!(all(method %in% c("meanshift", "dbscan", "diana")))){
     if(is.null(n_clust)){
       # Storing the matrix input, necessary to find the optimal nb of clusters

@@ -26,6 +26,10 @@ all_steps <- function(
     ('data.frame') or a site-species matrix ('matrix').")
   }
 
+  if(!is.logical(weight)){
+    stop("'weight' must be a boolean.")
+  }
+
   if(input_format == "matrix"){
     if(!is.matrix(dat)){
       stop("dat should be a matrix with sites in rows and species in columns.")
@@ -79,10 +83,10 @@ all_steps <- function(
   }
 
   if(!is.null(cluster_method)){
-    if(!(cluster_method %in% c("kmeans", "meanshift",
-                               "ward.D", "ward.D2", "single", "complete",
-                               "average", "mcquitty", "median", "centroid", "dbscan",
-                               "gmm", "diana", "pam"))){
+    if(!(all(cluster_method %in% c("kmeans", "meanshift",
+                                   "ward.D", "ward.D2", "single", "complete",
+                                   "average", "mcquitty", "median", "centroid",
+                                   "dbscan", "gmm", "diana", "pam")))){
       stop("Clustering algorithm chosen is not available.
      Please chose among the following clustering techniques:
          'kmeans', 'meanshift',
@@ -105,13 +109,14 @@ all_steps <- function(
       }
     }
 
-    if(is.null(n_clust) & cluster_method %in%
-       c("kmeans", "ward.D", "ward.D2", "single", "complete",
-         "average", "mcquitty", "median", "centroid", "diana", "pam")){
-      warning("The chosen method is a supervised algorithm that needs a number of
-            clusters. Since 'n_clust = NULL', an optimization algorithm is
-            first executed to determine the optimal numbers of clusters.
-            This step may take a while.")
+    if(is.null(n_clust) & any(
+      cluster_method %in%
+      c("kmeans", "ward.D", "ward.D2", "single", "complete",
+        "average", "mcquitty", "median", "centroid", "diana", "pam"))){
+      warning("One of the chosen method is a supervised algorithm that needs a
+    number of clusters. Since 'n_clust = NULL', an optimization algorithm is
+    first executed to determine the optimal numbers of clusters.
+    This step may take a while.")
     }
 
     if(!(abs(nstart - round(nstart)) < .Machine$double.eps^0.5)){
@@ -138,30 +143,38 @@ all_steps <- function(
         stop("K.max should not be superior to the number of sites.")
       }
     }
+
+    # if(length(cluster_method) > 1 &
+    #    any(c("meanshift", "dbscan", "diana") %in% cluster_method) &
+    #    !(all(cluster_method %in% c("meanshift", "dbscan", "diana")))){
+    #   stop("'meanshift', 'dbscan' and 'diana' need a different input than the
+    # other clustering techniques. You should run cluster() separately with
+    #      these methods.")
+    # }
   }
 
   if(!is.null(network_method)){
-    if(!(network_method %in% c("greedy", "betweenness", "walktrap", "louvain",
-                               "LPAwb", "infomap", "spinglass", "leading_eigen",
-                               "label_prop", "netcarto", "oslom", "infomap",
-                               "beckett", "quanbimo"))){
-      stop("Network algorithm chosen is not available.
-     Please chose among the following network algorithms:
-         'greedy', 'betweenness', 'walktrap', 'louvain', 'LPAwb',
+    if(!(all(network_method %in% c(
+      "greedy", "betweenness", "walktrap", "louvain", "infomap", "spinglass",
+      "leading_eigen", "label_prop", "netcarto", "oslom", "infomap", "beckett",
+      "quanbimo")))){
+      stop("Provided algorithm to detect communities is not available. Please
+    choose among the followings: 'greedy', 'betweenness', 'walktrap', 'louvain',
          'spinglass', 'leading_eigen', 'label_prop', 'netcarto', 'oslom',
-         'infomap', 'beckett' or 'quanbimo.'")
-    }
-    if(network_method %in% c("beckett", "quanbimo") &
-       input_format == "data.frame"){
-      warning("The chosen algorithm needs a site-species matrix as input.
-            We here perform bioRgeo::contingency() function to convert it but
-            you can do this step a priori to save time.")
-      dat <-  contingency(dat, site = site, sp = sp, ab = ab, weight = weight)
+         'infomap', 'beckett' or 'quanbimo'")
     }
 
-    if(network_method %in% c("netcarto", "quanbimo")){
-      warning("The chosen algorithm is slow. Depending on the size of the
-            network, it may take a long time to run.")
+    if(any(network_method %in% c("beckett", "quanbimo")) & input == "data.frame"){
+      warning("beckett and quanbimo algorithms need a site-species matrix as
+    an input. We here perform bioRgeo::contingency() function to convert it but
+        you can do this step a priori to save time.")
+      dat_to_matrix <- contingency(dat, site = site, sp = sp, ab = ab,
+                                   weight = weight)
+    }
+
+    if(any(algo %in% c("netcarto", "quanbimo"))){
+      warning("netcarto and quanbimo algorithm is slow. Depending on the size
+      of the network, it may take a long time to run.")
     }
 
     if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){
@@ -170,30 +183,7 @@ all_steps <- function(
     }
 
     # Controls for OSLOM parameters
-    if(network_method == "oslom"){
-      # Controls: dat must be a data.frame with three columns containing id1,
-      # id2 and similarity metric
-      if(!(is.data.frame(dat))){
-        stop("dat must be a data.frame with three columns containing id1, id2
-        and a similarity metric.
-        It is the output of 'bioRgeo::simil()' function")
-      }
-
-      if(ncol(dat) != 3){
-        stop("dat must be a data.frame with three columns containing id1, id2
-  and similarity metric")
-      }
-
-      if(!(is.numeric(dat[, 3]))){
-        stop("dat must be a data.frame with three columns containing id1, id2
-  and similarity metric")
-      }
-
-      if(0 %in% dat[, 3]){
-        stop("OSLOM needs strictly positive weights to run. Remove the useless
-         lines from the input data.frame.")
-      }
-
+    if("oslom" %in% network_method){
       if(!(abs(n_runs - round(n_runs)) < .Machine$double.eps^0.5)){
         stop("n_runs must be an integer setting the number of runs.")
       }
@@ -215,7 +205,8 @@ all_steps <- function(
       }
 
       if(!(abs(hr - round(hr)) < .Machine$double.eps^0.5)){
-        stop("hr must be an integer setting the number of hierarchical levels.")
+        stop("hr must be an integer setting the number of hierarchical
+             levels.")
       }
 
       if(hr < 0){
@@ -244,22 +235,72 @@ all_steps <- function(
   ## cluster() ----
   if(!is.null(cluster_method)){
     if(input_format == "matrix"){
-      res_cluster <- cluster(dat, method = cluster_method,
-                             optim_method = optim_method, n_clust = n_clust,
-                             nstart = nstart, B = B, K.max = K.max)
+      if(length(cluster_method) > 1 &
+         any(c("meanshift", "dbscan", "diana") %in% cluster_method) &
+         !(all(cluster_method %in% c("meanshift", "dbscan", "diana")))){
+        cluster_method1 <- cluster_method[!(cluster_method %in% c(
+          "meanshift", "dbscan", "diana"))]
+        cluster_method2 <- cluster_method[cluster_method %in% c(
+          "meanshift", "dbscan", "diana")]
+
+        res_cluster <- cluster(dat, method = cluster_method1,
+                               optim_method = optim_method, n_clust = n_clust,
+                               nstart = nstart, B = B, K.max = K.max)
+
+        res_cluster2 <- cluster(dat, method = cluster_method2,
+                                optim_method = optim_method, n_clust = n_clust,
+                                nstart = nstart, B = B, K.max = K.max)
+
+        # Merge two clustering objects
+        res_cluster <- left_join(res_cluster, res_cluster2, by = "site")
+        rm(res_cluster2)
+      }
+
     } else if(input_format == "data.frame"){
-      res_cluster <- cluster(sp_mat, method = cluster_method,
-                             optim_method = optim_method, n_clust = n_clust,
-                             nstart = nstart, B = B, K.max = K.max)
+      if(length(cluster_method) > 1 &
+         any(c("meanshift", "dbscan", "diana") %in% cluster_method) &
+         !(all(cluster_method %in% c("meanshift", "dbscan", "diana")))){
+        cluster_method1 <- cluster_method[!(cluster_method %in% c(
+          "meanshift", "dbscan", "diana"))]
+        cluster_method2 <- cluster_method[cluster_method %in% c(
+          "meanshift", "dbscan", "diana")]
+
+        res_cluster <- cluster(sp_mat, method = cluster_method1,
+                               optim_method = optim_method, n_clust = n_clust,
+                               nstart = nstart, B = B, K.max = K.max)
+
+        res_cluster2 <- cluster(sp_mat, method = cluster_method2,
+                                optim_method = optim_method, n_clust = n_clust,
+                                nstart = nstart, B = B, K.max = K.max)
+
+        # Merge two clustering objects
+        res_cluster <- left_join(res_cluster, res_cluster2, by = "site")
+        rm(res_cluster2)
+      }
     }
   }
 
   ## community() ----
   if(!is.null(network_method)){
-    res_network <- community(dat = sp_mat, algo = network_method,
+    if(length(network_method) > 1 & "oslom" %in% network_method){
+      network_method1 <- network_method[!(network_method %in% "oslom")]
+
+      res_network <- community(dat = sp_mat, algo = network_method1,
+                               input = "matrix",
+                               N = N, n_runs = n_runs, t_param = t_param,
+                               cp_param = cp_param, hr = hr, weight = weight)
+
+      res_oslom <- community(dat = dat_proj[which(dat_proj[, metric] > 0), ]
+                             algo = "oslom",
                              input = "matrix",
                              N = N, n_runs = n_runs, t_param = t_param,
                              cp_param = cp_param, hr = hr, weight = weight)
+    } else{
+      res_network <- community(dat = sp_mat, algo = network_method,
+                               input = "matrix",
+                               N = N, n_runs = n_runs, t_param = t_param,
+                               cp_param = cp_param, hr = hr, weight = weight)
+    }
   }
 
   ## comparison() ----

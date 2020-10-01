@@ -9,10 +9,10 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
          columns or a 'dist' object.")
   }
 
-  if(!(method %in% c("kmeans", "meanshift",
-                     "ward.D", "ward.D2", "single", "complete",
-                     "average", "mcquitty", "median", "centroid", "dbscan",
-                     "gmm", "diana", "pam"))){
+  if(!(all(method %in% c("kmeans", "meanshift",
+                         "ward.D", "ward.D2", "single", "complete",
+                         "average", "mcquitty", "median", "centroid", "dbscan",
+                         "gmm", "diana", "pam")))){
     stop("Hierarchical clustering method chosen is not available.
      Please chose among the followings:
          'kmeans', 'meanshift',
@@ -35,13 +35,14 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     }
   }
 
-  if(is.null(n_clust) & method %in%
-     c("kmeans", "ward.D", "ward.D2", "single", "complete",
-       "average", "mcquitty", "median", "centroid", "diana", "pam")){
-    warning("The chosen method is a supervised algorithm that needs a number of
-            clusters. Since 'n_clust = NULL', an optimization algorithm is
-            first executed to determine the optimal numbers of clusters.
-            This step may take a while.")
+  if(is.null(n_clust) & any(
+    method %in%
+    c("kmeans", "ward.D", "ward.D2", "single", "complete",
+      "average", "mcquitty", "median", "centroid", "diana", "pam"))){
+    warning("One of the chosen method is a supervised algorithm that needs a
+    number of clusters. Since 'n_clust = NULL', an optimization algorithm is
+    first executed to determine the optimal numbers of clusters.
+    This step may take a while.")
   }
 
   if(!(abs(nstart - round(nstart)) < .Machine$double.eps^0.5)){
@@ -69,122 +70,125 @@ cluster <- function(dat, method = "ward.D2", optim_method = "firstSEmax",
     }
   }
   ## 2. Input conversion ----
-  if(!(method %in% c("meanshift", "dbscan", "diana"))){
+  if(length(method) > 1 &
+     any(c("meanshift", "dbscan", "diana") %in% method) &
+     !(all(method %in% c("meanshift", "dbscan", "diana")))){
+    stop("'meanshift', 'dbscan' and 'diana' need a different input than the
+    other clustering techniques. You should run cluster() separately with
+         these methods.")
+  }
+
+  if(!(all(method %in% c("meanshift", "dbscan", "diana")))){
     if(is.null(n_clust)){
       # Storing the matrix input, necessary to find the optimal nb of clusters
       dat1 <- dat
     }
     if(class(dat) != "dist"){
       # Project dat using simil() function with simpson metric
-      dat <- simil(dat, metric = "simpson", output = "dist")
+      dat <- simil(dat, metric = "simpson", input = "matrix", output = "dist")
     }
   }
 
   ## 3. Clustering ----
-  if(method == "meanshift"){
-    require(meanShiftR)
-    tmp <- meanShift(queryData = dat, algorithm = "LINEAR", alpha = 0,
-                     iterations = 100)
+  # Initiate empty list
+  cluster_list <- list()
+  # for-loop over the selected algorithms
+  for(i in 1:length(method)){
 
-    # Data.frame of results
-    res <- data.frame(site = rownames(dat),
-                      cluster = tmp$assignment)
+    if(method[i] == "meanshift"){
+      require(meanShiftR)
+      tmp <- meanShift(queryData = dat, algorithm = "LINEAR", alpha = 0,
+                       iterations = 100)
 
-  } else if(method == "dbscan"){
-    require(dbscan)
-    # Size of the epsilon neighborhood: normally determined by observing the
-    # knee-plot
-    eps <- quantile(kNNdist(dat, k = 5)[
-      kNNdist(dat, k = 5) > 0], 0.25)
-    # eps <- mean(kNNdist(dat, k = 5))
-    db_clust <- dbscan(x = dat, eps = eps, minPts = 5)
-
-    # Data.frame of results
-    res <- data.frame(site = rownames(dat),
-                      cluster = as.character(db_clust$cluster))
-
-  } else if(method == "gmm"){
-    # Conversion to dist object
-    dat <- as.dist(dat)
-    require(mclust)
-    gmm_mclust <- Mclust(dat)
-
-    # Data.frame of results
-    res <- data.frame(site = names(gmm_mclust$classification),
-                      cluster = as.character(gmm_mclust$classification))
-
-  } else{
-    # Conversion to dist object
-    # dat <- as.dist(dat)
-
-    # Number of clusters for supervised algorithms
-    if(!is.null(n_clust)){
-      optim_k <- n_clust
-    } else{
-      # Determine optimal numbers of clusters
-      # https://stackoverflow.com/questions/53159033/how-to-get-the-optimal-number-of-clusters-from-the-clusgap-function-as-an-output
-      # https://uc-r.github.io/kmeans_clustering#gap
-      # https://uc-r.github.io/hc_clustering
-
-      if(method == "diana"){
-        gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
-                            B = B)
-      } else{
-        gap_stat <- clusGap(dat1, FUN = kmeans, nstart = nstart, K.max = K.max,
-                            B = B)
-      }
-
-      optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
-                       SE.f = gap_stat$Tab[, "SE.sim"],
-                       method = optim_method)
-    }
-
-    if(!(method %in% c("kmeans", "pam"))){
-      if(method == "diana"){
-        h <- cluster::diana(dat)
-      } else{
-        # h <- hclust(dat, method = method)
-        require(fastcluster)
-        h <- fastcluster::hclust(dat, method = method)
-        # plot(h)
-      }
-
-      # Cut the tree with optim_k numbers
-      dend <- as.dendrogram(h)
       # Data.frame of results
-      res <- data.frame(site = names(dendextend::cutree(dend,
-                                                        k = optim_k)),
-                        cluster = as.character(dendextend::cutree(dend,
-                                                                  k = optim_k)))
-    } else if(method == "kmeans"){
-      h <- kmeans(dat, centers = optim_k, iter.max = 10, nstart = nstart)
-      res <- data.frame(site = names(h$cluster),
-                        cluster = as.numeric(h$cluster))
-    } else if(method == "pam"){
-      h <- cluster::pam(dat, k = optim_k, metric = "euclidean")
-      res <- data.frame(site = names(h$clustering),
-                        cluster = as.numeric(h$clustering))
+      res <- data.frame(site = rownames(dat),
+                        cluster = tmp$assignment)
+
+    } else if(method[i] == "dbscan"){
+      require(dbscan)
+      # Size of the epsilon neighborhood: normally determined by observing the
+      # knee-plot
+      eps <- quantile(kNNdist(dat, k = 5)[
+        kNNdist(dat, k = 5) > 0], 0.25)
+      # eps <- mean(kNNdist(dat, k = 5))
+      db_clust <- dbscan(x = dat, eps = eps, minPts = 5)
+
+      # Data.frame of results
+      res <- data.frame(site = rownames(dat),
+                        cluster = as.character(db_clust$cluster))
+
+    } else if(method[i] == "gmm"){
+      # Conversion to dist object
+      dat <- as.dist(dat)
+      require(mclust)
+      gmm_mclust <- Mclust(dat)
+
+      # Data.frame of results
+      res <- data.frame(site = names(gmm_mclust$classification),
+                        cluster = as.character(gmm_mclust$classification))
+
+    } else{
+      # Conversion to dist object
+      # dat <- as.dist(dat)
+
+      # Number of clusters for supervised algorithms
+      if(!is.null(n_clust)){
+        optim_k <- n_clust
+      } else{
+        # Determine optimal numbers of clusters
+        if(method[i] == "diana"){
+          gap_stat <- clusGap(dat, FUN = kmeans, nstart = nstart, K.max = K.max,
+                              B = B)
+        } else{
+          gap_stat <- clusGap(dat1, FUN = kmeans, nstart = nstart, K.max = K.max,
+                              B = B)
+        }
+
+        optim_k <- maxSE(f = gap_stat$Tab[, "gap"],
+                         SE.f = gap_stat$Tab[, "SE.sim"],
+                         method = optim_method)
+      }
+
+      if(!(method[i] %in% c("kmeans", "pam"))){
+        if(method[i] == "diana"){
+          h <- cluster::diana(dat)
+        } else{
+          # h <- hclust(dat, method = method[i])
+          require(fastcluster)
+          h <- fastcluster::hclust(dat, method = method[i])
+          # plot(h)
+        }
+
+        # Cut the tree with optim_k numbers
+        dend <- as.dendrogram(h)
+        # Data.frame of results
+        res <- data.frame(site = names(dendextend::cutree(dend,
+                                                          k = optim_k)),
+                          cluster = as.character(dendextend::cutree(dend,
+                                                                    k = optim_k)))
+      } else if(method[i] == "kmeans"){
+        h <- kmeans(dat, centers = optim_k, iter.max = 10, nstart = nstart)
+        res <- data.frame(site = names(h$cluster),
+                          cluster = as.numeric(h$cluster))
+      } else if(method[i] == "pam"){
+        h <- cluster::pam(dat, k = optim_k, metric = "euclidean")
+        res <- data.frame(site = names(h$clustering),
+                          cluster = as.numeric(h$clustering))
+      }
     }
+
+    # Convert cluster column into character
+    res$cluster <- as.character(res$cluster)
+
+    # Changing column names of res: paste(cluster, method[i])
+    colnames(res)[colnames(res) == "cluster"] <- paste0("cluster_", method[i])
+
+    # return(res)
+    cluster_list[[i]] <- res
   }
+  # Combine all list elements into one data.frame
+  cluster_list <- Reduce(merge, cluster_list)
+  return(cluster_list)
 
-  # Convert cluster column into character
-  res$cluster <- as.character(res$cluster)
-
-  # Changing column names of res: paste(cluster, method)
-  colnames(res)[colnames(res) == "cluster"] <- paste0("cluster_", method)
-
-  return(res)
-  # Visualization
-  # factoextra::fviz_nbclust(dat, kmeans, method = "gap_stat", k.max = 20)
-
-  # dend <- as.dendrogram(h)
-  # library(dendextend)
-  # labels(dend) <- x[order.dendrogram(dend)]
-  # # due to the ties - there is specific reason to have this be these 3 clusters:
-  # cutree(dend, k = 3)
-  #
-  # library(NbClust)
-  # NbClust(data = dat, diss = NULL, distance = "euclidean",
-  #         min.nc = 1, max.nc = 15, method = "ward.D2")
 }
 

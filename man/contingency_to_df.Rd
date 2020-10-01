@@ -2,7 +2,7 @@
 \alias{contingency_to_df}
 \title{Create a data frame from a contingency table.}
 \usage{
-contingency_to_df(dat)
+contingency_to_df(dat, col1 = "site", col2 = "sp", col3 = "ab")
 }
 \arguments{
 \item{dat}{a contingency matrix with sites as rows and species as columns.}

@@ -10,7 +10,7 @@ output:
 editor_options: 
  chunk_output_type: console
 vignette: >
-  %\VignetteIndexEntry{Tutorial for 'bioRgeo' R package}
+  %\VignetteIndexEntry{Tutorial for bioRgeo R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8} 
 ---

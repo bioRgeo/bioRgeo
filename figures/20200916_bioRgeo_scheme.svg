@@ -1100,10 +1100,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.64144687"
-     inkscape:cx="422.42965"
-     inkscape:cy="557.51257"
+     inkscape:cx="313.07682"
+     inkscape:cy="386.02526"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g9322"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="705"
@@ -2684,7 +2684,7 @@
            style="font-size:27.5px;line-height:1.25"
            id="flowPara4142-4-05-3">input = <flowSpan
    id="flowSpan5384"
-   style="fill:#2c6d1b;fill-opacity:1">&quot;data frame&quot;</flowSpan></flowPara></flowRoot>      <g
+   style="fill:#2c6d1b;fill-opacity:1">&quot;data.frame&quot;</flowSpan></flowPara></flowRoot>      <g
          transform="translate(-22.220394,-48.503937)"
          id="g9223">
         <path

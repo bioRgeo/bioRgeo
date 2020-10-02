@@ -19,8 +19,8 @@ Imports:
     ecodist,
     Rcpp,
     SMUT,
-	lctools,
-	fastcluster
+	  lctools,
+	  fastcluster
 Suggests:
     cowplot,
     ggplot2,

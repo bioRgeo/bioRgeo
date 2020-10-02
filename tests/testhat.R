@@ -1,4 +1,4 @@
 library(testthat)
-library(Bioregionalization)
+library(bioRgeo)
 
-test_check("Bioregionalization")
+test_check("bioRgeo")

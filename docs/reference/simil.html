@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes interactions between modules. — interact • bioRgeo</title>
+<title>Similarity matrix — simil • bioRgeo</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Computes interactions between modules. — interact" />
-<meta property="og:description" content="See Lenormand et al., Ecology and Evolution, 2019." />
+<meta property="og:title" content="Similarity matrix — simil" />
+<meta property="og:description" content="Project a contingency matrix into a similarity data.frame, the similarity being based upon the sites each pair of species has in common." />
 
 
 
@@ -115,84 +115,85 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes interactions between modules.</h1>
+    <h1>Similarity matrix</h1>
     
-    <div class="hidden name"><code>interact.Rd</code></div>
+    <div class="hidden name"><code>simil.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>See Lenormand et al., Ecology and Evolution, 2019.</p>
+    <p>Project a contingency matrix into a similarity data.frame, the similarity being based upon the sites each pair of species has in common.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>interact</span><span class='op'>(</span><span class='va'>dat</span>, <span class='va'>site</span>, <span class='va'>sp</span>, <span class='va'>bio_site</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span>, chord <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>simil</span><span class='op'>(</span><span class='va'>dat</span>, metric <span class='op'>=</span> <span class='st'>"simpson"</span>, input <span class='op'>=</span> <span class='st'>"matrix"</span>, output <span class='op'>=</span> <span class='st'>"data.frame"</span>, site <span class='op'>=</span> <span class='cn'>NULL</span>, sp <span class='op'>=</span> <span class='cn'>NULL</span>, ab <span class='op'>=</span> <span class='cn'>NULL</span>, weight <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>dat</th>
-      <td><p>a data.frame with four columns containing the sites, the species occurrences in each site and the bioregion of each site.</p></td>
+      <td><p>a contingency matrix with sites as rows and species as columns.</p></td>
+    </tr>
+    <tr>
+      <th>metric</th>
+      <td><p>a character string indicating which similarity metric to chose among <em>simpson</em>, <em>jaccard</em>, <em>sorensen</em>, <em>whittaker</em>, <em>euclidean</em> and <em>bray</em>.</p></td>
+    </tr>
+    <tr>
+      <th>input</th>
+      <td><p>a character string equals to 'matrix' or 'data.frame' indicating whether the input of the function is long-format data.frame or a wide format matrix.</p></td>
+    </tr>
+    <tr>
+      <th>output</th>
+      <td><p>a character string indicating whether the output of the function should be a symmetrical matrix, a long-format data.frame or a distance object.</p></td>
     </tr>
     <tr>
       <th>site</th>
-      <td><p>a character string corresponding to the column with sites.</p></td>
+      <td><p>If <code>input = 'data.frame'</code>, the column name of the sites.</p></td>
     </tr>
     <tr>
       <th>sp</th>
-      <td><p>a character string corresponding to the column with species occurrences within sites.</p></td>
+      <td><p>If <code>input = 'data.frame'</code>, the column name of the species.</p></td>
     </tr>
     <tr>
-      <th>bio_site</th>
-      <td><p>a character string corresponding to the column with the bioregion of each site.</p></td>
+      <th>ab</th>
+      <td><p>If <code>input = 'data.frame'</code> and species have abundances, the column name of the abundances of species per site.</p></td>
     </tr>
     <tr>
-      <th>plot</th>
-      <td><p>a boolean indicating whether to store the heatmap plot.</p></td>
-    </tr>
-    <tr>
-      <th>chord</th>
-      <td><p>a boolean indicating whether to plot the chord diagram.</p></td>
+      <th>weight</th>
+      <td><p>a boolean indicating whether abundances should be taken into account.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>compute a Sorensen index for each pair of bioregions according the following formula:
-$$
-\beta_{ij, i \neq j} = \frac{2a}{b + c}
-$$</p>
-<p>With \(i\) and \(j\) two distinct bioregions, \(a\) the number of species commonly occurring in their sites, \(b\) the number of species occurring in bioregion \(i\) and \(c\) the number of species occurring in bioregion \(j\). This index ranks between 0, when no species are shared between two bioregions, and 1, when the species list are identical.
-A heatmap and a chord diagram can be plotted.</p>
+    <p>With <code>a</code> the number of species shared by a pair of sites, <code>b</code> species only present in the first site and <code>c</code> species only present in the second site.</p>
+<p>\(Simpson = 1 - min(b, c)/(a + min(b, c))\)</p>
+<p>\(Sorensen = 1 - (b+c)/(2a + b + c)\)</p>
+<p>\(Jaccard = 1 - a/(a + b + c)\)</p>
+<p>\(Whittaker = 1 - (a + b + c)/((2a + b + c)/2)\)</p>
+<p>Euclidean computes the Euclidean distance between each pair of site.</p>
+<p>If abundances data are available, Bray-Curtis dissimilarity can also be computed. It computes following this equation:
+\(Bray-Curtis = 1 - 2C_{ij}/(S_i + S_j)\)
+with \(2C_{ij}\) the sum of the lesser values for common species shared by a pair of sites. \(S_{i}\) and \(S_{j}\) are the total number of specimens counted at both sites \(i\) and \(j\).</p>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>If <code>output = 'data.frame'</code>, a data.frame with 3 columns. The first two columns, <code>id1</code> and <code>id2</code>, correspond to each pair of sites. The third column indicates the similarity value for the chosen metric between each pair of site.</p>
+<p>If <code>output = 'matrix'</code>, a matrix with n_sites rows and n_sites columns. Values of the matrix indicate the similarity value for the chosen metric between each pair of site.</p>
+<p>If <code>output = 'dist'</code>, a dist object based on the symmetrical matrix.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>ex</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>sites <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"A"</span>, <span class='fl'>2</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"B"</span>, <span class='fl'>3</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"C"</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span>,
 species <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"a"</span>, <span class='st'>"b"</span>, <span class='st'>"a"</span>, <span class='st'>"c"</span>, <span class='st'>"d"</span>, <span class='st'>"b"</span>, <span class='st'>"d"</span><span class='op'>)</span>,
-count <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>100</span>, <span class='fl'>1</span>, <span class='fl'>20</span>, <span class='fl'>50</span>, <span class='fl'>10</span>, <span class='fl'>20</span><span class='op'>)</span>,
-bioregion <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"region1"</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"region2"</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+count <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>100</span>, <span class='fl'>1</span>, <span class='fl'>20</span>, <span class='fl'>50</span>, <span class='fl'>10</span>, <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>interact</span><span class='op'>(</span>dat <span class='op'>=</span> <span class='va'>ex</span>, site <span class='op'>=</span> <span class='st'>"sites"</span>, sp <span class='op'>=</span> <span class='st'>"species"</span>, bio_site <span class='op'>=</span> <span class='st'>"bioregion"</span>, plot <span class='op'>=</span> <span class='cn'>TRUE</span>, chord <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : ggplot2</span></div><div class='output co'>#&gt; <span class='message'>Le chargement a nécessité le package : circlize</span></div><div class='output co'>#&gt; <span class='warning'>Warning: le package 'circlize' a été compilé avec la version R 3.6.3</span></div><div class='output co'>#&gt; <span class='message'>========================================</span>
-#&gt; <span class='message'>circlize version 0.4.10</span>
-#&gt; <span class='message'>CRAN page: https://cran.r-project.org/package=circlize</span>
-#&gt; <span class='message'>Github page: https://github.com/jokergoo/circlize</span>
-#&gt; <span class='message'>Documentation: https://jokergoo.github.io/circlize_book/book/</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>If you use it in published research, please cite:</span>
-#&gt; <span class='message'>Gu, Z. circlize implements and enhances circular visualization</span>
-#&gt; <span class='message'>  in R. Bioinformatics 2014.</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>This message can be suppressed by:</span>
-#&gt; <span class='message'>  suppressPackageStartupMessages(library(circlize))</span>
-#&gt; <span class='message'>========================================</span></div><div class='img'><img src='interact-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $beta_bio
-#&gt;   Bioregion_1 Bioregion_2      beta
-#&gt; 1     region1     region1 1.0000000
-#&gt; 2     region2     region1 0.6666667
-#&gt; 3     region1     region2        NA
-#&gt; 4     region2     region2 1.0000000
-#&gt; 
-#&gt; [[2]]</div><div class='output co'>#&gt; <span class='warning'>Warning: Removed 1 rows containing missing values (geom_text).</span></div><div class='img'><img src='interact-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; </div></pre>
+<span class='va'>ex_mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='contingency.html'>contingency</a></span><span class='op'>(</span>dat <span class='op'>=</span> <span class='va'>ex</span>, sp <span class='op'>=</span> <span class='st'>"species"</span>, site <span class='op'>=</span> <span class='st'>"sites"</span>, ab <span class='op'>=</span> <span class='st'>"count"</span>,
+weight <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='fu'>simil</span><span class='op'>(</span><span class='va'>ex_mat</span>, metric <span class='op'>=</span> <span class='st'>"simpson"</span>, input <span class='op'>=</span> <span class='st'>"matrix"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   id1 id2 simpson
+#&gt; 1   A   B     0.5
+#&gt; 2   A   C     0.5
+#&gt; 3   B   C     0.5</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

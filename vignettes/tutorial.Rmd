@@ -428,7 +428,7 @@ mbm <- microbenchmark(
                       weight = FALSE, input = "data.frame", site = "site",
                       sp = "sp", N = 10),
   # number of times for each algorithm
-  times = 10)#50)
+  times = 50)
 
 ```
 
@@ -443,7 +443,7 @@ ggplot(mbm_plot, aes(reorder(expr, time, na.rm = TRUE), time)) +
   geom_boxplot(aes(fill = as.factor(expr))) +
   scale_y_continuous(trans = "log") +
   scale_fill_viridis_d("Method") +
-  labs(x = "Methods", y = "Time (log-transformed ms)") +
+  labs(title = "50 runs", x = "Methods", y = "Time (log-transformed ms)") +
   theme_classic() +
   theme(panel.border = element_rect(fill = "NA"))
 

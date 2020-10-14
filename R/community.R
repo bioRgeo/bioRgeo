@@ -221,8 +221,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
 
       } else if(.Platform$OS.type == "unix"){
         cmd <-
-          paste0(Bio_dir,
-                 "./Infomap_lin -N 10 --undirected --two-level --map --clu --tree --markov-time 0.5 dataset.txt test")
+          paste0("./Infomap_lin -N ", N, " --undirected --two-level --map --clu --tree --markov-time 0.5 dat.net output")
 
         stop("To do")
       } else{
@@ -415,7 +414,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
           paste0(Bio_dir, "/OSLOM/oslom_undir_win.exe -f OSLOM/dataset.txt -w",
                  " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " -hr ", hr)
       } else if(.Platform$OS.type == "unix"){
-        stop("To do")
+        cmd <-
+          paste0(Bio_dir, "/OSLOM/oslom_undir_lin -f OSLOM/dataset.txt -w",
+                 " -r ", n_runs, " -t ", t_param, " -cp ", cp_param, " -hr ", hr)
       } else{
         stop("Windows or Unix distributions only.")
       }

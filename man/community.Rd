@@ -23,6 +23,8 @@ contingency matrix or a long-format data.frame.}
 \item{ab}{a character string corresponding to the column with abundances of
 species at sites.}
 
+\item{N}{Integer setting the number of outer-most loops to run before picking the best solution, for Infomap algorithm only.}
+
 \item{n_runs}{Numeric parameter setting the number of runs for the first
 hierarchical level. The default value is 10. The bigger, the slower the
 function but the more accurate the results.}

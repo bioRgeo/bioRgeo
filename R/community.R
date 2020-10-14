@@ -81,7 +81,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
 
   if(!(abs(N - round(N)) < .Machine$double.eps^0.5)){
     stop("N must be an integer setting the number of outer-most loops to run
-         before picking the best solution.")
+         before picking the best solution, for Infomap algorithm only.")
   }
 
   # 1.1. Controls for OSLOM ----

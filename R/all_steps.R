@@ -47,18 +47,20 @@ all_steps <- function(
            species within sites can be present.")
     }
 
-    if(!is.character(site)){
+    if(!is.character(site) | !(site %in% colnames(dat))){
       stop("site must be the column name of dat describing the sites.")
     }
 
-    if(!is.character(sp)){
+    if(!is.character(sp) | !(sp %in% colnames(dat))){
       stop("sp must be the column name of dat describing the occurrences
            of species within sites.")
     }
 
     if(!is.null(ab) & !is.character(ab)){
-      stop("ab must be the column name of dat describing the abundances
+      if(!(ab %in% colnames(dat))){
+        stop("ab must be the column name of dat describing the abundances
          of species within sites.")
+      }
     }
 
     if(is.null(ab) & weight == TRUE){

@@ -148,13 +148,13 @@ Before applying any of the available method, and according to the preference of 
 This transformation can consider the abundances of species.
 
 ```{r contingency_matrix}
-sp_mat <- contingency(virtual[which(virtual$pa != 0), ],
-                      "site", "sp", ab = NULL, weight = FALSE)
+sp_mat <- contingency(virtual[which(virtual$pa != 0), ], "site", "sp",
+                      ab = NULL)
 knitr::kable(sp_mat[1:5, 1:5],
              caption = "5 first rows and columns of contingency table.")
 
 # With weights (abundances of species within sites)
-sp_mat_w <- contingency(virtual, "site", "sp", ab = "suitab", weight = FALSE)
+sp_mat_w <- contingency(virtual, "site", "sp", abundance.col = "suitab")
 knitr::kable(sp_mat_w[1:5, 1:5],
              caption = "5 first rows and columns of weighted contingency
              table.")

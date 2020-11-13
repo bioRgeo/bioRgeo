@@ -345,8 +345,8 @@ The next chunk runs the different network methods on the virtual dataset. Severa
 # Several algorithms at once
 net_bio <-  community(
   dat = virtual[which(virtual$pa > 0), ],
-  algo = c("greedy", "beckett", "louvain", "walktrap", "infomap"),
-  weight = FALSE, input = "data.frame", site = "site", sp = "sp",
+  algorithm = c("greedy", "beckett", "louvain", "walktrap", "infomap"),
+  weight = FALSE, input = "data.frame", site.col = "site", species.col = "sp",
   N = 10)
 
 # Only sites
@@ -357,8 +357,8 @@ net_bio_site <- net_bio %>%
 
 # OSLOM
 oslom_mod <- community(
-  dat = sp_proj[which(sp_proj$simpson > 0), ], algo = "oslom", weight = FALSE,
-  input = "data.frame", site = "site", sp = "sp", N = 10,
+  dat = sp_proj[which(sp_proj$simpson > 0), ], algorithm = "oslom", weight = FALSE,
+  input = "data.frame", site.col = "site", species.col = "sp", N = 10,
   n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
   oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson")
 
@@ -415,18 +415,18 @@ mbm <- microbenchmark(
   centroid = cluster(sp_mat, method = "centroid", n_clust = 4),
   diana = cluster(sp_mat, method = "diana", n_clust = 4),
   # network methods
-  fastgreedy = community(dat = sp_mat, algo = "greedy", weight = FALSE),
-  beckett = community(dat = sp_mat, algo = "beckett", weight = FALSE),
-  louvain = community(dat = sp_mat, algo = "louvain", weight = FALSE),
-  walktrap = community(dat = sp_mat, algo = "walktrap", weight = FALSE),
+  fastgreedy = community(dat = sp_mat, algorithm = "greedy", weight = FALSE),
+  beckett = community(dat = sp_mat, algorithm = "beckett", weight = FALSE),
+  louvain = community(dat = sp_mat, algorithm = "louvain", weight = FALSE),
+  walktrap = community(dat = sp_mat, algorithm = "walktrap", weight = FALSE),
   oslom = community(
-    dat = sp_proj[which(sp_proj$simpson> 0), ], algo = "oslom", weight = FALSE,
-    input = "data.frame", site = "site", sp = "sp", N = 10, n_runs = 1,
-    t_param = 0.1, cp_param = 0.5, hr = 0,
+    dat = sp_proj[which(sp_proj$simpson> 0), ], algorithm = "oslom", weight = FALSE,
+    input = "data.frame", site.col = "site", species.col = "sp", N = 10,
+    n_runs = 1, t_param = 0.1, cp_param = 0.5, hr = 0,
     oslom_id1 = "id1", oslom_id2 = "id2", oslom_proj = "simpson"),
-  infomap = community(dat = virtual[which(virtual$pa > 0), ], algo = "infomap",
-                      weight = FALSE, input = "data.frame", site = "site",
-                      sp = "sp", N = 10),
+  infomap = community(dat = virtual[which(virtual$pa > 0), ], algorithm = "infomap",
+                      weight = FALSE, input = "data.frame", site.col = "site",
+                      species.col = "sp", N = 10),
   # number of times for each algorithm
   times = 50)
 

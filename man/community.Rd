@@ -2,12 +2,12 @@
 \alias{community}
 \title{Community detection on bipartite networks}
 \usage{
-community(dat, algo = "greedy", weight = FALSE, input = "matrix", site = NULL, sp = NULL, ab = NULL)
+community(dat, algorithm = "greedy", weight = FALSE, input = "matrix", site.col = NULL, species.col = NULL, abundance.col = NULL)
 }
 \arguments{
-\item{dat}{a contingency matrix with sites as rows and species as columns.If 'algo="oslom"', a data.frame with three columns containing id1, id2 and a similarity metric (output of 'bioRgeo::simil()' function).}
+\item{dat}{a contingency matrix with sites as rows and species as columns.If 'algorithm="oslom"', a data.frame with three columns containing id1, id2 and a similarity metric (output of 'bioRgeo::simil()' function).}
 
-\item{algo}{An algorithm used to perfom the bipartite community detection.
+\item{algorithm}{An algorithm used to perfom the bipartite community detection.
 Available options are \emph{greedy}, \emph{betweenness}, \emph{walktrap}, \emph{louvain}, \emph{infomap}, \emph{spinglass}, \emph{leading_eigen}, \emph{label_prop}, \emph{netcarto}, \emph{oslom}, \emph{beckett} and \emph{quanbimo}.}
 
 \item{weight}{A boolean indicating whether the detection of communities has to
@@ -16,11 +16,11 @@ be weighted or not.}
 \item{input}{A character string indicating whether the input format is a
 contingency matrix or a long-format data.frame.}
 
-\item{site}{a character string corresponding to the column with sites.}
+\item{site.col}{a character string corresponding to the column with sites.}
 
-\item{sp}{a character string corresponding to the column with species.}
+\item{species.col}{a character string corresponding to the column with species.}
 
-\item{ab}{a character string corresponding to the column with abundances of
+\item{abundance.col}{a character string corresponding to the column with abundances of
 species at sites.}
 
 \item{N}{Integer setting the number of outer-most loops to run before picking the best solution, for Infomap algorithm only.}
@@ -61,12 +61,11 @@ Some algorithms (the ones from \code{igraph} package and \emph{infomap} return a
 
 \examples{
 # Example dataset from bioRgeo:
-data("virtual_sp")
-sp_df <- virtual[[1]]
+data("virtual")
 
 # fastgreedy algorithm from igraph
-bip_df <- community(dat = sp_df[which(sp_df$pa > 0), ],
-                         algo = "greedy",
-                         weight = FALSE, input = "data.frame", site = "site",
-                         sp = "sp", ab = NULL)
+res <- community(dat = virtual[which(virtual$pa > 0), ],
+                         algorithm = "greedy",
+                         weight = FALSE, input = "data.frame", site.col = "site",
+                         species.col = "sp", abundance.col = NULL)
 }

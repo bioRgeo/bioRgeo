@@ -1,7 +1,7 @@
 
-community <- function(dat, algo = "greedy", weight = FALSE,
-                      input = "matrix", site = NULL, sp = NULL,
-                      ab = NULL, N = 10, n_runs = 10, t_param = 0.1,
+community <- function(dat, algorithm = "greedy", weight = FALSE,
+                      input = "matrix", site.col = NULL, species.col = NULL,
+                      abundance.col = NULL, N = 10, n_runs = 10, t_param = 0.1,
                       cp_param = 0.5, hr = 0, oslom_id1 = NULL,
                       oslom_id2 = NULL, oslom_proj = NULL){
 
@@ -25,52 +25,52 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       stop("dat should be a long format data.frame with each row being the
     presence of a species in a given site.")
 
-      if(!is.character(site)){
-        stop("site must be the column name of dat describing the sites")
+      if(!is.character(site.col)){
+        stop("site.col must be the column name of dat describing the sites")
       }
 
-      if(!is.character(sp)){
-        stop("sp must be the column name of dat describing the species.")
+      if(!is.character(species.col)){
+        stop("species.col must be the column name of dat describing the species.")
       }
 
-      if(!is.null(ab) & !is.character(ab)){
-        stop("ab must be the column name of dat describing the abundances
+      if(!is.null(abundance.col) & !is.character(abundance.col)){
+        stop("abundance.col must be the column name of dat describing the abundances
          of species")
       }
     }
 
-    if(weight == TRUE & is.null(ab)){
+    if(weight == TRUE & is.null(abundance.col)){
       stop("With weight = TRUE and input = 'data.frame', input data.frame
       should have a column containg the abundances of species at sites.")
     }
   }
 
-  if(!(all(algo %in% c("greedy", "betweenness", "walktrap", "louvain",
-                       "infomap", "spinglass", "leading_eigen", "label_prop",
-                       "netcarto", "oslom", "infomap",
-                       "beckett", "quanbimo")))){
+  if(!(all(algorithm %in% c("greedy", "betweenness", "walktrap", "louvain",
+                            "infomap", "spinglass", "leading_eigen", "label_prop",
+                            "netcarto", "oslom", "infomap",
+                            "beckett", "quanbimo")))){
     stop("Provided algorithm to detect communities is not available. Please
     choose among the followings: 'greedy', 'betweenness', 'walktrap', 'louvain',
          'spinglass', 'leading_eigen', 'label_prop', 'netcarto', 'oslom',
          'infomap', 'beckett' or 'quanbimo'")
   }
 
-  if(any(algo %in% c("beckett", "quanbimo")) & input == "data.frame"){
+  if(any(algorithm %in% c("beckett", "quanbimo")) & input == "data.frame"){
     warning("beckett and quanbimo algorithms need a site-species matrix as
     an input. We here perform bioRgeo::contingency() function to convert it but
         you can do this step a priori to save time.")
-    dat_to_matrix <- contingency(dat, site, sp, ab)
+    dat_to_matrix <- contingency(dat, site.col, species.col, abundance.col)
   }
 
-  if(any(algo %in% c("infomap")) & input == "matrix"){
+  if(any(algorithm %in% c("infomap")) & input == "matrix"){
     warning("infomap algorithm needs a long-format data.frame as an input.
     We here perform bioRgeo::contingency_to_df() function to convert it but
         you can do this step a priori to save time.")
-    dat_to_df <- contingency_to_df(dat, col1 = "site", col2 = "sp",
-                                   col3 = "ab")
+    dat_to_df <- contingency_to_df(dat, site.col = "site", species.col = "sp",
+                                   abundance.col = "ab")
   }
 
-  if(any(algo %in% c("netcarto", "quanbimo"))){
+  if(any(algorithm %in% c("netcarto", "quanbimo"))){
     warning("netcarto and quanbimo algorithm is slow. Depending on the size of the
             network, it may take a long time to run.")
   }
@@ -85,10 +85,10 @@ community <- function(dat, algo = "greedy", weight = FALSE,
   }
 
   # 1.1. Controls for OSLOM ----
-  if(length(algo) > 1 & "oslom" %in% algo){
+  if(length(algorithm) > 1 & "oslom" %in% algorithm){
     stop("oslom algorithm needs a different input than the other algorithms.
          You should run community() separately with OSLOM.")
-  } else if(length(algo) == 1 & algo %in% "oslom"){
+  } else if(length(algorithm) == 1 & algorithm %in% "oslom"){
     # Controls: dat must be a data.frame with three columns containing id1, id2
     # and similarity metric
     if(!(is.data.frame(dat))){
@@ -156,11 +156,11 @@ community <- function(dat, algo = "greedy", weight = FALSE,
   # Initiate empty list
   network_list <- list()
   # for-loop over the selected algorithms
-  for(i in 1:length(algo)){
+  for(i in 1:length(algorithm)){
 
     ## 2. Infomap ----
-    if(algo[i] == "infomap"){
-      if(any(algo %in% c("infomap")) & input == "matrix"){
+    if(algorithm[i] == "infomap"){
+      if(any(algorithm %in% c("infomap")) & input == "matrix"){
         sauv <- dat
         dat <- dat_df
       }
@@ -175,29 +175,33 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       }
 
       # Convert dat to Pajek format (readable by Infomap)
-      if(!is.factor(dat[, sp])){
-        dat[, sp] <- as.factor(dat[, sp])
+      if(!is.factor(dat[, species.col])){
+        dat[, species.col] <- as.factor(dat[, species.col])
       }
-      if(!is.factor(dat[, site])){
-        dat[, site] <- as.factor(dat[, site])
+      if(!is.factor(dat[, site.col])){
+        dat[, site.col] <- as.factor(dat[, site.col])
       }
 
-      species <- data.frame(sp = levels(dat[, sp]),
-                            id = 1:length(levels(dat[, sp])))
-      sites <- data.frame(site = levels(dat[, site]),
-                          id = length(levels(dat[, sp])) +
-                            1:length(levels(dat[, site])))
+      species <- data.frame(species.col = levels(dat[, species.col]),
+                            id = 1:length(levels(dat[, species.col])))
+      sites <- data.frame(site.col = levels(dat[, site.col]),
+                          id = length(levels(dat[, species.col])) +
+                            1:length(levels(dat[, site.col])))
 
-      if(!is.null(ab)){
-        links <- data.frame(from = species$id[match(dat[, sp], species$sp)],
-                            to = sites$id[match(dat[, site], sites$site)],
-                            weight = ifelse(rep(length(ab), nrow(dat)),
-                                            dat[, ab],
+      if(!is.null(abundance.col)){
+        links <- data.frame(from = species$id[match(dat[, species.col],
+                                                    species$species.col)],
+                            to = sites$id[match(dat[, site.col],
+                                                sites$site.col)],
+                            weight = ifelse(rep(length(abundance.col),
+                                                nrow(dat)),
+                                            dat[, abundance.col],
                                             rep(1, nrow(dat))))
       } else{
-        links <- data.frame(from = species$id[match(dat[, sp], species$sp)],
-                            to = sites$id[match(dat[, site], sites$site)],
-                            weight = rep(1, nrow(dat)))
+        links <- data.frame(
+          from = species$id[match(dat[, species.col], species$species.col)],
+          to = sites$id[match(dat[, site.col], sites$site.col)],
+          weight = rep(1, nrow(dat)))
       }
 
       # Write .net file into INFOMAP folder
@@ -263,14 +267,14 @@ community <- function(dat, algo = "greedy", weight = FALSE,
                              pattern = "dat.")))
 
       # Removing data.frame conversion to save space
-      if(any(algo %in% c("infomap")) & input == "matrix"){
+      if(any(algorithm %in% c("infomap")) & input == "matrix"){
         dat <- sauv
         rm(sauv)
       }
 
       ## 3. igraph algorithms ----
-    } else if(algo[i] %in% c("greedy", "betweenness", "walktrap", "louvain",
-                             "spinglass", "leading_eigen", "label_prop")){
+    } else if(algorithm[i] %in% c("greedy", "betweenness", "walktrap", "louvain",
+                                  "spinglass", "leading_eigen", "label_prop")){
       require(igraph)
       # https://stats.stackexchange.com/questions/209086/community-detection-and-modularity
       # https://www.sixhat.net/finding-communities-in-networks-with-r-and-igraph.html
@@ -298,29 +302,30 @@ community <- function(dat, algo = "greedy", weight = FALSE,
 
       } else if(input == "data.frame"){
         if(weight == FALSE){
-          network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE)
+          network <- graph_from_data_frame(dat[, c(species.col, site.col)],
+                                           directed = FALSE)
         } else if(weight == TRUE){
-          network <- graph_from_data_frame(dat[, c(sp, site)], directed = FALSE,
-                                           weighted = TRUE)
+          network <- graph_from_data_frame(dat[, c(species.col, site.col)],
+                                           directed = FALSE, weighted = TRUE)
         }
       }
 
       # Community detection algorithm
-      if(algo[i] == "greedy"){
+      if(algorithm[i] == "greedy"){
         network_mod <- cluster_fast_greedy(network)
-      } else if(algo[i] == "betweenness"){
+      } else if(algorithm[i] == "betweenness"){
         network_mod <- cluster_edge_betweenness(network, modularity = TRUE)
-      } else if(algo[i] == "walktrap"){
+      } else if(algorithm[i] == "walktrap"){
         network_mod <- cluster_walktrap(graph = network)
-      } else if(algo[i] == "louvain"){
+      } else if(algorithm[i] == "louvain"){
         network_mod <- cluster_louvain(graph = network)
-        # } else if(algo[i] == "infomap"){
+        # } else if(algorithm[i] == "infomap"){
         #   network_mod <- cluster_infomap(graph = network)
-      } else if(algo[i] == "spinglass"){
+      } else if(algorithm[i] == "spinglass"){
         network_mod <- cluster_spinglass(graph = network)
-      } else if(algo[i] == "leading_eigen"){
+      } else if(algorithm[i] == "leading_eigen"){
         network_mod <- cluster_leading_eigen(graph = network)
-      } else if(algo[i] == "label_prop"){
+      } else if(algorithm[i] == "label_prop"){
         network_mod <- cluster_label_prop(graph = network)
       }
 
@@ -340,9 +345,10 @@ community <- function(dat, algo = "greedy", weight = FALSE,
                                   "site", "sp")
       }
       ## 4. netcarto ----
-    } else if(algo[i] == "netcarto"){
+    } else if(algorithm[i] == "netcarto"){
       if(input == "data.frame"){
-        dat <- contingency(dat, site = site, sp = sp, ab = ab)
+        dat <- contingency(dat, site.col = site.col, species.col = species.col,
+                           abundance.col = abundance.col)
       }
       # Convert matrix into square matrix (first pixels and then species)
       rownames_mat <- rownames(dat)
@@ -365,13 +371,13 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       # Add category of the node
       if(input == "matrix"){
         network_lab$cat <- ifelse(network_lab$node %in% rownames(dat),
-                                  "site", "sp")
+                                  "site.col", "species.col")
       }else if(input == "data.frame"){
-        network_lab$cat <- ifelse(network_lab$node %in% dat[, site],
-                                  "site", "sp")
+        network_lab$cat <- ifelse(network_lab$node %in% dat[, site.col],
+                                  "site.col", "species.col")
       }
       ## 5. OSLOM ----
-    } else if(algo[i] == "oslom"){
+    } else if(algorithm[i] == "oslom"){
       warning("With OSLOM algorithm, the input must be a projected network.")
 
       # Renaming columns (id1, id2 must be present, no more than 3 columns)
@@ -490,17 +496,17 @@ community <- function(dat, algo = "greedy", weight = FALSE,
       network_lab <- network_lab[, c("site", "module")]
 
       ## 6. Beckett/Dormann & Strauss ----
-    } else if(algo[i] %in% c("beckett", "quanbimo")){
+    } else if(algorithm[i] %in% c("beckett", "quanbimo")){
       require(bipartite)
-      if(algo[i] == "beckett"){
-        algo2 <- "Beckett"
-      } else if(algo[i] == "quanbimo"){
-        algo2 <- "DormannnStrauss"
+      if(algorithm[i] == "beckett"){
+        algorithm2 <- "Beckett"
+      } else if(algorithm[i] == "quanbimo"){
+        algorithm2 <- "DormannnStrauss"
       }
 
-      if(any(algo %in% c("beckett", "quanbimo")) & input == "data.frame"){
+      if(any(algorithm %in% c("beckett", "quanbimo")) & input == "data.frame"){
         network_lab <- computeModules(
-          dat_to_matrix, method = algo2, deep = FALSE,
+          dat_to_matrix, method = algorithm2, deep = FALSE,
           deleteOriginalFiles = TRUE, steps = 1000000, tolerance = 1e-10,
           experimental = FALSE, forceLPA = FALSE)
 
@@ -508,7 +514,7 @@ community <- function(dat, algo = "greedy", weight = FALSE,
         sp_names <- colnames(dat_to_matrix)
       } else{
         network_lab <- computeModules(
-          dat, method = algo2, deep = FALSE,
+          dat, method = algorithm2, deep = FALSE,
           deleteOriginalFiles = TRUE, steps = 1000000, tolerance = 1e-10,
           experimental = FALSE, forceLPA = FALSE)
 
@@ -533,9 +539,9 @@ community <- function(dat, algo = "greedy", weight = FALSE,
     # Convert module column into character
     network_lab$module <- as.character(network_lab$module)
 
-    # Changing column names of network_lab: paste(algo[i], method)
+    # Changing column names of network_lab: paste(algorithm[i], method)
     colnames(network_lab)[colnames(network_lab) == "module"] <-
-      paste0("module_", algo[i])
+      paste0("module_", algorithm[i])
 
     # Complete list
     network_list[[i]] <- network_lab

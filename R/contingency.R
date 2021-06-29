@@ -1,6 +1,7 @@
 
 contingency <- function(dat, site.col, species.col, abundance.col = NULL){
 
+  # Control 1
   if(!is.data.frame(dat)){
     stop("dat must be a data.frame with columns species and sites.")
   }
@@ -16,6 +17,19 @@ contingency <- function(dat, site.col, species.col, abundance.col = NULL){
   if(!is.null(abundance.col) & !is.character(abundance.col)){
     stop("abundance.col must be the column name of dat describing the
     abundances of species.")
+  }
+
+  # Control 2
+  if(sum(colnames(dat) == site.col)==0){
+    stop(paste0("could not find the column ", species.col))
+  }
+
+  if(sum(colnames(dat) == species.col)==0){
+    stop(paste0("could not find the column ", site.col))
+  }
+
+  if(!is.null(abundance.col) & sum(colnames(dat) == abundance.col)==0){
+    stop(paste0("could not find the column ", abundance.col))
   }
 
   # Rename columns

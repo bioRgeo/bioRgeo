@@ -222,7 +222,7 @@ all_steps <- function(
     sp_mat <- contingency(dat, site = site, sp = sp, ab = ab)
   } else if(input_format == "matrix"){
     sp_df <- contingency_to_df(dat, site.col = "site", species.col = "sp", abundance.col = "ab",
-                               remove_zeros = TRUE)
+                               remove_absent_species = TRUE)
   }
 
   ## simil() ----

@@ -221,7 +221,7 @@ all_steps <- function(
   if(input_format == "data.frame"){
     sp_mat <- contingency(dat, site = site, sp = sp, ab = ab)
   } else if(input_format == "matrix"){
-    sp_df <- contingency_to_df(dat, col1 = "site", col2 = "sp", col3 = "ab",
+    sp_df <- contingency_to_df(dat, site.col = "site", species.col = "sp", abundance.col = "ab",
                                remove_zeros = TRUE)
   }
 

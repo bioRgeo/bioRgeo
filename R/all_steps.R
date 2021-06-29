@@ -170,8 +170,7 @@ all_steps <- function(
       warning("beckett and quanbimo algorithms need a site-species matrix as
     an input. We here perform bioRgeo::contingency() function to convert it but
         you can do this step a priori to save time.")
-      dat_to_matrix <- contingency(dat, site = site, sp = sp, ab = ab,
-                                   weight = weight)
+      dat_to_matrix <- contingency(dat, site = site, sp = sp, ab = ab)
     }
 
     if(any(network_method %in% c("netcarto", "quanbimo"))){
@@ -220,7 +219,7 @@ all_steps <- function(
   ## contingency() ----
   # Create contingency table if needed
   if(input_format == "data.frame"){
-    sp_mat <- contingency(dat, site = site, sp = sp, ab = ab, weight = weight)
+    sp_mat <- contingency(dat, site = site, sp = sp, ab = ab)
   } else if(input_format == "matrix"){
     sp_df <- contingency_to_df(dat, col1 = "site", col2 = "sp", col3 = "ab",
                                remove_zeros = TRUE)

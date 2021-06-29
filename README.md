@@ -14,7 +14,7 @@ clustering based on multivariate or network approaches.
 ## 1 Installation
 
 ``` r
-devtools::install_github("bioRgeo", build_vignettes = TRUE)
+devtools::install_github("bioRgeo/bioRgeo", build_vignettes = TRUE)
 ```
 
 ## 2 Tutorial

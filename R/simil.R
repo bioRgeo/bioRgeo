@@ -56,7 +56,7 @@ simil <- function(dat, metric = "simpson", input = "matrix",
     }
 
     # Conversion as a contingency table with contingency function
-    dat <- contingency(dat, site, sp, ab = ab, weight = weight)
+    dat <- contingency(dat, site, sp, ab = ab)
   }
 
   if(!(metric %in% c("simpson", "jaccard", "sorensen", "whittaker", "bray",

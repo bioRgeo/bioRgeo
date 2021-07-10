@@ -6,33 +6,33 @@
 
 using namespace Rcpp;
 
-// ProdMat
-SEXP ProdMat(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B);
-RcppExport SEXP _bioRgeo_ProdMat(SEXP ASEXP, SEXP BSEXP) {
+// abc
+NumericMatrix abc(NumericMatrix comat);
+RcppExport SEXP _bioRgeo_abc(SEXP comatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type comat(comatSEXP);
+    rcpp_result_gen = Rcpp::wrap(abc(comat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// prodmat
+SEXP prodmat(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B);
+RcppExport SEXP _bioRgeo_prodmat(SEXP ASEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type A(ASEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(ProdMat(A, B));
-    return rcpp_result_gen;
-END_RCPP
-}
-// abcw
-NumericMatrix abcw(NumericMatrix comat);
-RcppExport SEXP _bioRgeo_abcw(SEXP comatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type comat(comatSEXP);
-    rcpp_result_gen = Rcpp::wrap(abcw(comat));
+    rcpp_result_gen = Rcpp::wrap(prodmat(A, B));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_bioRgeo_ProdMat", (DL_FUNC) &_bioRgeo_ProdMat, 2},
-    {"_bioRgeo_abcw", (DL_FUNC) &_bioRgeo_abcw, 1},
+    {"_bioRgeo_abc", (DL_FUNC) &_bioRgeo_abc, 1},
+    {"_bioRgeo_prodmat", (DL_FUNC) &_bioRgeo_prodmat, 2},
     {NULL, NULL, 0}
 };
 

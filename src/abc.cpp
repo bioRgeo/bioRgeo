@@ -2,10 +2,10 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericMatrix abcw(NumericMatrix comat) {
+NumericMatrix abc(NumericMatrix comat) {
   int nrow = comat.nrow();
   int ncol = comat.ncol();
-  NumericMatrix abc(nrow*(nrow-1)/2,5);
+  NumericMatrix res(nrow*(nrow-1)/2,5);
   int l=0;
   for(int i = 0; i < (nrow - 1); i++) {
     for(int j = (i + 1); j < (nrow); j++) {
@@ -20,11 +20,11 @@ NumericMatrix abcw(NumericMatrix comat) {
         sumi += comat(i,k);
         sumj += comat(j,k);
       }
-      abc(l,0)=(i+1);
-      abc(l,1)=(j+1);
-      abc(l,2)=minsum;
-      abc(l,3)=sumi;
-      abc(l,4)=sumj;
+      res(l,0)=(i+1);
+      res(l,1)=(j+1);
+      res(l,2)=minsum;
+      res(l,3)=sumi;
+      res(l,4)=sumj;
       l++;
     }
   }

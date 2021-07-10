@@ -18,13 +18,11 @@ Imports:
     dplyr,
     ecodist,
     Rcpp,
-    RcppArmadillo,
     RcppEigen,
     SMUT,
     lctools,
     fastcluster
 LinkingTo: Rcpp,
-           RcppArmadillo,
            RcppEigen
 Suggests:
     cowplot,

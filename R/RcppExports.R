@@ -5,7 +5,7 @@ ProdMat <- function(A, B) {
     .Call(`_bioRgeo_ProdMat`, A, B)
 }
 
-abcw <- function(N, thin) {
-    .Call(`_bioRgeo_abcw`, N, thin)
+abcw <- function(comat) {
+    .Call(`_bioRgeo_abcw`, comat)
 }
 

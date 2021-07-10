@@ -19,21 +19,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // abcw
-NumericMatrix abcw(int N, int thin);
-RcppExport SEXP _bioRgeo_abcw(SEXP NSEXP, SEXP thinSEXP) {
+NumericMatrix abcw(NumericMatrix comat);
+RcppExport SEXP _bioRgeo_abcw(SEXP comatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type N(NSEXP);
-    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
-    rcpp_result_gen = Rcpp::wrap(abcw(N, thin));
+    Rcpp::traits::input_parameter< NumericMatrix >::type comat(comatSEXP);
+    rcpp_result_gen = Rcpp::wrap(abcw(comat));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bioRgeo_ProdMat", (DL_FUNC) &_bioRgeo_ProdMat, 2},
-    {"_bioRgeo_abcw", (DL_FUNC) &_bioRgeo_abcw, 2},
+    {"_bioRgeo_abcw", (DL_FUNC) &_bioRgeo_abcw, 1},
     {NULL, NULL, 0}
 };
 

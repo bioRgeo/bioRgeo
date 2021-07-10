@@ -1,18 +1,33 @@
-// [[Rcpp::export]]
-Rcpp::NumericMatrix abcw(int N, int thin) {
+#include <Rcpp.h>
+using namespace Rcpp;
 
-  Rcpp::NumericMatrix res (N,2); // définit une matrice de 0 de taille (N,2) (résultats)
-  double x = 0;  // définit un numérique (double précision) initialisé à 0.
-  double y = 0;
-  int indexline = 0;  // définit un entier qui va nous permettre de remplir la matrice
-  for (int i = 0 ; i < N ; i++){
-    indexline = i;
-    for (int j = 0; j < thin; ++j){
-      x = rgamma(1, 3, y * y + 4)[0];
-      y = rnorm(1, 1 / (x + 1), 1 / sqrt(2 * ( x + 1)))[0];
+// [[Rcpp::export]]
+NumericMatrix abcw(NumericMatrix comat) {
+  int nrow = comat.nrow();
+  int ncol = comat.ncol();
+  NumericMatrix abc(nrow*(nrow-1)/2,5);
+  int l=0;
+  for(int i = 0; i < (nrow - 1); i++) {
+    for(int j = (i + 1); j < (nrow); j++) {
+      double minsum = 0;
+      double sumi = 0;
+      double sumj = 0;
+      for(int   k = 0; k < ncol; k++) {
+        if(comat(i,k) < comat(j,k))
+          minsum += comat(i,k);
+        else
+          minsum += comat(j,k);
+        sumi += comat(i,k);
+        sumj += comat(j,k);
+      }
+      abc(l,0)=(i+1);
+      abc(l,1)=(j+1);
+      abc(l,2)=minsum;
+      abc(l,3)=sumi;
+      abc(l,4)=sumj;
+      l++;
     }
-    res(indexline,0) = x;
-    res(indexline,1) = y;
   }
-  return res;
+
+  return abc;
 }

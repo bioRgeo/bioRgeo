@@ -2,12 +2,12 @@
 % Please edit documentation in R/comat_to_df.R
 \name{comat_to_df}
 \alias{comat_to_df}
-\title{Create a data.frame from a contingency table}
+\title{Create a data.frame from a co-occurence matrix}
 \usage{
 comat_to_df(comat, weight = FALSE, remove_absent_species = TRUE)
 }
 \arguments{
-\item{comat}{a contingency matrix with sites as rows and species as columns}
+\item{comat}{a co-occurence matrix with sites as rows and species as columns}
 
 \item{weight}{a boolean indicating if the value are presence (i.e. equal 1) or abundance data}
 
@@ -34,7 +34,7 @@ colnames(comat)=paste0("Species",1:10)
 df=comat_to_df(comat,weight=TRUE)
 }
 \author{
-Pierre Denelle \email{pierre.denelle@gmail.com},
+Pierre Denelle \email{pierre.denelle@gmail.com}
 Maxime Lenormand \email{maxime.lenormand@inrae.fr}
-and Boris Leroy \email{leroy.boris@gmail.com}
+Boris Leroy \email{leroy.boris@gmail.com}
 }

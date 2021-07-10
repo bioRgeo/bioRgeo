@@ -1,4 +1,4 @@
-#' Create a data.frame from a contingency table
+#' Create a data.frame from a co-occurence matrix
 #'
 #' This function creates a two- or three-columns data.frame where
 #' each row represents the presence of a species (second column)
@@ -6,7 +6,7 @@
 #' of the species in this site (if weight=TRUE) from a co-occurence matrix
 #' (sites as rows and species as columns).
 #'
-#' @param comat a contingency matrix with sites as rows and species as columns
+#' @param comat a co-occurence matrix with sites as rows and species as columns
 #' @param weight a boolean indicating if the value are presence (i.e. equal 1) or abundance data
 #' @param remove_absent_species a boolean determining whether absent
 #' species from the co-occurence matrix have to be removed from the output.
@@ -27,6 +27,7 @@
 #' @export
 comat_to_df <- function(comat, weight = FALSE, remove_absent_species = TRUE){
 
+  # Control
   if(!is.matrix(comat)){
     stop("Contingency table should be a matrix with sites as rows and species as columns.")
   }
@@ -37,7 +38,7 @@ comat_to_df <- function(comat, weight = FALSE, remove_absent_species = TRUE){
   }
 
   # Conversion as data.frame
-  df <- reshape2::melt(codat)
+  df <- reshape2::melt(comat)
   colnames(df) <- c("Site", "Species", "Weight")
 
   if(remove_absent_species == TRUE){

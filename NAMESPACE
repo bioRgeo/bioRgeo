@@ -1,1 +1,5 @@
+useDynLib(bioRgeo, .registration=TRUE)
 exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+
+

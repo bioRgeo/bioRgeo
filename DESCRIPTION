@@ -21,6 +21,7 @@ Imports:
     SMUT,
 	  lctools,
 	  fastcluster
+LinkingTo: Rcpp
 Suggests:
     cowplot,
     ggplot2,

@@ -29,5 +29,5 @@ NumericMatrix abc(NumericMatrix comat) {
     }
   }
 
-  return abc;
+  return res;
 }

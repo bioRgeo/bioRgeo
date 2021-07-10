@@ -30,4 +30,4 @@ Suggests:
     rmarkdown,
     sf
 VignetteBuilder: knitr
-
+RoxygenNote: 7.1.0

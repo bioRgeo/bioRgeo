@@ -1,7 +1,7 @@
 // [[Rcpp::export]]
-NumericMatrix abcw(int N, int thin) {
+Rcpp::NumericMatrix abcw(int N, int thin) {
 
-  NumericMatrix res (N,2); // définit une matrice de 0 de taille (N,2) (résultats)
+  Rcpp::NumericMatrix res (N,2); // définit une matrice de 0 de taille (N,2) (résultats)
   double x = 0;  // définit un numérique (double précision) initialisé à 0.
   double y = 0;
   int indexline = 0;  // définit un entier qui va nous permettre de remplir la matrice

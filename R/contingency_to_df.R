@@ -30,7 +30,7 @@ contingency_to_df <- function(comat, weight = FALSE, remove_absent_objects = TRU
     stop("Contingency table should be a matrix")
   }
 
-  if(!is.logical(remove_absent_species)){
+  if(!is.logical(remove_absent_objects)){
     stop("remove_absent_objects must be a boolean")
   }
 

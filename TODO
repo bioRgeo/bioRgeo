@@ -1,0 +1,3 @@
+
+- Gérer exécutables pour le CRAN
+- Bien vérifier les potentiels problèmes character, numeric, factor pour les sites/species des data.frame   

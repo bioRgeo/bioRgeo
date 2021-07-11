@@ -8,6 +8,7 @@
 #' each row represents the interaction between two objects (site and species for example)
 #' and an optional third column indicating the weight of the interaction
 #' @param weight a boolean indicating if the abundance should be considered
+#' @param squared a boolean indicating if the output matrix should but squared
 #' @export
 #' @return A contingency table with the first objects (first column of df) as rows and
 #' the second objects (second column of df) as columns
@@ -22,7 +23,7 @@
 #'
 #' comat=df_to_comat(df,weight=TRUE)
 #' @export
-df_to_contingency <- function(df, weight = FALSE){
+df_to_contingency <- function(df, weight = FALSE, squared = FALSE){
 
   # Control
   if(!is.data.frame(df)){
@@ -51,9 +52,20 @@ df_to_contingency <- function(df, weight = FALSE){
     df$Weight <- 1
   }
 
+  # Squared
+  if(squared){
+    obj1=sort(df$Object1[!duplicated(df$Object1)])
+    obj2=sort(df$Object2[!duplicated(df$Object2)])
+    diff12=setdiff(obj1,obj2)
+    diff21=setdiff(obj2,obj1)
+    obj12=data.frame(Object1=df$Object1[1], Object2=diff12, Weight=0)
+    obj21=data.frame(Object1=diff21, Object2=df$Object2[1], Weight=0)
+    df=rbind(df,obj12,obj21)
+  }
+
   # Create contingency table with matrix indexing
-  df$Site <- as.factor(df$Object1)
-  df$Species <- as.factor(df$Object2)
+  df$Object1 <- as.factor(df$Object1)
+  df$Object2 <- as.factor(df$Object2)
 
   comat <- with(df, {
     out <- matrix(nrow = nlevels(Object1), ncol = nlevels(Object2),
@@ -61,12 +73,15 @@ df_to_contingency <- function(df, weight = FALSE){
     out[cbind(Object1, Object2)] <- Weight
     out
   })
+
   # Replace NAs with 0s
   comat[is.na(comat)] <- 0
 
   # Check for empty rows and columns
-  comat <- comat[rowSums(comat) > 0, ]
-  comat <- comat[, colSums(comat) > 0]
+  if(!squared){
+    comat <- comat[rowSums(comat) > 0, ]
+    comat <- comat[, colSums(comat) > 0]
+  }
 
   return(comat)
 }

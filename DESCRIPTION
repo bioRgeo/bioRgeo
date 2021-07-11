@@ -11,11 +11,11 @@ Authors@R:
        person(given = "Maxime",
               family = "Lenormand",
               email = "maxime.lenormand@inrae.fr",
-              role = c("aut", "cre"),
+              role = c("ctb"),
               comment = c(ORCID = "0000-0001-6362-3473")),
        person(given = "Boris",
               family = "Leroy",
-              role = c("aut", "cre"),
+              role = c(""ctb),
               email = "boris.leroy@gmail.com",
               comment = c(ORCID = "0000-0002-7686-4302"))
                     )

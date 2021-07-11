@@ -63,7 +63,7 @@ df_to_contingency <- function(df, weight = FALSE, squared = FALSE){
     df=rbind(df,obj12,obj21)
   }
 
-  # Create contingency table with matrix indexing
+  # Create contingency table
   df$Object1 <- as.factor(df$Object1)
   df$Object2 <- as.factor(df$Object2)
 

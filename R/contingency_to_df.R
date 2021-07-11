@@ -46,5 +46,8 @@ contingency_to_df <- function(comat, weight = FALSE, remove_absent_objects = TRU
     df=df[,-3]
   }
 
+  df[,1]=as.character(df[,1])
+  df[,2]=as.character(df[,2])
+
   return(df)
 }
